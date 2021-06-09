@@ -5,12 +5,8 @@ BONUS_OFILES = $(patsubst %.c,%.o,$(BONUS_FILES))
 HEADER = libft.h
 NAME = libft.a
 FLAGS = -Wall -Wextra -Werror
-
-ifdef WITH_BONUS
 OFILES = $(REG_OFILES) $(BONUS_OFILES)
-else
-OFILES = $(REG_OFILES)
-endif
+
 
 all:		$(NAME)
 
@@ -21,14 +17,11 @@ $(NAME):	$(OFILES)
 			gcc $(FLAGS) -c $< -o $@
 
 clean:
-			rm -f $(REG_OFILES) $(BONUS_OFILES)
+			rm -f $(OFILES)
 
 fclean:		clean
 			rm -f $(NAME) 
 
 re:			fclean all
-
-bonus:
-			$(MAKE) WITH_BONUS=1 all
 
 .PHONY:		all clean fclean re
