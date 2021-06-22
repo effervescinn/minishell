@@ -52,17 +52,20 @@ void quotes(char **str, char **newstr, char **start)
     quote = 0;
     if (**str == '$')
     {
-        // find_vars();
-        if (**(str++) == ' ' || **str == '\0')
+        (*str)++;
+        if (**str == ' ' || **str == '\0')
         {
             tmp = *newstr;
             *newstr = ft_strjoin(tmp, "$");
             free(tmp);
-            if (*str)
-                *start = ++(*str);
+            *start = *str;
+            return ;
+        }
+        else
+        {
+
         }
     }
-
     if (**str == '\'')
     {
         (*str)++;
