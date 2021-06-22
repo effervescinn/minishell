@@ -31,16 +31,51 @@ typedef struct s_token
 // char *str = "e\"ch\"o    '$PWD    '     >> test.txt";
 
 
-// void find_vars(char **str)
-// {
 
-// }
 
 //  "echo '$PWD\"\" ' $ hah"
 
 ///////////////////////changing env vars
 
-void quotes(char **str, char **newstr, char **start)
+int count_len(char *str)
+{
+    int len;
+
+    len = 0;
+    while (*str)
+    {
+        len++;
+        str++;
+    }
+    return (len);
+}
+
+char *vars(char **str, t_list *head)
+{
+    char *var;
+    int i;
+    char *newvar;
+    int j;
+    int len;
+
+    while (head)
+    {
+        j = 0;
+        while ((*str)[j] && head->content[j] && head->content[j] == (*str)[j])
+            j++;
+        str += j;
+        if (head->content[j] == '=')
+        {
+            j++;
+            newvar = ft_substr(&(head->content[j]), 0, count_len(&(head->content[j])));
+            return (newvar);
+        }
+        head = head->next;
+    }
+    return (newvar);
+}
+
+void quotes(char **str, char **newstr, char **start, t_list *head)
 {
     int dquote;
     int quote;
@@ -63,7 +98,14 @@ void quotes(char **str, char **newstr, char **start)
         }
         else
         {
-
+            // printf("%s\n", vars(str));
+            tmp = *newstr;
+            *newstr = ft_strjoin(tmp, vars(str, head));
+            free(tmp);
+            while (**str != ' ' && **str != '\0')
+                (*str)++;
+            *start = *str;
+            return ;
         }
     }
     if (**str == '\'')
@@ -116,7 +158,7 @@ char *replace_vars(char *str, t_list *head) //потом почистить str 
             newstr = ft_strjoin(tmp, glue);
             free(tmp);
         }
-        quotes(&str, &newstr, &start);
+        quotes(&str, &newstr, &start, head);
     }
 
     return (newstr);
@@ -157,7 +199,7 @@ int main(int argc, char **argv, char **envp)
 {
     t_list *head;
     make_env(envp, &head);
-    char *str = "echo '$PWD\"\" ' $ hah";
+    char *str = "echo '$PWD\"\"' '''$PWD' lala";
     char *newstr;
     newstr = replace_vars(str, head);
     printf("%s\n", newstr);
