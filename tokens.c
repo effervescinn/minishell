@@ -53,6 +53,11 @@ char *vars(char **str, t_list *head)
         }
         head = head->next;
     }
+    if (newvar == 0)
+    {
+        newvar = (char*)malloc(1);
+        *newvar = '\0';
+    }
     return (newvar);
 }
 
@@ -89,6 +94,7 @@ void quotes(char **str, char **newstr, char **start, t_list *head)
             tmp = *newstr;
             *newstr = ft_strjoin(tmp, var);
             free(tmp);
+            free(var);
             while (**str != ' ' && **str != '\0')
                 (*str)++;
             *start = *str;
@@ -103,7 +109,6 @@ void quotes(char **str, char **newstr, char **start, t_list *head)
         glue = ft_substr(*start, 0, *str - *start + 1);
         tmp = *newstr;
         *newstr = ft_strjoin(tmp, glue);
-
         free(tmp);
         free(glue);
         *start = ++(*str);
@@ -181,7 +186,7 @@ int main(int argc, char **argv, char **envp)
 {
     t_list *head;
     make_env(envp, &head);
-    char *str = "echo $PWDd";
+    char *str = "echo $PWDr la";
     char *newstr;
     newstr = replace_vars(str, head);
     printf("%s\n", newstr);
