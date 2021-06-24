@@ -16,25 +16,6 @@ typedef struct s_token
     char *type; //word or command or argument
 } t_token;
 
-// char *glue(char *newstr, char *start, char *end, char *env)
-// {
-//     char *temp;
-//     char *before;
-
-//     temp = newstr;
-//     before = ft_substr(newstr, start, end - start);
-//     newstr = ft_strjoin(before, env);
-//     free(temp);
-//     return(newstr);
-// }
-
-// char *str = "e\"ch\"o    '$PWD    '     >> test.txt";
-
-
-
-
-//  "echo '$PWD\"\" ' $ hah"
-
 ///////////////////////changing env vars
 
 int count_len(char *str)
@@ -53,9 +34,9 @@ int count_len(char *str)
 char *vars(char **str, t_list *head)
 {
     char *var;
-    int i;
     char *newvar;
     int j;
+    int i;
     int len;
 
     while (head)
@@ -63,11 +44,11 @@ char *vars(char **str, t_list *head)
         j = 0;
         while ((*str)[j] && head->content[j] && head->content[j] == (*str)[j])
             j++;
-        str += j;
-        if (head->content[j] == '=')
+        if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0'))
         {
             j++;
             newvar = ft_substr(&(head->content[j]), 0, count_len(&(head->content[j])));
+            str += j;
             return (newvar);
         }
         head = head->next;
@@ -82,6 +63,7 @@ void quotes(char **str, char **newstr, char **start, t_list *head)
     int change;
     char *glue;
     char *tmp;
+    char *var;
 
     dquote = 0;
     quote = 0;
@@ -94,36 +76,37 @@ void quotes(char **str, char **newstr, char **start, t_list *head)
             *newstr = ft_strjoin(tmp, "$");
             free(tmp);
             *start = *str;
-            return ;
+            return;
         }
         else
         {
-            // printf("%s\n", vars(str));
+            var = vars(str, head);
+            glue = ft_substr(*start, 0, *str - *start - 1);
             tmp = *newstr;
-            *newstr = ft_strjoin(tmp, vars(str, head));
+            *newstr = ft_strjoin(tmp, glue);
+            free(tmp);
+            free(glue);
+            tmp = *newstr;
+            *newstr = ft_strjoin(tmp, var);
             free(tmp);
             while (**str != ' ' && **str != '\0')
                 (*str)++;
             *start = *str;
-            return ;
+            return;
         }
     }
-    if (**str == '\'')
+    else if (**str == '\'')
     {
         (*str)++;
         while (**str && **str != '\'')
             (*str)++;
-        if (**str == '\0')
-            return;
-        else
-        {
-            glue = ft_substr(*start, 0, *str - *start + 1);
-            tmp = *newstr;
-            *newstr = ft_strjoin(tmp, glue);
-            free(tmp);
-            *start = ++(*str);
-            
-        }
+        glue = ft_substr(*start, 0, *str - *start + 1);
+        tmp = *newstr;
+        *newstr = ft_strjoin(tmp, glue);
+
+        free(tmp);
+        free(glue);
+        *start = ++(*str);
     }
 
     // if (str[i] == '\"')
@@ -142,11 +125,10 @@ char *replace_vars(char *str, t_list *head) //потом почистить str 
     char *tmp;
 
     i = 0;
-
     start = str;
-    newstr = malloc(1);
+    newstr = (char *)malloc(1);
     *newstr = '\0';
-    
+
     while (*str)
     {
         while (*str && *str != '\'' && *str != '\"' && *str != '$')
@@ -199,10 +181,9 @@ int main(int argc, char **argv, char **envp)
 {
     t_list *head;
     make_env(envp, &head);
-    char *str = "echo '$PWD\"\"' '''$PWD' lala";
+    char *str = "echo $PWDd";
     char *newstr;
     newstr = replace_vars(str, head);
     printf("%s\n", newstr);
-    // printf("%s\n", str);
     return 0;
 }
