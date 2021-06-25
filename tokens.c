@@ -44,14 +44,13 @@ char *vars(char **str, t_list *head)
         j = 0;
         while ((*str)[j] && head->content[j] && head->content[j] == (*str)[j])
             j++;
-        if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0'))
+        if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0' || (*str)[j] == '\'' || (*str)[j] == '\"'  || (*str)[j] == '$'))
         {
             j++;
             newvar = ft_substr(&(head->content[j]), 0, count_len(&(head->content[j])));
-            str += j;
             return (newvar);
         }
-        head = head->next;    
+        head = head->next;
     }
     if (newvar == NULL)
     {
@@ -72,10 +71,7 @@ void dollar(char **str, char **newstr, char **start, t_list *head)
     {
         tmp = *newstr;
         *newstr = ft_strjoin(tmp, "$");
-        if (tmp)
-            free(tmp);
-        *start = *str;
-        return;
+        free(tmp);
     }
     else
     {
@@ -89,10 +85,8 @@ void dollar(char **str, char **newstr, char **start, t_list *head)
         *newstr = ft_strjoin(tmp, var);
         free(tmp);
         free(var);
-        while (**str != ' ' && **str != '\0')
+        while (**str != ' ' && **str != '\0' && **str != '\'' && **str != '\"' && **str != '$')
             (*str)++;
-        *start = *str;
-        return;
     }
 }
 
@@ -106,36 +100,7 @@ void quotes(char **str, char **newstr, char **start, t_list *head)
 
     dquote = 0;
     if (**str == '$')
-    {
-        // dollar(str, newstr, start, head);
-        (*str)++;
-        if (**str == ' ' || **str == '\0')
-        {
-            tmp = *newstr;
-            *newstr = ft_strjoin(tmp, "$");
-            free(tmp);
-            *start = *str;
-            return;
-        }
-        else
-        {
-            var = vars(str, head);
-            glue = ft_substr(*start, 0, *str - *start - 1);
-            tmp = *newstr;
-            // printf("|%s|\n", glue);
-            *newstr = ft_strjoin(tmp, glue);
-            free(tmp);
-            free(glue);
-            tmp = *newstr;
-            *newstr = ft_strjoin(tmp, var);
-            free(tmp);
-            free(var);
-            while (**str != ' ' && **str != '\0')
-                (*str)++;
-            *start = *str;
-            return;
-        }
-    }
+        dollar(str, newstr, start, head);
     else if (**str == '\'')
     {
         (*str)++;
@@ -148,7 +113,7 @@ void quotes(char **str, char **newstr, char **start, t_list *head)
             free(tmp);
         if (glue)
             free(glue);
-        *start = ++(*str);
+        ++(*str);
     }
     // else //echo "$PWD hello"
     // {
@@ -183,8 +148,8 @@ char *replace_vars(char *str, t_list *head) //потом почистить str 
             free(tmp);
         }
         quotes(&str, &newstr, &start, head);
+        start = str;
     }
-
     return (newstr);
 }
 
@@ -223,7 +188,7 @@ int main(int argc, char **argv, char **envp)
 {
     t_list *head;
     make_env(envp, &head);
-    char *str = "'  $be'";
+    char *str = "  $PWD$ha'$PWD'$ha ";
     char *newstr;
     newstr = replace_vars(str, head);
     printf("%s\n", newstr);
