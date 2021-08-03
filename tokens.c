@@ -1,34 +1,29 @@
 #include "libft/libft.h"
-#include "stdio.h"
 
-//lexer
-typedef struct s_command
+typedef struct s_info
 {
-    char *name;
-    char **arguments;
-    int pipe;     //0,1
-    int redirect; //1, 2, 3, 4?
-} t_command;
+	int		d_quote;
+	int		s_quote;
+	char	first;
+	t_list	*head;
+} t_info;
 
-typedef struct s_token
+void make_env(char **envp, t_list **head)
 {
-    char *token;
-    char *type; //word or command or argument
-} t_token;
 
-///////////////////////changing env vars
+	t_list *new;
+	int i;
 
-int count_len(char *str)
-{
-    int len;
-
-    len = 0;
-    while (*str)
-    {
-        len++;
-        str++;
-    }
-    return (len);
+	i = 1;
+	*head = ft_lstnew(envp[0]);
+	while (envp[i])
+	{
+		new = (t_list *)malloc(sizeof(t_list));
+		new->content = envp[i];
+		new->next = NULL;
+		ft_lstadd_back(head, new);
+		i++;
+	}
 }
 
 char *vars(char **str, t_list *head)
@@ -44,10 +39,10 @@ char *vars(char **str, t_list *head)
         j = 0;
         while ((*str)[j] && head->content[j] && head->content[j] == (*str)[j])
             j++;
-        if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0' || (*str)[j] == '\'' || (*str)[j] == '\"'  || (*str)[j] == '$'))
+        if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0' || (*str)[j] == '\'' || (*str)[j] == '\"' || (*str)[j] == '$'))
         {
             j++;
-            newvar = ft_substr(&(head->content[j]), 0, count_len(&(head->content[j])));
+            newvar = ft_substr(&(head->content[j]), 0, ft_strlen(&(head->content[j])));
             return (newvar);
         }
         head = head->next;
@@ -60,7 +55,7 @@ char *vars(char **str, t_list *head)
     return (newvar);
 }
 
-void dollar(char **str, char **newstr, char **start, t_list *head)
+void dollar(char **str, char **newstr, char **start, t_info *info)
 {
     char *tmp;
     char *glue;
@@ -72,10 +67,26 @@ void dollar(char **str, char **newstr, char **start, t_list *head)
         tmp = *newstr;
         *newstr = ft_strjoin(tmp, "$");
         free(tmp);
+		return ;
     }
+	if ((info->d_quote == 0 && info->s_quote == 1) || (info->s_quote == 1 && info->first == 's'))
+	{
+		tmp = *newstr;
+		glue = ft_substr(*start, 0, *str - *start);
+		*newstr = ft_strjoin(tmp, glue);
+        free(tmp);
+        free(glue);
+		*start = *str;
+		while (**str != '\0' && **str !='\'' && **str !='\"' && **str !=' ')
+			(*str)++;
+        tmp = *newstr;
+		glue = ft_substr(*start, 0, *str - *start);
+        *newstr = ft_strjoin(tmp, glue);
+        free(tmp);
+	}
     else
     {
-        var = vars(str, head);
+        var = vars(str, info->head);
         glue = ft_substr(*start, 0, *str - *start - 1);
         tmp = *newstr;
         *newstr = ft_strjoin(tmp, glue);
@@ -90,107 +101,62 @@ void dollar(char **str, char **newstr, char **start, t_list *head)
     }
 }
 
-void quotes(char **str, char **newstr, char **start, t_list *head)
+char *replace_vars(char *str, t_info *info)
 {
-    int change;
-    char *glue;
-    char *tmp;
-    char *var;
-    int dquote;
+	int i;
+	char *newstr;
+	char *start;
+	char *glue;
+	char *tmp;
 
-    dquote = 0;
-    if (**str == '$')
-        dollar(str, newstr, start, head);
-    else if (**str == '\'')
-    {
-        (*str)++;
-        while (**str && **str != '\'')
-            (*str)++;
-        glue = ft_substr(*start, 0, *str - *start + 1);
-        tmp = *newstr;
-        *newstr = ft_strjoin(tmp, glue);
-        if (tmp)
-            free(tmp);
-        if (glue)
-            free(glue);
-        ++(*str);
-    }
-    // else //echo "$PWD hello"
-    // {
-    //     dquote = != dquote;
-
-    // }
+	info->d_quote = 0;
+	info->s_quote = 0;
+	info->first = 'n';
+	start = str;
+	newstr = (char*)malloc(1);
+	*newstr = '\0';
+	while (*str)
+	{
+		while (*str && *str != '\'' && *str !='\"' && *str != '$')
+			str++;
+		if (*str == '\"')
+		{
+			info->d_quote = !(info->d_quote);
+			if (info->first == 'n')
+				info->first = 'd';
+			str++;
+		}
+		else if (*str == '\'')
+		{
+			info->s_quote = !(info->s_quote);
+			if (info->first == 'n')
+				info->first = 's';
+			str++;
+		}
+		else if (*str == '$')
+		{
+			dollar(&str, &newstr, &start, info);
+			start = str;
+		}
+		if (*str == '\0')
+		{
+			glue = ft_substr(start, 0, str - start);
+			tmp = newstr;
+			newstr = ft_strjoin(tmp, glue);
+			free(tmp);
+		}
+	}
+	return newstr;
 }
 
-char *replace_vars(char *str, t_list *head) //потом почистить str после замены
+int main(int ac, char **av, char **envp)
 {
-    int i;
-    int len;
-    char *newstr;
-    char *start;
-    char *glue;
-    char *tmp;
+	t_info  info;
+	make_env(envp, &info.head);
+	char *newstr;
 
-    i = 0;
-    start = str;
-    newstr = (char *)malloc(1);
-    *newstr = '\0';
-
-    while (*str)
-    {
-        while (*str && *str != '\'' && *str != '\"' && *str != '$')
-            str++;
-        if (*str == '\0')
-        {
-            glue = ft_substr(start, 0, str - start);
-            tmp = newstr;
-            newstr = ft_strjoin(tmp, glue);
-            free(tmp);
-        }
-        quotes(&str, &newstr, &start, head);
-        start = str;
-    }
-    return (newstr);
-}
-
-///////////////////////
-
-void add_export(t_list **head, char *addition)
-{
-    t_list *new;
-
-    new = (t_list *)malloc(sizeof(t_list));
-    new->content = addition;
-    new->next = NULL;
-    ft_lstadd_back(head, new);
-    //sort_env();
-}
-
-void make_env(char **envp, t_list **head)
-{
-
-    t_list *new;
-    int i;
-
-    i = 1;
-    *head = ft_lstnew(envp[0]);
-    while (envp[i])
-    {
-        new = (t_list *)malloc(sizeof(t_list));
-        new->content = envp[i];
-        new->next = NULL;
-        ft_lstadd_back(head, new);
-        i++;
-    }
-}
-
-int main(int argc, char **argv, char **envp)
-{
-    t_list *head;
-    make_env(envp, &head);
-    char *str = "  $PWD$ha'$PWD'$ha ";
-    char *newstr;
-    newstr = replace_vars(str, head);
-    printf("%s\n", newstr);
-    return 0;
+	char *str = "\" \'$PWD\'\"  '$PWD'";
+	newstr = replace_vars(str, &info);
+	printf("%s\n", newstr);
+	return 0;
 }
