@@ -28,77 +28,77 @@ void make_env(char **envp, t_list **head)
 
 char *vars(char **str, t_list *head)
 {
-    char *var;
-    char *newvar;
-    int j;
-    int len;
+	char *var;
+	char *newvar;
+	int j;
+	int len;
 
-    newvar = NULL;
-    while (head)
-    {
-        j = 0;
-        while ((*str)[j] && head->content[j] && head->content[j] == (*str)[j])
-            j++;
-        if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0' || (*str)[j] == '\'' || (*str)[j] == '\"' || (*str)[j] == '$'))
-        {
-            j++;
-            newvar = ft_substr(&(head->content[j]), 0, ft_strlen(&(head->content[j])));
-            return (newvar);
-        }
-        head = head->next;
-    }
-    if (newvar == NULL)
-    {
-        newvar = (char *)malloc(1);
-        *newvar = '\0';
-    }
-    return (newvar);
+	newvar = NULL;
+	while (head)
+	{
+		j = 0;
+		while ((*str)[j] && head->content[j] && head->content[j] == (*str)[j])
+			j++;
+		if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0' || (*str)[j] == '\'' || (*str)[j] == '\"' || (*str)[j] == '$'))
+		{
+			j++;
+			newvar = ft_substr(&(head->content[j]), 0, ft_strlen(&(head->content[j])));
+			return (newvar);
+		}
+		head = head->next;
+	}
+	if (newvar == NULL)
+	{
+		newvar = (char *)malloc(1);
+		*newvar = '\0';
+	}
+	return (newvar);
 }
 
 void dollar(char **str, char **newstr, char **start, t_info *info)
 {
-    char *tmp;
-    char *glue;
-    char *var;
+	char *tmp;
+	char *glue;
+	char *var;
 
-    (*str)++;
-    if (**str == ' ' || **str == '\0')
-    {
-        tmp = *newstr;
-        *newstr = ft_strjoin(tmp, "$");
-        free(tmp);
+	(*str)++;
+	if (**str == ' ' || **str == '\0')
+	{
+		tmp = *newstr;
+		*newstr = ft_strjoin(tmp, "$");
+		free(tmp);
 		return ;
-    }
-	if ((info->d_quote == 0 && info->s_quote == 1) || (info->s_quote == 1 && info->first == 's'))
+	}
+	if ((info->d_quote == 0 && info->s_quote == 1))
 	{
 		tmp = *newstr;
 		glue = ft_substr(*start, 0, *str - *start);
 		*newstr = ft_strjoin(tmp, glue);
-        free(tmp);
-        free(glue);
+		free(tmp);
+		free(glue);
 		*start = *str;
 		while (**str != '\0' && **str !='\'' && **str !='\"' && **str !=' ')
 			(*str)++;
-        tmp = *newstr;
+		tmp = *newstr;
 		glue = ft_substr(*start, 0, *str - *start);
-        *newstr = ft_strjoin(tmp, glue);
-        free(tmp);
+		*newstr = ft_strjoin(tmp, glue);
+		free(tmp);
 	}
-    else
-    {
-        var = vars(str, info->head);
-        glue = ft_substr(*start, 0, *str - *start - 1);
-        tmp = *newstr;
-        *newstr = ft_strjoin(tmp, glue);
-        free(tmp);
-        free(glue);
-        tmp = *newstr;
-        *newstr = ft_strjoin(tmp, var);
-        free(tmp);
-        free(var);
-        while (**str != ' ' && **str != '\0' && **str != '\'' && **str != '\"' && **str != '$')
-            (*str)++;
-    }
+	else
+	{
+		var = vars(str, info->head);
+		glue = ft_substr(*start, 0, *str - *start - 1);
+		tmp = *newstr;
+		*newstr = ft_strjoin(tmp, glue);
+		free(tmp);
+		free(glue);
+		tmp = *newstr;
+		*newstr = ft_strjoin(tmp, var);
+		free(tmp);
+		free(var);
+		while (**str != ' ' && **str != '\0' && **str != '\'' && **str != '\"' && **str != '$')
+			(*str)++;
+	}
 }
 
 char *replace_vars(char *str, t_info *info)
@@ -121,16 +121,14 @@ char *replace_vars(char *str, t_info *info)
 			str++;
 		if (*str == '\"')
 		{
-			info->d_quote = !(info->d_quote);
-			if (info->first == 'n')
-				info->first = 'd';
+			if (info->s_quote == 0)
+				info->d_quote = !(info->d_quote);
 			str++;
 		}
 		else if (*str == '\'')
 		{
-			info->s_quote = !(info->s_quote);
-			if (info->first == 'n')
-				info->first = 's';
+			if (info->d_quote == 0)
+				info->s_quote = !(info->s_quote);
 			str++;
 		}
 		else if (*str == '$')
@@ -155,7 +153,7 @@ int main(int ac, char **av, char **envp)
 	make_env(envp, &info.head);
 	char *newstr;
 
-	char *str = "\" \'$PWD\'\"  '$PWD'";
+	char *str = "\' $PWD \"$PWD\"  $PWD \' \"\'$PWD\'\"";
 	newstr = replace_vars(str, &info);
 	printf("%s\n", newstr);
 	return 0;
