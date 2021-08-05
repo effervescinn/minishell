@@ -1,10 +1,10 @@
 #include "libft/libft.h"
 
-typedef struct	s_token
+typedef struct s_token
 {
 	char *str;
 	char *type; //0 - word; 1 - redirect or pipe
-}				t_token;
+} t_token;
 
 typedef struct	s_info
 {
@@ -12,9 +12,8 @@ typedef struct	s_info
 	int s_quote;
 	char first;
 	t_list *head;
-	t_token	*tokens;
+	t_token *tokens;
 }				t_info;
-
 
 void make_env(char **envp, t_list **head)
 {
@@ -181,9 +180,42 @@ char **make_tokens(char *str)
 		start = str;
 		if (*str != '\"' && *str != '\'')
 		{
+			if (*str == '|' || *str == '<' || *str == '>')
+			{
+				i++;
+				tmp = arr;
+				arr = (char **)malloc(sizeof(char *) * (i + 1));
+				arr[i] = NULL;
+
+				j = 0;
+				while (tmp[j])
+				{
+					arr[j] = ft_substr(tmp[j], 0, ft_strlen(tmp[j]));
+					j++;
+				}
+				if (*(str + 1) == '>' || *(str + 1) == '<')
+				{
+					arr[j] = ft_substr(start, 0, 2);
+					str += 2;
+				}
+					
+				else
+				{
+					arr[j] = ft_substr(start, 0, 1);
+					str++;
+				}
+				j = 0;
+				while (j < i)
+				{
+					free(tmp[j]);
+					j++;
+				}
+				free(tmp);
+				continue ;
+			}
 			while (*str && *str != ' ')
 			{
-				while (*str && *str != '\"' && *str != '\'' && *str != ' ')
+				while (*str && *str != '\"' && *str != '\'' && *str != ' ' && *str != '|' && *str != '>' && *str != '<')
 					str++;
 				if (*str == '\'')
 				{
@@ -197,6 +229,8 @@ char **make_tokens(char *str)
 					str = ft_strchr(str, '\"');
 					str++;
 				}
+				else if (*str == '|' || *str == '>' || *str == '<')
+					break;
 			}
 		}
 		else if (*str == '\"' || *str == '\'')
@@ -242,7 +276,7 @@ char **make_tokens(char *str)
 void handle_token(char *tmp_token, t_token *token)
 {
 	int i;
-	int	j;
+	int j;
 	int quotes;
 
 	i = 0;
@@ -253,28 +287,28 @@ void handle_token(char *tmp_token, t_token *token)
 			quotes++;
 		i++;
 	}
-	token->str = (char*)malloc(ft_strlen(tmp_token) - quotes + 1);
+	token->str = (char *)malloc(ft_strlen(tmp_token) - quotes + 1);
 	i = -1;
 	j = 0;
 	while (tmp_token[++i])
 	{
 		if (tmp_token[i] == '\'' || tmp_token[i] == '\"')
-			continue ;
+			continue;
 		token->str[j] = tmp_token[i];
 		j++;
 	}
 	token->str[j] = '\0';
 }
 
-t_token	*delete_quotes(char **tmp_arr)
+t_token *delete_quotes(char **tmp_arr)
 {
-	int		i;
-	t_token	*tokens_arr;
+	int i;
+	t_token *tokens_arr;
 
 	i = 0;
 	while (tmp_arr[i])
 		i++;
-	tokens_arr = (t_token*)malloc(sizeof(t_token) * (i + 1));
+	tokens_arr = (t_token *)malloc(sizeof(t_token) * (i + 1));
 	tokens_arr[i].str = NULL;
 	i = 0;
 	while (tmp_arr[i])
@@ -283,8 +317,9 @@ t_token	*delete_quotes(char **tmp_arr)
 		if ((tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
 		|| (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
 		|| (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
-		|| (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>' && tmp_arr[i][2] == '\0')
-		|| (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0'))
+		|| (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>'
+		&& tmp_arr[i][2] == '\0') || (tmp_arr[i][0] ==
+		'<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0'))
 			tokens_arr[i].type = "command";
 		else
 			tokens_arr[i].type = "word";
@@ -300,11 +335,10 @@ int main(int ac, char **av, char **envp)
 	char *newstr;
 	char **tmp_arr;
 
-	char *str = " \"lalal 'df' topolya\"  \"|\"    '|' |  '$PWD \"$PWD\"' okay ";
+	char *str = " \"lalal 'df' topolya\"  \"|\"    '>>' \">>\"ffd|  '$PWD \"$PWD\"' okay>>";
 	newstr = replace_vars(str, &info);
 	tmp_arr = make_tokens(newstr);
 	info.tokens = delete_quotes(tmp_arr);
-
 
 	int i = 0;
 	while (info.tokens[i].str)
