@@ -3,7 +3,7 @@
 typedef struct	s_token
 {
 	char *str;
-	int type; //0 - word; 1 - redirect or pipe
+	char *type; //0 - word; 1 - redirect or pipe
 }				t_token;
 
 typedef struct	s_info
@@ -253,8 +253,7 @@ void handle_token(char *tmp_token, t_token *token)
 			quotes++;
 		i++;
 	}
-	token->str = (char*)malloc(sizeof(char) * (ft_strlen(tmp_token) - quotes + 1));
-
+	token->str = (char*)malloc(ft_strlen(tmp_token) - quotes + 1);
 	i = -1;
 	j = 0;
 	while (tmp_token[++i])
@@ -264,6 +263,7 @@ void handle_token(char *tmp_token, t_token *token)
 		token->str[j] = tmp_token[i];
 		j++;
 	}
+	token->str[j] = '\0';
 }
 
 t_token	*delete_quotes(char **tmp_arr)
@@ -280,6 +280,14 @@ t_token	*delete_quotes(char **tmp_arr)
 	while (tmp_arr[i])
 	{
 		handle_token(tmp_arr[i], &tokens_arr[i]);
+		if ((tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
+		|| (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
+		|| (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
+		|| (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>' && tmp_arr[i][2] == '\0')
+		|| (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0'))
+			tokens_arr[i].type = "command";
+		else
+			tokens_arr[i].type = "word";
 		i++;
 	}
 	return (tokens_arr);
@@ -292,7 +300,7 @@ int main(int ac, char **av, char **envp)
 	char *newstr;
 	char **tmp_arr;
 
-	char *str = " \"lalal 'df' topolya\"  \"'$PWD'\"    '$PWD'   '$PWD \"$PWD\"' okay ";
+	char *str = " \"lalal 'df' topolya\"  \"|\"    '|' |  '$PWD \"$PWD\"' okay ";
 	newstr = replace_vars(str, &info);
 	tmp_arr = make_tokens(newstr);
 	info.tokens = delete_quotes(tmp_arr);
@@ -301,7 +309,7 @@ int main(int ac, char **av, char **envp)
 	int i = 0;
 	while (info.tokens[i].str)
 	{
-		printf("%s\n", info.tokens[i].str);
+		printf("%s || %s\n", info.tokens[i].str, info.tokens[i].type);
 		i++;
 	}
 
