@@ -168,52 +168,67 @@ char **make_tokens(char *str)
 	arr[0] = NULL;
 	while (*str)
 	{
-		// start = str;
+
 		while (*str && *str == ' ')
 			str++;
+		if (*str == '\0')
+			continue;
+		start = str;
 		if (*str != '\"' && *str != '\'')
 		{
 			while (*str && *str != ' ')
 			{
-				while (*str != '\"' && *str != '\'' && *str != ' ')
+				while (*str && *str != '\"' && *str != '\'' && *str != ' ')
 					str++;
-
 				if (*str == '\'')
 				{
+					str++;
 					str = ft_strchr(str, '\'');
 					str++;
 				}
-
-				if (*str == '\"')
+				else if (*str == '\"')
 				{
+					str++;
 					str = ft_strchr(str, '\"');
 					str++;
 				}
 			}
-			i++;
-
-			tmp = arr;
-			arr = (char **)malloc(sizeof(char *) * (i + 1));
-			arr[i + 1] = NULL;
-			j = 0;
-			
-			if (tmp[0])
-			{
-				while (arr[j])
-				{
-					arr[j] = ft_substr(tmp[j], 0, ft_strlen(tmp[j]));
-					j++;
-				}
-			}
-
-			j = 0;
-			while (j <= i)
-			{
-				free(tmp[j]);
-				j++;
-			}
-			free(tmp);
 		}
+		else if (*str == '\"' || *str == '\'')
+		{
+			if (*str == '\'')
+			{
+				str++;
+				str = ft_strchr(str, '\'');
+				str++;
+			}
+
+			else if (*str == '\"')
+			{
+				str++;
+				str = ft_strchr(str, '\"');
+				str++;
+			}
+		}
+		i++;
+		tmp = arr;
+		arr = (char **)malloc(sizeof(char *) * (i + 1));
+		arr[i] = NULL;
+
+		j = 0;
+		while (tmp[j])
+		{
+			arr[j] = ft_substr(tmp[j], 0, ft_strlen(tmp[j]));
+			j++;
+		}
+		arr[j] = ft_substr(start, 0, str - start);
+		j = 0;
+		while (j < i)
+		{
+			free(tmp[j]);
+			j++;
+		}
+		free(tmp);
 	}
 
 	return (arr);
@@ -226,10 +241,16 @@ int main(int ac, char **av, char **envp)
 	char *newstr;
 	char **tokens_arr;
 
-	char *str = "ec\"$la\" ";
+	char *str = " \"lalal 'df' topolya\"  \"'$PWD'\"    '$PWD'   '$PWD \"$PWD\"' okay ";
 	newstr = replace_vars(str, &info);
 	tokens_arr = make_tokens(newstr);
-	printf("%s\n", newstr);
+	int i = 0;
+	while (tokens_arr[i])
+	{
+		printf("%s\n", tokens_arr[i]);
+		i++;
+	}
+
 	return 0;
 }
 
