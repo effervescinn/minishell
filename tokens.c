@@ -88,6 +88,7 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 		glue = ft_substr(*start, 0, *str - *start);
 		*newstr = ft_strjoin(tmp, glue);
 		free(tmp);
+		free(glue);
 	}
 	else
 	{
@@ -147,6 +148,7 @@ char *replace_vars(char *str, t_info *info)
 			tmp = newstr;
 			newstr = ft_strjoin(tmp, glue);
 			free(tmp);
+			free(glue);
 		}
 	}
 	return newstr;
@@ -241,15 +243,30 @@ int main(int ac, char **av, char **envp)
 	char *newstr;
 	char **tokens_arr;
 
-	char *str = " \"lalal 'df' topolya\"  \"'$PWD'\"    '$PWD'   '$PWD \"$PWD\"' okay ";
+	char *str = " $PWD";
 	newstr = replace_vars(str, &info);
 	tokens_arr = make_tokens(newstr);
-	int i = 0;
-	while (tokens_arr[i])
-	{
-		printf("%s\n", tokens_arr[i]);
-		i++;
-	}
+
+
+
+	// ОТ УТЕЧЕК
+	// free(newstr);
+
+	// int i = 0;
+	// while (tokens_arr[i])	
+	// {
+	// 	free(tokens_arr[i]);
+	// 	i++;
+	// }
+	// free(tokens_arr);
+
+	// t_list *tmp;
+	// while(info.head)
+	// {
+	// 	tmp = info.head->next;
+	// 	free(info.head);
+	// 	info.head = tmp;
+	// }
 
 	return 0;
 }
