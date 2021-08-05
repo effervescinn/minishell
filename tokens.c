@@ -3,7 +3,7 @@
 typedef struct s_token
 {
 	char *str;
-	char *type; //0 - word; 1 - redirect or pipe
+	char *type; //word, command, pipe, great, less, greatgreat, lessless 
 } t_token;
 
 typedef struct	s_info
@@ -314,13 +314,16 @@ t_token *delete_quotes(char **tmp_arr)
 	while (tmp_arr[i])
 	{
 		handle_token(tmp_arr[i], &tokens_arr[i]);
-		if ((tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
-		|| (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
-		|| (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
-		|| (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>'
-		&& tmp_arr[i][2] == '\0') || (tmp_arr[i][0] ==
-		'<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0'))
-			tokens_arr[i].type = "command";
+		if (tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
+			tokens_arr[i].type = "pipe";
+		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
+			tokens_arr[i].type = "great";
+		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
+			tokens_arr[i].type = "less";
+		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>' && tmp_arr[i][2] == '\0')
+			tokens_arr[i].type = "greatgreat";
+		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0')
+			tokens_arr[i].type = "lessless";
 		else
 			tokens_arr[i].type = "word";
 		i++;
