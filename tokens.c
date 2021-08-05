@@ -1,17 +1,20 @@
 #include "libft/libft.h"
 
-typedef struct s_info
+typedef struct	s_token
+{
+	char *str;
+	int type; //0 - word; 1 - redirect or pipe
+}				t_token;
+
+typedef struct	s_info
 {
 	int d_quote;
 	int s_quote;
 	char first;
 	t_list *head;
-} t_info;
+	t_token	*tokens;
+}				t_info;
 
-typedef struct s_token
-{
-	int type;
-} t_token;
 
 void make_env(char **envp, t_list **head)
 {
@@ -236,24 +239,77 @@ char **make_tokens(char *str)
 	return (arr);
 }
 
+void handle_token(char *tmp_token, t_token *token)
+{
+	int i;
+	int	j;
+	int quotes;
+
+	i = 0;
+	quotes = 0;
+	while (tmp_token[i])
+	{
+		if (tmp_token[i] == '\'' || tmp_token[i] == '\"')
+			quotes++;
+		i++;
+	}
+	token->str = (char*)malloc(sizeof(char) * (ft_strlen(tmp_token) - quotes + 1));
+
+	i = -1;
+	j = 0;
+	while (tmp_token[++i])
+	{
+		if (tmp_token[i] == '\'' || tmp_token[i] == '\"')
+			continue ;
+		token->str[j] = tmp_token[i];
+		j++;
+	}
+}
+
+t_token	*delete_quotes(char **tmp_arr)
+{
+	int		i;
+	t_token	*tokens_arr;
+
+	i = 0;
+	while (tmp_arr[i])
+		i++;
+	tokens_arr = (t_token*)malloc(sizeof(t_token) * (i + 1));
+	tokens_arr[i].str = NULL;
+	i = 0;
+	while (tmp_arr[i])
+	{
+		handle_token(tmp_arr[i], &tokens_arr[i]);
+		i++;
+	}
+	return (tokens_arr);
+}
+
 int main(int ac, char **av, char **envp)
 {
 	t_info info;
 	make_env(envp, &info.head);
 	char *newstr;
-	char **tokens_arr;
+	char **tmp_arr;
 
-	char *str = " $PWD";
+	char *str = " \"lalal 'df' topolya\"  \"'$PWD'\"    '$PWD'   '$PWD \"$PWD\"' okay ";
 	newstr = replace_vars(str, &info);
-	tokens_arr = make_tokens(newstr);
+	tmp_arr = make_tokens(newstr);
+	info.tokens = delete_quotes(tmp_arr);
 
 
+	int i = 0;
+	while (info.tokens[i].str)
+	{
+		printf("%s\n", info.tokens[i].str);
+		i++;
+	}
 
 	// ОТ УТЕЧЕК
 	// free(newstr);
 
 	// int i = 0;
-	// while (tokens_arr[i])	
+	// while (tokens_arr[i])
 	// {
 	// 	free(tokens_arr[i]);
 	// 	i++;
@@ -267,6 +323,8 @@ int main(int ac, char **av, char **envp)
 	// 	free(info.head);
 	// 	info.head = tmp;
 	// }
+
+	//почистить tmp_arr
 
 	return 0;
 }
