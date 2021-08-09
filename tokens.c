@@ -1,19 +1,3 @@
-#include "libft/libft.h"
-
-typedef struct s_token
-{
-	char *str;
-	char *type; //word, command, pipe, great, less, GREAT, LESS
-	char **args;
-} t_token;
-
-typedef struct	s_info
-{
-	int d_quote;
-	int s_quote;
-	t_list *head;
-	t_token *tokens;
-}				t_info;
 
 void make_env(char **envp, t_list **head)
 {
@@ -119,6 +103,7 @@ char *replace_vars(char *str, t_info *info)
 
 	info->d_quote = 0;
 	info->s_quote = 0;
+	info->first = 'n';
 	start = str;
 	newstr = (char *)malloc(1);
 	*newstr = '\0';
@@ -320,9 +305,9 @@ t_token *delete_quotes(char **tmp_arr)
 		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
 			tokens_arr[i].type = "less";
 		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = "GREAT";
+			tokens_arr[i].type = "greatgreat";
 		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = "LESS";
+			tokens_arr[i].type = "lessless";
 		else
 			tokens_arr[i].type = "word";
 		i++;
@@ -330,105 +315,26 @@ t_token *delete_quotes(char **tmp_arr)
 	return (tokens_arr);
 }
 
-void less_args(t_token *tokens, int i)
-{
-	int q;
-	int j;
-
-	q = 0;
-	i++;
-	while (tokens[i].str && tokens[i].type[0] == 'w')
-	{
-		i++;
-		q++;
-	}
-	i -= q + 1;
-	tokens[i].args = (char**)malloc(sizeof(char*) * (q + 1));
-	tokens[i].args[q] = NULL;
-	j = 0;
-	while (q)
-	{
-		tokens[i].args[j] = tokens[i + j + 1].str;
-		j++;
-		q--;
-	}
-}
-
-void define_types(t_info *info)
-{
-	int i;
-
-	i = 0;
-	while (info->tokens[i].str)
-	{
-		if (info->tokens[i].str[0] == '>' && (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G'))
-		{
-			info->tokens[i].args = (char**)malloc(sizeof(char*) + 1);
-			info->tokens[i].args[0] = info->tokens[i + 1].str;
-			info->tokens[i].args[1] = NULL;
-		}
-		if (info->tokens[i].str[0] == '<' && info->tokens[i].type[0] == 'l')
-		{
-			less_args(info->tokens, i);
-		}
-		i++;
-	}
-}
-
-// void set_args() //тут надо замаллочить массив под аргументы и задать первому элементу NULL
-
-int main(int ac, char **av, char **envp)
-{
-	t_info info;
-	make_env(envp, &info.head);
-	char *newstr;
-	char **tmp_arr;
-
-	char *str = " grep hello > 1 < 2 3";
-	newstr = replace_vars(str, &info);
-	tmp_arr = make_tokens(newstr);
-	info.tokens = delete_quotes(tmp_arr);
-	// set_args(&info.tokens);
-	define_types(&info);
+// int main(int ac, char **av, char **envp)
+// {
+// 	// t_info info;
+// 	// make_env(envp, &info.head);
+// 	// make_exp(&info);
+// 	// char *newstr;
+// 	// char **tmp_arr;
 
 
-	// int i = 0;
-	// while (info.tokens[i].str)
-	// {
-	// 	printf("%s || %s\n", info.tokens[i].str, info.tokens[i].type);
-	// 	int j = 0;
-	// 	printf("args:\n");
-	// 	while (info.tokens[i].args[j])
-	// 	{
-	// 		printf("%s\n", info.tokens[i].args[j]);
-	// 		j++;
-	// 	}
-	// 	i++;
-	// 	printf("%s\n", "-------------------------------");
-	// }
+//     // info.result = malloc(1);
+//     // info.result[0] = '\0';
+// 	// info.i = 0;
 
-	// ОТ УТЕЧЕК
-	// free(newstr);
+// 	char *str = "export";
+// 	newstr = replace_vars(str, &info);
+// 	tmp_arr = make_tokens(newstr);
+// 	info.tokens = delete_quotes(tmp_arr);
 
-	// int i = 0;
-	// while (tokens_arr[i])
-	// {
-	// 	free(tokens_arr[i]);
-	// 	i++;
-	// }
-	// free(tokens_arr);
-
-	// t_list *tmp;
-	// while(info.head)
-	// {
-	// 	tmp = info.head->next;
-	// 	free(info.head);
-	// 	info.head = tmp;
-	// }
-
-	//почистить tmp_arr
-
-	return 0;
-}
+//     program_define(&info);
+// 	return 0;
+// }
 
 // gcc -L./libft -lft tokens.c
