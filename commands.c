@@ -49,6 +49,7 @@ void make_exp(t_info *info)
     }
     exp_tmp->next = NULL;
     export_order(info, i);
+    write(1, "********************************************\n", 46);
 }
 
 char *no_leaks_join(char *str1, char *str2)
@@ -142,15 +143,10 @@ char *add_quotes(char *str)
     return (result);
 }
 
-// void print_exp_vars(t_info *info)
-// {
-    
-// }
-
-void export(t_info *info)
+void print_exp_vars(t_info *info)
 {
     t_list *tmp;
-    
+
     tmp = info->exp;
     while (tmp->next)
     {
@@ -165,6 +161,133 @@ void export(t_info *info)
 		info->result = no_leaks_join(info->result, "\n");
 		tmp = tmp->next;
 	}
+}
+
+void no_quotes(char *str)
+{
+    char *new_string;
+    int i;
+    int k;
+    int quotes;
+
+    i = 0;
+    quotes = 0;
+    while (str[i])
+    {
+        if (str[i] == 34 || str[i] == 39)
+            quotes++;
+        i++;
+    }
+    if (quotes == 0)
+        return;
+    new_string = malloc(sizeof(char) * (ft_strlen(str) - quotes + 1));
+    i = 0;
+    k = 0;
+    while(str[i])
+    {
+        if (str[i] != 34 && str[i] != 39)
+        {
+            new_string[k] = str[i];
+            i++;
+        }
+        k++;
+    }
+    new_string[k] = '\0';
+    free(str);
+    str = new_string;
+}
+
+void find_existing_var(t_list **list, char *var_name, char *new_str, t_info *info)
+{
+    t_list *tmp;
+    int var_len;
+    char *tmp2;
+
+    tmp = *list;
+    var_len = ft_strlen(var_name);
+    while (tmp->next)
+    {
+        if (!ft_strncmp(tmp->content, var_name, var_len))
+        {
+            if (tmp->content[var_len] == '=' || tmp->content[var_len] == '\0')
+            {
+                tmp2 = tmp->content;
+                tmp->content = new_str;
+                // free(tmp2);
+                make_exp(info);
+                return;
+            }
+        }
+        tmp = tmp->next;
+    }
+    tmp = malloc(sizeof(t_list));
+    tmp->content = new_str;
+    ft_lstadd_back(list, tmp);
+}
+
+char *var_name_in_str(char *str, char *ptr_to_eq)
+{
+    char *var_name;
+    int var_len;
+
+    ptr_to_eq = ft_strchr(str, '=');
+    var_len = ptr_to_eq - str;
+    var_name = malloc(sizeof(char) * (var_len + 1));
+    ft_memcpy(var_name, str, var_len);
+    var_name[var_len] = '\0';
+    return (var_name);
+}
+
+void print_export_error(char *str)
+{
+    char **array;
+    int i;
+
+    i = 0;
+    array = ft_split(str, ' ');
+    while (array[i])
+    {
+        printf("-dashBash: export: `%s': not a valid identifier", array[i]);
+        i++;
+    }
+    i = 0;
+    while(array[i++])
+        free(array[i]);
+    free(array);
+}
+
+void export(t_info *info)
+{
+    t_list *tmp;
+    char *ptr_to_eq;
+    char *ptr_to_space;
+    char *var_name;
+
+    info->i++;
+    if (!info->tokens[info->i].str)
+        print_exp_vars(info);
+    else
+    {
+        ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
+        // ptr_to_space = ft_strchr(info->tokens[info->i].str, ' '); ///////////////////////проверить потом с новым парсером
+        // if (ptr_to_space < ptr_to_eq)
+        // {
+        //     print_export_error(info->tokens[info->i].str);
+        //     return;
+        // }
+        no_quotes(info->tokens[info->i].str);
+        if (ptr_to_eq)
+        {
+            var_name = var_name_in_str(info->tokens[info->i].str, ptr_to_eq);
+            printf("replase por %s***********************************************\n", info->tokens[info->i].str);
+            find_existing_var(&info->head, var_name, info->tokens[info->i].str, info);
+
+        }
+        else
+        printf("*\n");
+
+    }
+        // printf("*\n");
 }
 
 // void free_tokens(t_info *info)
