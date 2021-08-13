@@ -1,23 +1,7 @@
-#include "libft/libft.h"
-
-typedef struct s_token
-{
-	char *str;
-	char *type; //word, command, pipe, great, less, GREAT, LESS
-	char **args;
-} t_token;
-
-typedef struct	s_info
-{
-	int d_quote;
-	int s_quote;
-	t_list *head;
-	t_token *tokens;
-}				t_info;
+#include "minishell.h"
 
 void make_env(char **envp, t_list **head)
 {
-
 	t_list *new;
 	int i;
 
@@ -377,58 +361,58 @@ void define_types(t_info *info)
 
 // void set_args() //тут надо замаллочить массив под аргументы и задать первому элементу NULL
 
-int main(int ac, char **av, char **envp)
-{
-	t_info info;
-	make_env(envp, &info.head);
-	char *newstr;
-	char **tmp_arr;
+// int main(int ac, char **av, char **envp)
+// {
+// 	t_info info;
+// 	make_env(envp, &info.head);
+// 	char *newstr;
+// 	char **tmp_arr;
 
-	char *str = " grep hello > 1 < 2 3";
-	newstr = replace_vars(str, &info);
-	tmp_arr = make_tokens(newstr);
-	info.tokens = delete_quotes(tmp_arr);
-	// set_args(&info.tokens);
-	define_types(&info);
+// 	char *str = " grep hello > 1 < 2 3";
+// 	newstr = replace_vars(str, &info);
+// 	tmp_arr = make_tokens(newstr);
+// 	info.tokens = delete_quotes(tmp_arr);
+// 	// set_args(&info.tokens);
+// 	define_types(&info);
 
 
-	// int i = 0;
-	// while (info.tokens[i].str)
-	// {
-	// 	printf("%s || %s\n", info.tokens[i].str, info.tokens[i].type);
-	// 	int j = 0;
-	// 	printf("args:\n");
-	// 	while (info.tokens[i].args[j])
-	// 	{
-	// 		printf("%s\n", info.tokens[i].args[j]);
-	// 		j++;
-	// 	}
-	// 	i++;
-	// 	printf("%s\n", "-------------------------------");
-	// }
+// 	// int i = 0;
+// 	// while (info.tokens[i].str)
+// 	// {
+// 	// 	printf("%s || %s\n", info.tokens[i].str, info.tokens[i].type);
+// 	// 	int j = 0;
+// 	// 	printf("args:\n");
+// 	// 	while (info.tokens[i].args[j])
+// 	// 	{
+// 	// 		printf("%s\n", info.tokens[i].args[j]);
+// 	// 		j++;
+// 	// 	}
+// 	// 	i++;
+// 	// 	printf("%s\n", "-------------------------------");
+// 	// }
 
-	// ОТ УТЕЧЕК
-	// free(newstr);
+// 	// ОТ УТЕЧЕК
+// 	// free(newstr);
 
-	// int i = 0;
-	// while (tokens_arr[i])
-	// {
-	// 	free(tokens_arr[i]);
-	// 	i++;
-	// }
-	// free(tokens_arr);
+// 	// int i = 0;
+// 	// while (tokens_arr[i])
+// 	// {
+// 	// 	free(tokens_arr[i]);
+// 	// 	i++;
+// 	// }
+// 	// free(tokens_arr);
 
-	// t_list *tmp;
-	// while(info.head)
-	// {
-	// 	tmp = info.head->next;
-	// 	free(info.head);
-	// 	info.head = tmp;
-	// }
+// 	// t_list *tmp;
+// 	// while(info.head)
+// 	// {
+// 	// 	tmp = info.head->next;
+// 	// 	free(info.head);
+// 	// 	info.head = tmp;
+// 	// }
 
-	//почистить tmp_arr
+// 	//почистить tmp_arr
 
-	return 0;
-}
+// 	return 0;
+// }
 
 // gcc -L./libft -lft tokens.c
