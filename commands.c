@@ -1,3 +1,5 @@
+#include "minishell.h"
+
 void swap_content(t_list *list1, t_list *list2)
 {
     char *tmp;

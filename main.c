@@ -1,11 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <term.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include "libft/libft.h"
 #include "minishell.h"
 
 int ft_putchar(int c)
@@ -53,6 +45,7 @@ void history(t_info *info)
 	    newstr = replace_vars(input, info);
 	    tmp_arr = make_tokens(newstr);
 	    info->tokens = delete_quotes(tmp_arr);
+        define_types(info);
         program_define(info);
         // if (input)
             // free(input);

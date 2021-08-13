@@ -1,14 +1,23 @@
-typedef struct s_token
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <term.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+#include "libft/libft.h"
+
+typedef struct	s_token
 {
 	char *str;
-	char *type; //word, command, pipe, great, less, greatgreat, lessless 
-} t_token;
+	char *type; //word, command, pipe, great, less, GREAT, LESS 
+	char **args;
+}				t_token;
 
 typedef struct	s_info
 {
 	int d_quote;
 	int s_quote;
-	char first;
 	t_list *head;
 	t_token *tokens;
     char *result;
@@ -16,8 +25,42 @@ typedef struct	s_info
 	t_list *exp;
 }				t_info;
 
-#include "commands.c"
-#include "tokens.c"
-
 char *input;
 typedef void (*sighandler_t)(int);
+
+
+//main.c
+int ft_putchar(int c);
+void sig_int(int d);
+void history(t_info *info);
+
+
+//commands.c
+void swap_content(t_list *list1, t_list *list2);
+void export_order(t_info *info, int i);
+void make_exp(t_info *info);
+char *no_leaks_join(char *str1, char *str2);
+void echo(t_info *info);
+void pwd(t_info *info);
+void env(t_info *info);
+char *add_quotes(char *str);
+void print_exp_vars(t_info *info);
+void no_quotes(char *str);
+void find_existing_var(t_list **list, char *var_name, char *new_str, t_info *info);
+char *var_name_in_str(char *str, char *ptr_to_eq);
+void print_export_error(char *str);
+void export(t_info *info);
+void program_define(t_info *info);
+
+
+
+//tokens.c
+void make_env(char **envp, t_list **head);
+char *vars(char **str, t_list *head);
+void dollar(char **str, char **newstr, char **start, t_info *info);
+char *replace_vars(char *str, t_info *info);
+char **make_tokens(char *str);
+void handle_token(char *tmp_token, t_token *token);
+t_token *delete_quotes(char **tmp_arr);
+void less_args(t_token *tokens, int i);
+void define_types(t_info *info);
