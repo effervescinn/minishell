@@ -1,5 +1,24 @@
 #include "minishell.h"
 
+void set_pointers(t_info *info)
+{
+    t_list *tmp;
+
+    tmp = info->head;
+    while (tmp)
+    {
+        if (!ft_strncmp(tmp->content, "OLDPWD=", 7))
+        {
+            info->oldpwd = tmp;
+        }
+        if (!ft_strncmp(tmp->content, "PWD=", 4))
+            info->pwd = tmp;
+        else if (!ft_strncmp(tmp->content, "PATH=", 5))
+            info->pths = tmp;
+        tmp = tmp->next;
+    }
+}
+
 void swap_content(t_list *list1, t_list *list2)
 {
     char *tmp;
@@ -35,6 +54,7 @@ void make_exp(t_info *info)
 {
     t_list *env_tmp;
     t_list *exp_tmp;
+    t_list *extra_tmp;
     int i;
 
     i = 1;
@@ -49,9 +69,22 @@ void make_exp(t_info *info)
         exp_tmp->content = ft_strdup(env_tmp->content);
         i++;
     }
-    exp_tmp->next = NULL;
+    if (!info->extra_exp)
+        exp_tmp->next = NULL;
+    else
+    {
+        extra_tmp = info->extra_exp;
+        while (extra_tmp)
+        {
+            exp_tmp->next = malloc(sizeof(t_list));
+            exp_tmp = exp_tmp->next;
+            exp_tmp->content = ft_strdup(extra_tmp->content);
+            extra_tmp = extra_tmp->next;
+            i++;
+        }
+        exp_tmp->next = NULL;
+    }
     export_order(info, i);
-    write(1, "********************************************\n", 46);
 }
 
 char *no_leaks_join(char *str1, char *str2)
@@ -70,9 +103,19 @@ void echo(t_info *info)
 
 	n = 0;
 	info->i++;
+    if (!info->tokens[info->i].str)
+    {
+        info->result = ft_strdup("\n\0");
+        return;
+    }
     if (ft_strlen(info->tokens[info->i].str) == 2 && !ft_strncmp(info->tokens[info->i].str, "-n", 2))
     {
 		info->i++;
+        if (!info->tokens[info->i].str)
+        {
+            info->result = ft_strdup("\0");
+            return;
+        }
 		n = 1;
     }
     while (ft_strlen(info->tokens[info->i].type) == 4 && !ft_strncmp(info->tokens[info->i].type, "word", 4))
@@ -145,14 +188,31 @@ char *add_quotes(char *str)
     return (result);
 }
 
+void free_exp(t_info *info)
+{
+    t_list *tmp;
+
+    while (info->exp)
+    {
+        tmp = info->exp;
+        info->exp = info->exp->next;
+        free(tmp->content);
+        free(tmp);
+    }
+}
+
 void print_exp_vars(t_info *info)
 {
     t_list *tmp;
 
+    if (info->exp)
+        free_exp(info);
+    make_exp(info);
     tmp = info->exp;
-    while (tmp->next)
+    while (tmp)
     {
-        tmp->content = add_quotes(tmp->content);
+        if (ft_strchr(tmp->content, '='))
+            tmp->content = add_quotes(tmp->content);
         tmp = tmp->next;
     }
     tmp = info->exp;
@@ -199,44 +259,47 @@ void no_quotes(char *str)
     str = new_string;
 }
 
-void find_existing_var(t_list **list, char *var_name, char *new_str, t_info *info)
+void find_existing_var(char *var_name, t_info *info)
 {
     t_list *tmp;
     int var_len;
     char *tmp2;
 
-    tmp = *list;
+    tmp = info->head;
     var_len = ft_strlen(var_name);
-    while (tmp->next)
+    while (tmp)
     {
         if (!ft_strncmp(tmp->content, var_name, var_len))
         {
             if (tmp->content[var_len] == '=' || tmp->content[var_len] == '\0')
             {
                 tmp2 = tmp->content;
-                tmp->content = new_str;
-                // free(tmp2);
-                make_exp(info);
+                tmp->content = ft_strdup(info->tokens[info->i].str);
+                free(tmp2);
                 return;
             }
         }
         tmp = tmp->next;
     }
     tmp = malloc(sizeof(t_list));
-    tmp->content = new_str;
-    ft_lstadd_back(list, tmp);
+    tmp->content = ft_strdup(info->tokens[info->i].str);
+    ft_lstadd_back(&info->head, tmp);
 }
 
 char *var_name_in_str(char *str, char *ptr_to_eq)
 {
     char *var_name;
     int var_len;
+    int i;
+    i = 0;
 
-    ptr_to_eq = ft_strchr(str, '=');
-    var_len = ptr_to_eq - str;
-    var_name = malloc(sizeof(char) * (var_len + 1));
-    ft_memcpy(var_name, str, var_len);
-    var_name[var_len] = '\0';
+    while (str[i] && str[i] != '=')
+        i++;
+    if (str[i - 1] == '+')
+        i--;
+    var_name = malloc(sizeof(char) * (i + 1));
+    ft_memcpy(var_name, str, i);
+    var_name[i] = '\0';
     return (var_name);
 }
 
@@ -258,6 +321,124 @@ void print_export_error(char *str)
     free(array);
 }
 
+void extra_export(t_info *info)
+{
+    t_list *new;
+
+    if (!info->extra_exp)
+        info->extra_exp = ft_lstnew(ft_strdup(info->tokens[info->i].str));
+    else
+    {
+        new = malloc(sizeof(t_list));
+        new->content = ft_strdup(info->tokens[info->i].str);
+        ft_lstadd_back(&info->extra_exp, new);
+    }
+}
+
+void remove_from_extra_exp(t_list **list, char *var)
+{
+    t_list *tmp;
+    int var_len;
+    t_list *prev;
+
+    tmp = *list;
+    var_len = ft_strlen(var);
+    while (tmp)
+    {
+        if (!ft_strncmp(tmp->content, var, var_len) && tmp->content[var_len] == '\0')
+        {
+            if (tmp == *list)
+            {
+                *list = tmp->next;
+                free(tmp->content);
+                free(tmp);
+                return;
+            }
+            else
+            {
+                prev->next = tmp->next;
+                ft_lstdelone(tmp, free);
+            }
+        }
+        prev = tmp;
+        tmp = tmp->next;
+    }
+}
+
+char *remove_plus(char *s)
+{
+    char *new;
+    char *ptr_to_plus;
+    int i;
+    int j;
+
+    new = malloc(sizeof(char) * ft_strlen(s));
+    ptr_to_plus = ft_strchr(s, '+');
+    i = 0;
+    j = 0;
+    while (s[i])
+    {
+        if (s + i == ptr_to_plus)
+            i++;
+        new[j++] = s[i++];
+    }
+    new[j] = '\0';
+    free(s);
+    return (new);
+}
+
+void find_and_join(char *ptr_to_eq, t_info *info, char *var)
+{
+    t_list *tmp;
+    int var_len;
+    t_list *new;
+
+    tmp = info->head;
+    var_len = ft_strlen(var);
+    while (tmp)
+    {
+        if (!ft_strncmp(tmp->content, var, var_len))
+        {
+            tmp->content = no_leaks_join(tmp->content, ptr_to_eq + 1);
+            return;
+        }
+        tmp = tmp->next;
+    }
+    info->tokens[info->i].str = remove_plus(info->tokens[info->i].str);
+    new = malloc(sizeof(t_list));
+    new->content = ft_strdup(info->tokens[info->i].str);
+    ft_lstadd_back(&info->head, new);
+}
+
+char *remove_eqs(char *str, char *ptr_to_eq)
+{
+    int a;
+    int b;
+    int i;
+    char *new;
+
+    i = 0;
+    while (ptr_to_eq[i] && ptr_to_eq[i] == '=')
+        i++;
+    new = malloc(sizeof(char) * (ft_strlen(str) - i + 2));
+    a = 0;
+    b = 0;
+    while (str[a])
+    {
+        new[b] = str[a];
+        if(str[a] == '=')
+        {
+            a += i - 1;
+            i = 0;
+        }
+        b++;
+        a++;
+    }
+    new[b] = '\0';
+    free(str);
+    return (new);
+}
+
 void export(t_info *info)
 {
     t_list *tmp;
@@ -270,55 +451,154 @@ void export(t_info *info)
         print_exp_vars(info);
     else
     {
-        ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
+        while (info->tokens[info->i].str)
+        {
+            ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
+            if(ptr_to_eq)
+            {
+                info->tokens[info->i].str = remove_eqs(info->tokens[info->i].str, ptr_to_eq);
+                ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
+            
+                if (info->tokens[info->i].str[0] != '=')
+                {
+                    if (!ft_isdigit(*(ptr_to_eq - 1)) && !ft_isalpha(*(ptr_to_eq - 1)) && *(ptr_to_eq - 1) != '+')
+                    {
+                        printf("-dashBash: export: `%s': not a valid identifier\n", info->tokens[info->i].str);
+                        return;
+                    }
+                    if (*(ptr_to_eq - 1) == '+')
+                    {
+                        var_name = var_name_in_str(info->tokens[info->i].str, ptr_to_eq);
+                        find_and_join(ptr_to_eq, info, var_name);
+                        remove_from_extra_exp(&info->extra_exp, var_name);
+                        return;
+                    }
+                }
+            }
         // ptr_to_space = ft_strchr(info->tokens[info->i].str, ' '); ///////////////////////проверить потом с новым парсером
         // if (ptr_to_space < ptr_to_eq)
         // {
         //     print_export_error(info->tokens[info->i].str);
         //     return;
         // }
-        no_quotes(info->tokens[info->i].str);
-        if (ptr_to_eq)
-        {
-            var_name = var_name_in_str(info->tokens[info->i].str, ptr_to_eq);
-            printf("replase por %s***********************************************\n", info->tokens[info->i].str);
-            find_existing_var(&info->head, var_name, info->tokens[info->i].str, info);
-
+            no_quotes(info->tokens[info->i].str);
+            if (ptr_to_eq)
+            {
+                var_name = var_name_in_str(info->tokens[info->i].str, ptr_to_eq);
+                find_existing_var(var_name, info);
+                remove_from_extra_exp(&info->extra_exp, var_name);
+            }
+            else
+                extra_export(info);
+            info->i++;
         }
-        else
-        printf("*\n");
-
     }
-        // printf("*\n");
 }
 
-// void free_tokens(t_info *info)
-// {
-//     int i = 0;
-//     while (info->tokens[i].str)
-//     {
-//         free(info->tokens[i].str);
-//         // free(info->tokens[i].type);
-//         i++;
-//     }
-//     free(info->tokens);
-// }
+void cd(t_info *info)
+{
+    char *tmp;
+    char *buf;
+    char *tmp2;
+    int a;
+
+    tmp = ft_strjoin("OLD", info->pwd->content);
+	info->i++;
+    a = chdir(info->tokens[info->i].str);
+    if (!a)
+    {
+        info->oldpwd->content = ft_strdup(tmp);
+	    buf = getcwd(NULL, 100);
+        if (buf)
+        {
+            tmp2 = ft_strjoin("PWD=", buf);
+            info->pwd->content = ft_strdup(tmp2);
+            free(buf);
+        }
+	    else
+		    exit(0);
+    }
+    else
+    {
+        if (errno == 20)
+            printf("-dashBash: cd: %s: Not a directory\n", info->tokens[info->i].str);
+        else if (errno == 2)
+            printf("-dashBash: cd: %s: No such file or directory\n", info->tokens[info->i].str);
+        else
+            printf("zapomni chto ty sdelal\n");
+        errno = 0;
+        free(tmp);
+    }
+}
+
+void remove_var(t_info *info, t_list **list)
+{
+    t_list *tmp;
+    int var_len;
+    t_list *prev;
+
+    tmp = *list;
+    var_len = ft_strlen(info->tokens[info->i].str);
+    while (tmp)
+    {
+        if (!ft_strncmp(tmp->content, info->tokens[info->i].str, var_len) && tmp->content[var_len] == '=')
+        {
+            if (tmp == *list)
+            {
+                *list = tmp->next;
+                free(tmp->content);
+                free(tmp);
+                return;
+            }
+            else
+            {
+                prev->next = tmp->next;
+                ft_lstdelone(tmp, free);
+                return;
+            }
+        }
+        prev = tmp;
+        tmp = tmp->next;
+    }
+}
+
+void unset(t_info *info)
+{
+    int i;
+
+    info->i++;
+    while (info->tokens[info->i].str)
+    {
+        i = 0;
+        while (info->tokens[info->i].str[i])
+        {
+            if (!ft_isalpha(info->tokens[info->i].str[i]) && !ft_isdigit(info->tokens[info->i].str[i]))
+            {
+                printf("bash: unset: `%s': not a valid identifier\n", info->tokens[info->i].str);
+                return;
+            }
+            i++;
+        }
+        remove_var(info, &info->head);
+        remove_from_extra_exp(&info->extra_exp, info->tokens[info->i].str);
+        info->i++;
+    }
+}
 
 void program_define(t_info *info)
 {
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
 		pwd(info);
     else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
-    {
-		info->i++;
-        chdir(info->tokens[info->i].str);
-    }
+        cd(info);
     else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
 		echo(info);
 	else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
 		env(info);
-	else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 3))
+	else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
 		export(info);
+	else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
+        unset(info);
     else
     {
         write(1, "dashBash: ", 11);
