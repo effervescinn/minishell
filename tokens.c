@@ -17,6 +17,41 @@ void make_env(char **envp, t_list **head)
 	}
 }
 
+int count_quotes(char *str)
+{
+    int quotes;
+    
+    quotes = 0;
+    while (*str)
+    {
+        while (*str && *str != '\'' && *str != '\"')
+            str++;
+        if (*str == '\"')
+        {
+            str++;
+            quotes++;
+            str = ft_strchr(str, '\"');
+            if (!str)
+                return (quotes);
+            quotes++;
+            str++;
+        }
+        else if (*str == '\'')
+        {
+            str++;
+            quotes++;
+            str = ft_strchr(str, '\'');
+            if (!str)
+                return (quotes);
+            quotes++;
+            str++;
+        }
+        if (*str == '\0')
+            continue ;
+    }
+    return (quotes);
+}
+
 char *vars(char **str, t_list *head)
 {
 	char *var;
@@ -361,59 +396,3 @@ void define_types(t_info *info)
 }
 
 // void set_args() //тут надо замаллочить массив под аргументы и задать первому элементу NULL
-
-// int main(int ac, char **av, char **envp)
-// {
-// 	t_info info;
-// 	make_env(envp, &info.head);
-// 	char *newstr;
-// 	char **tmp_arr;
-
-// 	char *str = " grep hello > 1 < 2 3";
-// 	newstr = replace_vars(str, &info);
-// 	tmp_arr = make_tokens(newstr);
-// 	info.tokens = delete_quotes(tmp_arr);
-// 	// set_args(&info.tokens);
-// 	define_types(&info);
-
-
-// 	// int i = 0;
-// 	// while (info.tokens[i].str)
-// 	// {
-// 	// 	printf("%s || %s\n", info.tokens[i].str, info.tokens[i].type);
-// 	// 	int j = 0;
-// 	// 	printf("args:\n");
-// 	// 	while (info.tokens[i].args[j])
-// 	// 	{
-// 	// 		printf("%s\n", info.tokens[i].args[j]);
-// 	// 		j++;
-// 	// 	}
-// 	// 	i++;
-// 	// 	printf("%s\n", "-------------------------------");
-// 	// }
-
-// 	// ОТ УТЕЧЕК
-// 	// free(newstr);
-
-// 	// int i = 0;
-// 	// while (tokens_arr[i])
-// 	// {
-// 	// 	free(tokens_arr[i]);
-// 	// 	i++;
-// 	// }
-// 	// free(tokens_arr);
-
-// 	// t_list *tmp;
-// 	// while(info.head)
-// 	// {
-// 	// 	tmp = info.head->next;
-// 	// 	free(info.head);
-// 	// 	info.head = tmp;
-// 	// }
-
-// 	//почистить tmp_arr
-
-// 	return 0;
-// }
-
-// gcc -L./libft -lft tokens.c

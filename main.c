@@ -63,11 +63,15 @@ void history(t_info *info)
             write(1, "\n", 1);
             exit(0);
         }
+        if (count_quotes(input) % 2 != 0)
+        {
+            write(1, "dashBash: unclosed quote\n", 26);
+            info->result = NULL; //Поправь тут, если надо
+            continue ;
+        }
         newstr = replace_vars(input, info);
         tmp_arr = make_tokens(newstr);
         info->tokens = delete_quotes(tmp_arr);
-
-
         free(newstr);
         int i = 0;
         while (tmp_arr[i])
@@ -76,8 +80,6 @@ void history(t_info *info)
             i++;
         }
         free(tmp_arr);
-
-
         define_types(info);
         program_define(info);
         // if (input)

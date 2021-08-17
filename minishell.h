@@ -61,6 +61,7 @@ void set_pointers(t_info *info);
 
 //tokens.c
 void make_env(char **envp, t_list **head);
+int count_quotes(char *str);
 char *vars(char **str, t_list *head);
 void dollar(char **str, char **newstr, char **start, t_info *info);
 char *replace_vars(char *str, t_info *info);
