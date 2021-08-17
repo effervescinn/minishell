@@ -256,7 +256,7 @@ char **make_tokens(char *str)
 			{
 				str++;
 				str = ft_strchr(str, '\'');
-				while (*str && *str != ' ')
+				while (*str && *str != ' ' && *str != '|' && *str != '<' && *str != '>')
 					str++;
 			}
 
@@ -264,7 +264,7 @@ char **make_tokens(char *str)
 			{
 				str++;
 				str = ft_strchr(str, '\"');
-				while (*str && *str != ' ')
+				while (*str && *str != ' ' && *str != '|' && *str != '<' && *str != '>')
 					str++;
 			}
 		}
@@ -374,6 +374,19 @@ void less_args(t_token *tokens, int i)
 	}
 }
 
+void set_args(t_info *info) //тут надо замаллочить массив под аргументы и задать первому элементу NULL
+{
+	int i;
+
+	i = 0;
+	while (info->tokens[i].str)
+	{
+		info->tokens[i].args = (char**)malloc(sizeof(char*));
+		info->tokens[i].args[0] = NULL;
+		i++;
+	}
+}
+
 void define_types(t_info *info)
 {
 	int i;
@@ -383,16 +396,18 @@ void define_types(t_info *info)
 	{
 		if (info->tokens[i].str[0] == '>' && (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G'))
 		{
+			free(info->tokens[i].args[0]);
+			free(info->tokens[i].args);
 			info->tokens[i].args = (char**)malloc(sizeof(char*) + 1);
-			info->tokens[i].args[0] = info->tokens[i + 1].str;
+			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
 			info->tokens[i].args[1] = NULL;
 		}
 		if (info->tokens[i].str[0] == '<' && info->tokens[i].type[0] == 'l')
 		{
+			free(info->tokens[i].args[0]);
+			free(info->tokens[i].args);
 			less_args(info->tokens, i);
 		}
 		i++;
 	}
 }
-
-// void set_args() //тут надо замаллочить массив под аргументы и задать первому элементу NULL
