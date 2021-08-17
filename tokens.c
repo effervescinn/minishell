@@ -10,7 +10,7 @@ void make_env(char **envp, t_list **head)
 	while (envp[i])
 	{
 		new = (t_list *)malloc(sizeof(t_list));
-		new->content = envp[i];
+		new->content = ft_strdup(envp[i]);
 		new->next = NULL;
 		ft_lstadd_back(head, new);
 		i++;
@@ -155,7 +155,6 @@ char **make_tokens(char *str)
 	arr[0] = NULL;
 	while (*str)
 	{
-
 		while (*str && *str == ' ')
 			str++;
 		if (*str == '\0')
@@ -222,14 +221,16 @@ char **make_tokens(char *str)
 			{
 				str++;
 				str = ft_strchr(str, '\'');
-				str++;
+				while (*str && *str != ' ')
+					str++;
 			}
 
 			else if (*str == '\"')
 			{
 				str++;
 				str = ft_strchr(str, '\"');
-				str++;
+				while (*str && *str != ' ')
+					str++;
 			}
 		}
 		i++;
