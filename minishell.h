@@ -5,6 +5,7 @@
 #include <term.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <errno.h>
 #include "libft/libft.h"
 
 typedef struct	s_token
@@ -23,6 +24,10 @@ typedef struct	s_info
     char *result;
 	int i;
 	t_list *exp;
+	t_list *extra_exp;
+	t_list *pths;
+	t_list *pwd;
+	t_list *oldpwd;
 }				t_info;
 
 char *input;
@@ -36,6 +41,7 @@ void history(t_info *info);
 
 
 //commands.c
+void extra_export(t_info *info);
 void swap_content(t_list *list1, t_list *list2);
 void export_order(t_info *info, int i);
 void make_exp(t_info *info);
@@ -46,13 +52,12 @@ void env(t_info *info);
 char *add_quotes(char *str);
 void print_exp_vars(t_info *info);
 void no_quotes(char *str);
-void find_existing_var(t_list **list, char *var_name, char *new_str, t_info *info);
+void find_existing_var(char *var_name, t_info *info);
 char *var_name_in_str(char *str, char *ptr_to_eq);
 void print_export_error(char *str);
 void export(t_info *info);
 void program_define(t_info *info);
-
-
+void set_pointers(t_info *info);
 
 //tokens.c
 void make_env(char **envp, t_list **head);

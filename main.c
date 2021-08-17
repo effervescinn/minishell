@@ -56,7 +56,9 @@ int main(int ac, char **av, char **envp)
 {
 	t_info info;
 	make_env(envp, &info.head);
-	make_exp(&info);
+    set_pointers(&info);
+    info.exp = NULL;
+    info.extra_exp = NULL;
 
     info.result = malloc(1);
     info.result[0] = '\0';
