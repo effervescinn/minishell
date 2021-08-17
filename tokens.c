@@ -6,7 +6,7 @@ void make_env(char **envp, t_list **head)
 	int i;
 
 	i = 1;
-	*head = ft_lstnew(envp[0]);
+	*head = ft_lstnew(ft_strdup(envp[0]));
 	while (envp[i])
 	{
 		new = (t_list *)malloc(sizeof(t_list));
