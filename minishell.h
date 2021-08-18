@@ -72,3 +72,7 @@ void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
 void set_args(t_info *info);
 void command_args(t_token *tokens, int i);
+
+//main.c -> потом куда-нибудь перекинуть
+void free_args(t_info *info);
+void free_tokens(t_info *info);

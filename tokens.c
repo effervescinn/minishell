@@ -375,7 +375,7 @@ void less_args(t_token *tokens, int i)
 	}
 }
 
-void set_args(t_info *info) //тут надо замаллочить массив под аргументы и задать первому элементу NULL
+void set_args(t_info *info)
 {
 	int i;
 
@@ -455,12 +455,6 @@ void define_types(t_info *info)
 		}
 		else if (info->tokens[i].type[0] == 'p')
 		{
-			//pipe_args
-			// free(info->tokens[i].args[0]);
-			// free(info->tokens[i].args);
-			// info->tokens[i].args = (char**)malloc(sizeof(char*) + 1);
-			// info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
-			// info->tokens[i].args[1] = NULL;
 			info->tokens[i + 1].type = "command";
 		}
 		if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')

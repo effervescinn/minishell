@@ -11,7 +11,7 @@ void sig_int(int d)
     int right = 11;
 
     while (right--)
-            tputs(cursor_right, 1, ft_putchar);
+        tputs(cursor_right, 1, ft_putchar);
     tputs(tgetstr("dc", NULL), 1, ft_putchar);
     tputs(cursor_left, 1, ft_putchar);
     tputs(tgetstr("dc", NULL), 1, ft_putchar);
@@ -27,8 +27,8 @@ void sig_int(int d)
 void history(t_info *info)
 {
     char *prompt;
-	char *newstr;
-	char **tmp_arr;
+    char *newstr;
+    char **tmp_arr;
 
     prompt = ft_strdup("dashBash$ ");
     while (1)
@@ -42,45 +42,66 @@ void history(t_info *info)
             write(1, "\n", 1);
             exit(0);
         }
-	    newstr = replace_vars(input, info);
-	    tmp_arr = make_tokens(newstr);
-	    info->tokens = delete_quotes(tmp_arr);
+        newstr = replace_vars(input, info);
+        tmp_arr = make_tokens(newstr);
+        info->tokens = delete_quotes(tmp_arr);
         define_types(info);
         program_define(info);
         // if (input)
-            // free(input);
+        // free(input);
+    }
+}
+
+void free_args(t_info *info)
+{
+    int i;
+    int j;
+
+    i = 0;
+    j = 1;
+    while (info->tokens[i].str)
+    {
+        if (info->tokens[i].args[0])
+        {
+            while (info->tokens[i].args[j])
+            {
+                free(info->tokens[i].args[j]);
+                j++;
+            }
+        }
+        free(info->tokens[i].args[0]);
+        free(info->tokens[i].args);
+        i++;
     }
 }
 
 int main(int ac, char **av, char **envp)
 {
-	t_info info;
-	make_env(envp, &info.head);
+    t_info info;
+    make_env(envp, &info.head);
     set_pointers(&info);
     info.exp = NULL;
     info.extra_exp = NULL;
 
     info.result = malloc(1);
     info.result[0] = '\0';
-	info.i = 0;
+    info.i = 0;
 
     char *newstr;
-	char **tmp_arr;
+    char **tmp_arr;
     char *input = "echo hello > 1 hahaha";
 
-
     newstr = replace_vars(input, &info);
-	tmp_arr = make_tokens(newstr);
-	info.tokens = delete_quotes(tmp_arr);
-    //функция вывода ошибки на пайп с редиректом
+    tmp_arr = make_tokens(newstr);
+    info.tokens = delete_quotes(tmp_arr);
+    //функция вывода ошибки на пайп с редиректом должна быть тут
     set_args(&info);
     define_types(&info);
-    
 
     int i = 0;
     int j = 0;
     while (info.tokens[i].str)
-    {   
+    {
         printf("TOKEN:\n");
         printf("%s\n\n", info.tokens[i].str);
         printf("TYPE:\n");
@@ -97,50 +118,32 @@ int main(int ac, char **av, char **envp)
         i++;
     }
     // printf("args: %s\n", info.tokens[0].args[2]);
-
-
-    i = 0; //чистка аргументов так скозать
-     j = 1;
-    while (info.tokens[i].str)
-    {
-        if (info.tokens[i].args[0])
-        {
-            while (info.tokens[i].args[j])
-            {
-                free(info.tokens[i].args[j]);
-                j++;
-            }
-        }
-        free(info.tokens[i].args[0]);
-        free(info.tokens[i].args);
-        i++;
-    }
-
+    free_args(&info);
     // ВСЯКИЕ УТЕЧКИ ТОКЕНАЙЗЕРА
     free(newstr);
-	i = 0;
-	while (tmp_arr[i])
-	{
-		free(tmp_arr[i]);
-		i++;
-	}
-	free(tmp_arr);
+    i = 0;
+    while (tmp_arr[i])
+    {
+        free(tmp_arr[i]);
+        i++;
+    }
+    free(tmp_arr);
 
-	t_list *tmp;
-	while(info.head)
-	{
+    t_list *tmp;
+    while (info.head)
+    {
         free(info.head->content);
-		tmp = info.head->next;
-		free(info.head);
-		info.head = tmp;
-	}
+        tmp = info.head->next;
+        free(info.head);
+        info.head = tmp;
+    }
     i = 0;
     while (info.tokens[i].str)
     {
         free(info.tokens[i].str);
         i++;
     }
-    
+
     free(info.tokens);
     free(info.result);
 
