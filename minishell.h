@@ -42,6 +42,9 @@ int ft_putchar(int c);
 void sig_int(int d);
 void history(t_info *info);
 void free_tokens(t_info *info);
+void free_args(t_info *info);
+void printf_tokens_err(int error);
+int unexpected_tokens(t_token *tokens);
 
 
 void make_paths(t_info *info);
@@ -80,3 +83,5 @@ void handle_token(char *tmp_token, t_token *token);
 t_token *delete_quotes(char **tmp_arr);
 void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
+void command_args(t_token *tokens, int i);
+void set_args(t_info *info);

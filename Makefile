@@ -1,5 +1,5 @@
 all:		
-			gcc $$LDFLAGS $$CPPFLAGS -L./libft -lft -ltermcap -lreadline commands.c main.c tokens.c
+			gcc $$LDFLAGS $$CPPFLAGS -L./libft -lft -ltermcap -lreadline commands.c main.c bins.c tokens.c
 
 
 fclean:	
