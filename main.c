@@ -45,6 +45,29 @@ void free_tokens(t_info *info)
     free(info->tokens);
 }
 
+void free_args(t_info *info)
+{
+    int i;
+    int j;
+
+    i = 0;
+    j = 1;
+    while (info->tokens[i].str)
+    {
+        if (info->tokens[i].args[0])
+        {
+            while (info->tokens[i].args[j])
+            {
+                free(info->tokens[i].args[j]);
+                j++;
+            }
+        }
+        free(info->tokens[i].args[0]);
+        free(info->tokens[i].args);
+        i++;
+    }
+}
+
 void history(t_info *info)
 {
     char *prompt;
@@ -80,6 +103,8 @@ void history(t_info *info)
             i++;
         }
         free(tmp_arr);
+        //функция вывода ошибки на пайп с редиректом должна быть тут
+        set_args(info);
         define_types(info);
         program_define(info);
         // if (input)
