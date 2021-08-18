@@ -19,37 +19,37 @@ void make_env(char **envp, t_list **head)
 
 int count_quotes(char *str)
 {
-	int quotes;
-
-	quotes = 0;
-	while (*str)
-	{
-		while (*str && *str != '\'' && *str != '\"')
-			str++;
-		if (*str == '\"')
-		{
-			str++;
-			quotes++;
-			str = ft_strchr(str, '\"');
-			if (!str)
-				return (quotes);
-			quotes++;
-			str++;
-		}
-		else if (*str == '\'')
-		{
-			str++;
-			quotes++;
-			str = ft_strchr(str, '\'');
-			if (!str)
-				return (quotes);
-			quotes++;
-			str++;
-		}
-		if (*str == '\0')
-			continue;
-	}
-	return (quotes);
+    int quotes;
+    
+    quotes = 0;
+    while (*str)
+    {
+        while (*str && *str != '\'' && *str != '\"')
+            str++;
+        if (*str == '\"')
+        {
+            str++;
+            quotes++;
+            str = ft_strchr(str, '\"');
+            if (!str)
+                return (quotes);
+            quotes++;
+            str++;
+        }
+        else if (*str == '\'')
+        {
+            str++;
+            quotes++;
+            str = ft_strchr(str, '\'');
+            if (!str)
+                return (quotes);
+            quotes++;
+            str++;
+        }
+        if (*str == '\0')
+            continue ;
+    }
+    return (quotes);
 }
 
 char *vars(char **str, t_list *head)
@@ -215,7 +215,7 @@ char **make_tokens(char *str)
 					arr[j] = ft_substr(start, 0, 2);
 					str += 2;
 				}
-
+					
 				else
 				{
 					arr[j] = ft_substr(start, 0, 1);
@@ -228,7 +228,7 @@ char **make_tokens(char *str)
 					j++;
 				}
 				free(tmp);
-				continue;
+				continue ;
 			}
 			while (*str && *str != ' ')
 			{
@@ -256,7 +256,7 @@ char **make_tokens(char *str)
 			{
 				str++;
 				str = ft_strchr(str, '\'');
-				while (*str && *str != ' ' && *str != '|' && *str != '<' && *str != '>')
+				while (*str && *str != ' ')
 					str++;
 			}
 
@@ -264,7 +264,7 @@ char **make_tokens(char *str)
 			{
 				str++;
 				str = ft_strchr(str, '\"');
-				while (*str && *str != ' ' && *str != '|' && *str != '<' && *str != '>')
+				while (*str && *str != ' ')
 					str++;
 			}
 		}
@@ -363,7 +363,7 @@ void less_args(t_token *tokens, int i)
 		q++;
 	}
 	i -= q + 1;
-	tokens[i].args = (char **)malloc(sizeof(char *) * (q + 1));
+	tokens[i].args = (char**)malloc(sizeof(char*) * (q + 1));
 	tokens[i].args[q] = NULL;
 	j = 0;
 	while (q)
@@ -374,69 +374,6 @@ void less_args(t_token *tokens, int i)
 	}
 }
 
-void set_args(t_info *info)
-{
-	int i;
-
-	i = 0;
-	while (info->tokens[i].str)
-	{
-		info->tokens[i].args = (char **)malloc(sizeof(char *));
-		info->tokens[i].args[0] = NULL;
-		i++;
-	}
-}
-
-void command_args(t_token *tokens, int i)
-{
-	int q;
-	int j;
-	int k;
-
-	q = 0;
-	j = i;
-	i++;
-	while (tokens[i].str && tokens[i].type[0] == 'w')
-	{
-		i++;
-		q++;
-	}
-	if (tokens[i].str)
-	{
-		if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G')
-		{
-			i += 2;
-			while (tokens[i].str && tokens[i].type[0] == 'w')
-			{
-				i++;
-				q++;
-			}
-		}
-	}
-	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 1));
-	tokens[j].args[q] = NULL;
-	k = 0;
-	while (tokens[j + k + 1].str && tokens[j + k + 1].type[0] == 'w')
-	{
-		tokens[j].args[k] = ft_strdup(tokens[j + k + 1].str);
-		k++;
-	}
-	i = j + k + 1;
-	if (tokens[i].str)
-	{
-		if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G')
-		{
-			i += 2;
-			while (tokens[i].str && tokens[i].type[0] == 'w')
-			{
-				tokens[j].args[k] = ft_strdup(tokens[i].str);
-				k++;
-				i++;
-			}
-		}
-	}
-}
-
 void define_types(t_info *info)
 {
 	int i;
@@ -444,32 +381,18 @@ void define_types(t_info *info)
 	i = 0;
 	while (info->tokens[i].str)
 	{
-		if ((i == 0 && info->tokens[i].type[0] == 'w') || info->tokens[i].type[0] == 'c')
+		if (info->tokens[i].str[0] == '>' && (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G'))
 		{
-			info->tokens[i].type = "command";
-			free(info->tokens[i].args[0]);
-			free(info->tokens[i].args);
-			command_args(info->tokens, i);
-			
-		}
-		else if (info->tokens[i].type[0] == 'p')
-		{
-			info->tokens[i + 1].type = "command";
-		}
-		if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
-		{
-			free(info->tokens[i].args[0]);
-			free(info->tokens[i].args);
-			info->tokens[i].args = (char **)malloc(sizeof(char *) + 1);
-			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
+			info->tokens[i].args = (char**)malloc(sizeof(char*) + 1);
+			info->tokens[i].args[0] = info->tokens[i + 1].str;
 			info->tokens[i].args[1] = NULL;
 		}
-		else if (info->tokens[i].type[0] == 'l')
+		if (info->tokens[i].str[0] == '<' && info->tokens[i].type[0] == 'l')
 		{
-			free(info->tokens[i].args[0]);
-			free(info->tokens[i].args);
 			less_args(info->tokens, i);
 		}
 		i++;
 	}
 }
+
+// void set_args() //тут надо замаллочить массив под аргументы и задать первому элементу NULL
