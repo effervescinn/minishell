@@ -369,7 +369,6 @@ void less_args(t_token *tokens, int i)
 	while (q)
 	{
 		tokens[i].args[j] = ft_strdup(tokens[i + j + 1].str);
-		printf("arg is %s\n", tokens[i + j + 1].str);
 		j++;
 		q--;
 	}

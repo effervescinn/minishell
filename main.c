@@ -68,6 +68,11 @@ void free_args(t_info *info)
     }
 }
 
+// int unexpected_tokens(t_info *info)
+// {
+
+// }
+
 void history(t_info *info)
 {
     char *prompt;
@@ -104,6 +109,11 @@ void history(t_info *info)
         }
         free(tmp_arr);
         //функция вывода ошибки на пайп с редиректом должна быть тут
+        // if (unexpected_tokens(info) < 0)
+        // {
+        //     info->result = NULL; //Поправь тут, если надо
+        //     continue ;
+        // }
         set_args(info);
         define_types(info);
         program_define(info);
