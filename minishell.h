@@ -28,6 +28,9 @@ typedef struct	s_info
 	t_list *pths;
 	t_list *pwd;
 	t_list *oldpwd;
+	char **pths_array;
+	char *str_pwd;
+	char *str_oldpwd;
 }				t_info;
 
 char *input;
@@ -38,6 +41,13 @@ typedef void (*sighandler_t)(int);
 int ft_putchar(int c);
 void sig_int(int d);
 void history(t_info *info);
+void free_tokens(t_info *info);
+
+
+void make_paths(t_info *info);
+void copy_pwds(t_info *info);
+
+
 
 
 //commands.c
@@ -70,9 +80,3 @@ void handle_token(char *tmp_token, t_token *token);
 t_token *delete_quotes(char **tmp_arr);
 void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
-void set_args(t_info *info);
-void command_args(t_token *tokens, int i);
-
-//main.c -> потом куда-нибудь перекинуть
-void free_args(t_info *info);
-void free_tokens(t_info *info);
