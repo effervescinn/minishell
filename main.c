@@ -29,13 +29,13 @@ void free_tokens(t_info *info)
     int i;
 
     t_list *tmp;
-	while(info->head)
-	{
+    while (info->head)
+    {
         free(info->head->content);
-		tmp = info->head->next;
-		free(info->head);
-		info->head = tmp;
-	}
+        tmp = info->head->next;
+        free(info->head);
+        info->head = tmp;
+    }
     i = 0;
     while (info->tokens[i].str)
     {
@@ -45,11 +45,81 @@ void free_tokens(t_info *info)
     free(info->tokens);
 }
 
+void free_args(t_info *info)
+{
+    int i;
+    int j;
+
+    i = 0;
+    j = 1;
+    while (info->tokens[i].str)
+    {
+        if (info->tokens[i].args[0])
+        {
+            while (info->tokens[i].args[j])
+            {
+                free(info->tokens[i].args[j]);
+                j++;
+            }
+        }
+        free(info->tokens[i].args[0]);
+        free(info->tokens[i].args);
+        i++;
+    }
+}
+
+int unexpected_tokens(t_token *tokens)
+{
+    int i;
+
+    i = 0;
+    while (tokens[i].str)
+    {
+        if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
+        {
+            if (tokens[i + 1].type)
+            {
+                if (tokens[i + 1].type[0] == 'p')
+                    return (1);
+                else if (tokens[i + 1].type[0] == 'L')
+                    return (2);
+                else if (tokens[i + 1].type[0] == 'l')
+                    return (3);
+                else if (tokens[i + 1].type[0] == 'g')
+                    return (4);
+                else if (tokens[i + 1].type[0] == 'G')
+                    return (5);
+            }
+            else
+                return (6);
+        }
+        i++;
+    }
+    return (0);
+}
+
+void printf_tokens_err(int error)
+{
+    if (error == 1)
+        printf("dashBash: syntax error near unexpected token `|'\n");
+    else if (error == 2)
+        printf("dashBash: syntax error near unexpected token `<<'\n");
+    else if (error == 3)
+        printf("dashBash: syntax error near unexpected token `<'\n");
+    else if (error == 4)
+        printf("dashBash: syntax error near unexpected token `>'\n");
+    else if (error == 5)
+        printf("dashBash: syntax error near unexpected token `>>'\n");
+    else if (error == 6)
+        printf("dashBash: syntax error near unexpected token `newline'\n");
+}
+
 void history(t_info *info)
 {
     char *prompt;
     char *newstr;
     char **tmp_arr;
+    int tokens_err;
 
     prompt = ft_strdup("dashBash$ ");
     while (1)
@@ -76,13 +146,20 @@ void history(t_info *info)
                 i++;
             }
             free(tmp_arr);
-            define_types(info);
-            program_define(info);
+            tokens_err = unexpected_tokens(info->tokens);
+            if (tokens_err == 0)
+            {
+                set_args(info);
+                define_types(info);
+                program_define(info);
+            }
+            else
+                printf_tokens_err(tokens_err);
         }
         else
             write(1, "-dashBash: unclosed quote\n", 27);
         // if (input)
-        // free(input);
+            // free(input);
     }
 }
 

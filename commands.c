@@ -491,6 +491,20 @@ void export(t_info *info)
         {
             no_quotes(info->tokens[info->i].str);
             ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
+            if ((!ft_strncmp(info->tokens[info->i].str, "PWD\0", 4) && ft_strlen(info->tokens[info->i].str) == 3 && !info->pwd) ||
+                (!ft_strncmp(info->tokens[info->i].str, "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].str) == 6 && !info->oldpwd))
+                {
+                    find_and_join(ptr_to_eq, info, info->tokens[info->i].str);
+                    set_pointers(info);
+                    info->i++;
+                    continue;
+                }
+            if ((!ft_strncmp(info->tokens[info->i].str, "PWD\0", 4) && ft_strlen(info->tokens[info->i].str) == 3 && info->pwd) ||
+                (!ft_strncmp(info->tokens[info->i].str, "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].str) == 6 && info->oldpwd))
+                {
+                    info->i++;
+                    continue;
+                }
             if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].str)
                 info->tokens[info->i].str = remove_eqs(info->tokens[info->i].str, ptr_to_eq);
             ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
@@ -509,8 +523,7 @@ void export(t_info *info)
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 return;
             }
-            if (ptr_to_eq || (!ft_strncmp(info->tokens[info->i].str, "PWD", 3) && ft_strlen(info->tokens[info->i].str) == 3)
-            || (!ft_strncmp(info->tokens[info->i].str, "OLDPWD", 6) && ft_strlen(info->tokens[info->i].str) == 6))
+            if (ptr_to_eq)
             {
                 find_existing_var(var_name, info);
                 remove_from_extra_exp(&info->extra_exp, var_name);
@@ -518,7 +531,6 @@ void export(t_info *info)
             }
             else
             {
-                write(1, "^&&^^&&^&^^&\n", 14);
                 if (!check_env_vars(info))
                     extra_export(info);
             }
@@ -648,12 +660,17 @@ void exit_minishell(t_info *info)
     free_list(&info->extra_exp);
     free_list(&info->head);
     free_tokens(info);
+    free_args(info);
+    free(info->str_pwd);
+    free(info->str_oldpwd);
     write(1, "exit\n", 6);
     exit(1);
 }
 
 void program_define(t_info *info)
 {
+    if (!info->tokens[info->i].str)
+        return;
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
 		pwd(info);
     else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
