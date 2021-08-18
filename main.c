@@ -45,29 +45,6 @@ void free_tokens(t_info *info)
     free(info->tokens);
 }
 
-void free_args(t_info *info)
-{
-    int i;
-    int j;
-
-    i = 0;
-    j = 1;
-    while (info->tokens[i].str)
-    {
-        if (info->tokens[i].args[0])
-        {
-            while (info->tokens[i].args[j])
-            {
-                free(info->tokens[i].args[j]);
-                j++;
-            }
-        }
-        free(info->tokens[i].args[0]);
-        free(info->tokens[i].args);
-        i++;
-    }
-}
-
 void history(t_info *info)
 {
     char *prompt;
@@ -86,27 +63,24 @@ void history(t_info *info)
             write(1, "\n", 1);
             exit(0);
         }
-        if (count_quotes(input) % 2 != 0)
+        if (count_quotes(input) % 2 == 0)
         {
-            write(1, "dashBash: unclosed quote\n", 26);
-            info->result = NULL; //Поправь тут, если надо
-            continue ;
+            newstr = replace_vars(input, info);
+            tmp_arr = make_tokens(newstr);
+            info->tokens = delete_quotes(tmp_arr);
+            free(newstr);
+            int i = 0;
+            while (tmp_arr[i])
+            {
+                free(tmp_arr[i]);
+                i++;
+            }
+            free(tmp_arr);
+            define_types(info);
+            program_define(info);
         }
-        newstr = replace_vars(input, info);
-        tmp_arr = make_tokens(newstr);
-        info->tokens = delete_quotes(tmp_arr);
-        free(newstr);
-        int i = 0;
-        while (tmp_arr[i])
-        {
-            free(tmp_arr[i]);
-            i++;
-        }
-        free(tmp_arr);
-        //функция вывода ошибки на пайп с редиректом должна быть тут
-        set_args(info);
-        define_types(info);
-        program_define(info);
+        else
+            write(1, "-dashBash: unclosed quote\n", 27);
         // if (input)
         // free(input);
     }
@@ -117,11 +91,15 @@ int main(int ac, char **av, char **envp)
     t_info info;
     make_env(envp, &info.head);
     set_pointers(&info);
+    make_paths(&info);
+    info.str_oldpwd = NULL;
+    info.str_pwd = NULL;
+    copy_pwds(&info);
+
     info.exp = NULL;
     info.extra_exp = NULL;
 
-    info.result = malloc(1);
-    info.result[0] = '\0';
+    info.result = ft_strdup("\0");
     info.i = 0;
     history(&info);
 }
