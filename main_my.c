@@ -66,41 +66,57 @@ int main(int ac, char **av, char **envp)
 
     char *newstr;
 	char **tmp_arr;
-    char *input = "\'hello\'he > alala ld";
+    char *input = "echo hello > 1 hahaha";
 
-    if (count_quotes(input) % 2 != 0)
-    {
-        printf("QUOTES ERROR\n");
-        return (-1);
-    }
 
     newstr = replace_vars(input, &info);
 	tmp_arr = make_tokens(newstr);
 	info.tokens = delete_quotes(tmp_arr);
+    //функция вывода ошибки на пайп с редиректом
     set_args(&info);
     define_types(&info);
     
 
     int i = 0;
+    int j = 0;
     while (info.tokens[i].str)
     {   
-        printf("%s\n", info.tokens[i].str);
-        printf("args: %s\n", info.tokens[i].args[0]);
+        printf("TOKEN:\n");
+        printf("%s\n\n", info.tokens[i].str);
+        printf("TYPE:\n");
+        printf("%s\n\n", info.tokens[i].type);
+
+        printf("ARGUMENTS:\n");
+        j = 0;
+        while (info.tokens[i].args[j])
+        {
+            printf("%s\n", info.tokens[i].args[j]);
+            j++;
+        }
         printf("----------------------\n");
         i++;
     }
-    // printf("args: %s\n", info.tokens[1].args[0]);
+    // printf("args: %s\n", info.tokens[0].args[2]);
 
 
-    i = 0;
+    i = 0; //чистка аргументов так скозать
+     j = 1;
     while (info.tokens[i].str)
     {
+        if (info.tokens[i].args[0])
+        {
+            while (info.tokens[i].args[j])
+            {
+                free(info.tokens[i].args[j]);
+                j++;
+            }
+        }
         free(info.tokens[i].args[0]);
         free(info.tokens[i].args);
         i++;
     }
 
-
+    // ВСЯКИЕ УТЕЧКИ ТОКЕНАЙЗЕРА
     free(newstr);
 	i = 0;
 	while (tmp_arr[i])
