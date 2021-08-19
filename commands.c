@@ -676,6 +676,9 @@ void exit_minishell(t_info *info)
 
 void program_define(t_info *info)
 {
+    char *cmd;
+    pid_t pid;
+
     if (!info->tokens[info->i].str)
         return;
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
@@ -692,6 +695,14 @@ void program_define(t_info *info)
         unset(info);
     else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
         exit_minishell(info);
+    else if ((cmd = find_bin(info)))
+    {
+        printf("%s\n", cmd);
+        pid = fork();
+		if (pid == 0)
+		execve(cmd, info->tokens[info->i].args, 0);
+		waitpid(pid, 0, 0);
+    }
     else
     {
         write(1, "dashBash: ", 11);

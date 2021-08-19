@@ -169,6 +169,12 @@ int main(int ac, char **av, char **envp)
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
+    // int i = 0;
+    // while (info.pths_array[i])
+    // {
+    //     printf("%s\n", info.pths_array[i]);
+    //     i++;
+    // }
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);

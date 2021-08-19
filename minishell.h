@@ -7,6 +7,7 @@
 #include <readline/history.h>
 #include <errno.h>
 #include "libft/libft.h"
+#include <sys/stat.h>
 
 typedef struct	s_token
 {
@@ -86,3 +87,6 @@ void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
 void command_args(t_token *tokens, int i);
 void set_args(t_info *info);
+
+//bins.c
+char *find_bin(t_info *info);
