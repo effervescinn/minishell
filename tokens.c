@@ -10,9 +10,12 @@ void make_env(char **envp, t_list **head)
 	while (envp[i])
 	{
 		new = (t_list *)malloc(sizeof(t_list));
-		new->content = ft_strdup(envp[i]);
-		new->next = NULL;
-		ft_lstadd_back(head, new);
+		if (ft_strncmp("_=./", envp[i], 4))
+		{
+			new->content = ft_strdup(envp[i]);
+			new->next = NULL;
+			ft_lstadd_back(head, new);
+		}
 		i++;
 	}
 }
