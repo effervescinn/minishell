@@ -49,12 +49,13 @@ int unexpected_tokens(t_token *tokens);
 
 void make_paths(t_info *info);
 void copy_pwds(t_info *info);
+void free_paths_array(t_info *info);
 
 
 
 
 //commands.c
-void extra_export(t_info *info);
+void extra_export(t_info *info, int a);
 void swap_content(t_list *list1, t_list *list2);
 void export_order(t_info *info, int i);
 void make_exp(t_info *info);
@@ -65,7 +66,7 @@ void env(t_info *info);
 char *add_quotes(char *str);
 void print_exp_vars(t_info *info);
 void no_quotes(char *str);
-void find_existing_var(char *var_name, t_info *info);
+void find_existing_var(char *var_name, t_info *info, int a);
 char *var_name_in_str(char *str, char *ptr_to_eq);
 void print_export_error(char *str);
 void export(t_info *info);

@@ -2,8 +2,10 @@
 
 void copy_pwds(t_info *info)
 {
-    info->str_pwd = ft_strdup(info->pwd->content);
-    info->str_oldpwd = ft_strdup(info->oldpwd->content);
+    if (info->pwd)
+        info->str_pwd = ft_strdup(info->pwd->content);
+    if (info->oldpwd)
+        info->str_oldpwd = ft_strdup(info->oldpwd->content);
 }
 
 void set_pointers(t_info *info)
@@ -107,35 +109,31 @@ char *no_leaks_join(char *str1, char *str2)
 void echo(t_info *info)
 {
 	int n;
+    int a;
 
 	n = 0;
-	info->i++;
-    if (!info->tokens[info->i].str)
+    a = 0;
+    if (!info->tokens[info->i].args[a])
     {
         info->result = ft_strdup("\n\0");
         return;
     }
-    if (ft_strlen(info->tokens[info->i].str) == 2 && !ft_strncmp(info->tokens[info->i].str, "-n", 2))
+    if (ft_strlen(info->tokens[info->i].args[a]) == 2 && !ft_strncmp(info->tokens[info->i].args[a], "-n", 2))
     {
-		info->i++;
-        if (!info->tokens[info->i].str)
+		a++;
+        if (!info->tokens[info->i].args[a])
         {
             info->result = ft_strdup("\0");
             return;
         }
 		n = 1;
     }
-    while (ft_strlen(info->tokens[info->i].type) == 4 && !ft_strncmp(info->tokens[info->i].type, "word", 4))
+    while (info->tokens[info->i].args[a])
     {
-		info->result = no_leaks_join(info->result, info->tokens[info->i].str);
-        info->i++;
-		if (info->tokens[info->i].str)
-		{
-	        if (ft_strlen(info->tokens[info->i].type) == 4 && !ft_strncmp(info->tokens[info->i].type, "word", 4))
-				info->result = no_leaks_join(info->result, " ");
-		}
-		else
-			break;
+		info->result = no_leaks_join(info->result, info->tokens[info->i].args[a]);
+        if (info->tokens[info->i].args[a + 1])
+            info->result = no_leaks_join(info->result, " ");
+        a++;
     }
 	if (!n)
 		info->result = no_leaks_join(info->result, "\n");
@@ -266,7 +264,7 @@ void no_quotes(char *str)
     str = new_string;
 }
 
-void find_existing_var(char *var_name, t_info *info)
+void find_existing_var(char *var_name, t_info *info, int a)
 {
     t_list *tmp;
     int var_len;
@@ -281,7 +279,7 @@ void find_existing_var(char *var_name, t_info *info)
             if (tmp->content[var_len] == '=' || tmp->content[var_len] == '\0')
             {
                 tmp2 = tmp->content;
-                tmp->content = ft_strdup(info->tokens[info->i].str);
+                tmp->content = ft_strdup(info->tokens[info->i].args[a]);
                 free(tmp2);
                 return;
             }
@@ -289,7 +287,7 @@ void find_existing_var(char *var_name, t_info *info)
         tmp = tmp->next;
     }
     tmp = malloc(sizeof(t_list));
-    tmp->content = ft_strdup(info->tokens[info->i].str);
+    tmp->content = ft_strdup(info->tokens[info->i].args[a]);
     ft_lstadd_back(&info->head, tmp);
 }
 
@@ -328,16 +326,16 @@ void print_export_error(char *str)
     free(array);
 }
 
-void extra_export(t_info *info)
+void extra_export(t_info *info, int a)
 {
     t_list *new;
 
     if (!info->extra_exp)
-        info->extra_exp = ft_lstnew(ft_strdup(info->tokens[info->i].str));
+        info->extra_exp = ft_lstnew(ft_strdup(info->tokens[info->i].args[a]));
     else
     {
         new = malloc(sizeof(t_list));
-        new->content = ft_strdup(info->tokens[info->i].str);
+        new->content = ft_strdup(info->tokens[info->i].args[a]);
         ft_lstadd_back(&info->extra_exp, new);
     }
 }
@@ -379,8 +377,10 @@ char *remove_plus(char *s)
     int i;
     int j;
 
-    new = malloc(sizeof(char) * ft_strlen(s));
     ptr_to_plus = ft_strchr(s, '+');
+    if (!ptr_to_plus)
+        return s;
+    new = malloc(sizeof(char) * ft_strlen(s));
     i = 0;
     j = 0;
     while (s[i])
@@ -394,7 +394,7 @@ char *remove_plus(char *s)
     return (new);
 }
 
-void find_and_join(char *ptr_to_eq, t_info *info, char *var)
+void find_and_join(char *ptr_to_eq, t_info *info, char *var, int a)
 {
     t_list *tmp;
     int var_len;
@@ -411,9 +411,9 @@ void find_and_join(char *ptr_to_eq, t_info *info, char *var)
         }
         tmp = tmp->next;
     }
-    info->tokens[info->i].str = remove_plus(info->tokens[info->i].str);
+    info->tokens[info->i].args[a] = remove_plus(info->tokens[info->i].args[a]);
     new = malloc(sizeof(t_list));
-    new->content = ft_strdup(info->tokens[info->i].str);
+    new->content = ft_strdup(info->tokens[info->i].args[a]);
     ft_lstadd_back(&info->head, new);
 }
 
@@ -460,16 +460,16 @@ int check_var_name(char *var_name)
     return (1);
 }
 
-int check_env_vars(t_info *info)
+int check_env_vars(t_info *info, int a)
 {
     t_list *tmp;
     int var_len;
 
     tmp = info->head;
-    var_len = ft_strlen(info->tokens[info->i].str);
+    var_len = ft_strlen(info->tokens[info->i].args[a]);
     while (tmp)
     {
-        if (!ft_strncmp(tmp->content, info->tokens[info->i].str, var_len) && tmp->content[var_len] == '=')
+        if (!ft_strncmp(tmp->content, info->tokens[info->i].args[a], var_len) && tmp->content[var_len] == '=')
             return (1);
         tmp = tmp->next;
     }
@@ -481,62 +481,68 @@ void export(t_info *info)
     char *ptr_to_eq;
     char *ptr_to_space;
     char *var_name;
+    int a;
 
-    info->i++;
-    if (!info->tokens[info->i].str)
+    // info->i++;
+    a = 0;
+    if (!info->tokens[info->i].args[0])
         print_exp_vars(info);
     else
     {
-        while (info->tokens[info->i].str)
+        while (info->tokens[info->i].args[a])
         {
-            no_quotes(info->tokens[info->i].str);
-            ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
-            if ((!ft_strncmp(info->tokens[info->i].str, "PWD\0", 4) && ft_strlen(info->tokens[info->i].str) == 3 && !info->pwd) ||
-                (!ft_strncmp(info->tokens[info->i].str, "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].str) == 6 && !info->oldpwd))
+            no_quotes(info->tokens[info->i].args[a]);
+            ptr_to_eq = ft_strchr(info->tokens[info->i].args[a], '=');
+            if ((!ft_strncmp(info->tokens[info->i].args[a], "PWD\0", 4) && ft_strlen(info->tokens[info->i].args[a]) == 3 && !info->pwd) ||
+                (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].args[a]) == 6 && !info->oldpwd))
                 {
-                    find_and_join(ptr_to_eq, info, info->tokens[info->i].str);
+                    find_and_join(ptr_to_eq, info, info->tokens[info->i].args[a], a);
                     set_pointers(info);
-                    info->i++;
+                    a++;
                     continue;
                 }
-            if ((!ft_strncmp(info->tokens[info->i].str, "PWD\0", 4) && ft_strlen(info->tokens[info->i].str) == 3 && info->pwd) ||
-                (!ft_strncmp(info->tokens[info->i].str, "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].str) == 6 && info->oldpwd))
+            if ((!ft_strncmp(info->tokens[info->i].args[a], "PWD\0", 4) && ft_strlen(info->tokens[info->i].args[a]) == 3 && info->pwd) ||
+                (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].args[a]) == 6 && info->oldpwd))
                 {
-                    info->i++;
+                    a++;
                     continue;
                 }
-            if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].str)
-                info->tokens[info->i].str = remove_eqs(info->tokens[info->i].str, ptr_to_eq);
-            ptr_to_eq = ft_strchr(info->tokens[info->i].str, '=');
-            if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].str)
-                var_name = var_name_in_str(info->tokens[info->i].str, ptr_to_eq);
+            if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].args[a])
+                info->tokens[info->i].args[a] = remove_eqs(info->tokens[info->i].args[a], ptr_to_eq);
+            ptr_to_eq = ft_strchr(info->tokens[info->i].args[a], '=');
+            if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].args[a])
+                var_name = var_name_in_str(info->tokens[info->i].args[a], ptr_to_eq);
             else
-                var_name = info->tokens[info->i].str;
+                var_name = info->tokens[info->i].args[a];
             if (!check_var_name(var_name))
             {
-                printf("-dashBash: export: `%s': not a valid identifier\n", info->tokens[info->i].str);
+                printf("-dashBash: export: `%s': not a valid identifier\n", info->tokens[info->i].args[a]);
                 return;
             }
             if (ptr_to_eq && *(ptr_to_eq - 1) == '+')
             {
-                find_and_join(ptr_to_eq, info, var_name);
+                find_and_join(ptr_to_eq, info, var_name, a);
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 return;
             }
             if (ptr_to_eq)
             {
-                find_existing_var(var_name, info);
+                find_existing_var(var_name, info, a);
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 set_pointers(info);
             }
             else
             {
-                if (!check_env_vars(info))
-                    extra_export(info);
+                if (!check_env_vars(info, a))
+                    extra_export(info, a);
             }
             if (!ft_strncmp(var_name, "PATH", 4) && ft_strlen(var_name) == 4)
+            {
+                free_paths_array(info);
                 make_paths(info);
-            info->i++;
+            }
+            // info->i++;
+            a++;
         }
     }
 }
@@ -547,8 +553,8 @@ void cd(t_info *info)
     char *tmp2;
     int a;
 
-	info->i++;
-    a = chdir(info->tokens[info->i].str);
+	// info->i++;
+    a = chdir(info->tokens[info->i].args[0]);
     if (!a)
     {
         if (info->oldpwd)
@@ -588,26 +594,26 @@ void cd(t_info *info)
     else
     {
         if (errno == 20)
-            printf("-dashBash: cd: %s: Not a directory\n", info->tokens[info->i].str);
+            printf("-dashBash: cd: %s: Not a directory\n", info->tokens[info->i].args[0]);
         else if (errno == 2)
-            printf("-dashBash: cd: %s: No such file or directory\n", info->tokens[info->i].str);
+            printf("-dashBash: cd: %s: No such file or directory\n", info->tokens[info->i].args[0]);
         else
             printf("zapomni chto ty sdelal\n");
         errno = 0;
     }
 }
 
-void remove_var(t_info *info, t_list **list)
+void remove_var(t_info *info, t_list **list, int a)
 {
     t_list *tmp;
     int var_len;
     t_list *prev;
 
     tmp = *list;
-    var_len = ft_strlen(info->tokens[info->i].str);
+    var_len = ft_strlen(info->tokens[info->i].args[a]);
     while (tmp)
     {
-        if (!ft_strncmp(tmp->content, info->tokens[info->i].str, var_len) && tmp->content[var_len] == '=')
+        if (!ft_strncmp(tmp->content, info->tokens[info->i].args[a], var_len) && tmp->content[var_len] == '=')
         {
             if (tmp == *list)
             {
@@ -631,27 +637,28 @@ void remove_var(t_info *info, t_list **list)
 void unset(t_info *info)
 {
     int i;
+    int a;
 
-    info->i++;
-    while (info->tokens[info->i].str)
+    a = 0;
+    while (info->tokens[info->i].args[a])
     {
         i = 0;
-        while (info->tokens[info->i].str[i])
+        while (info->tokens[info->i].args[a][i])
         {
-            if (!ft_isalpha(info->tokens[info->i].str[i]) && !ft_isdigit(info->tokens[info->i].str[i]))
+            if (!ft_isalpha(info->tokens[info->i].args[a][i]) && !ft_isdigit(info->tokens[info->i].args[a][i]))
             {
-                printf("bash: unset: `%s': not a valid identifier\n", info->tokens[info->i].str);
+                printf("bash: unset: `%s': not a valid identifier\n", info->tokens[info->i].args[a]);
                 return;
             }
             i++;
         }
-        remove_var(info, &info->head);
-        remove_from_extra_exp(&info->extra_exp, info->tokens[info->i].str);
-        if ((!ft_strncmp(info->tokens[info->i].str, "PATH", 4) && ft_strlen(info->tokens[info->i].str) == 4)
-            || (!ft_strncmp(info->tokens[info->i].str, "PWD", 3) && ft_strlen(info->tokens[info->i].str) == 3)
-            || (!ft_strncmp(info->tokens[info->i].str, "OLDPWD", 6) && ft_strlen(info->tokens[info->i].str) == 6))
+        remove_var(info, &info->head, a);
+        remove_from_extra_exp(&info->extra_exp, info->tokens[info->i].args[a]);
+        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4)
+            || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3)
+            || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
                 set_pointers(info);
-        info->i++;
+        a++;
     }
 }
 
@@ -659,8 +666,8 @@ void exit_minishell(t_info *info)
 {
     free_list(&info->extra_exp);
     free_list(&info->head);
-    free_tokens(info);
     free_args(info);
+    free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
     write(1, "exit\n", 6);
