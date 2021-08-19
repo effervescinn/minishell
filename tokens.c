@@ -295,7 +295,7 @@ char **make_tokens(char *str)
 	return (arr);
 }
 
-void handle_token(char *tmp_token, t_token *token) //"'la"
+void handle_token(char *tmp_token, t_token *token)
 {
 	int i;
 	int j;
@@ -311,10 +311,10 @@ void handle_token(char *tmp_token, t_token *token) //"'la"
 		i++;
 	}
 	token->str = (char *)malloc(ft_strlen(tmp_token) - quotes + 1);
-	i = -1;
+	i = 0;
 	j = 0;
 	flag = 0;
-	while (tmp_token[++i])
+	while (tmp_token[i])
 	{
 		if (tmp_token[i] == '\'' && flag == 0)
 		{
@@ -354,7 +354,7 @@ void handle_token(char *tmp_token, t_token *token) //"'la"
 				j++;
 			}
 		}
-		else if (flag == 0)
+		else
 		{
 			while (tmp_token[i] && tmp_token[i] != '\"' && tmp_token[i] != '\'')
 			{
@@ -363,6 +363,8 @@ void handle_token(char *tmp_token, t_token *token) //"'la"
 				j++;
 			}
 		}
+		if (tmp_token[i])
+			i++;
 	}
 	token->str[j] = '\0';
 }
