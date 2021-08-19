@@ -292,12 +292,13 @@ char **make_tokens(char *str)
 	return (arr);
 }
 
-void handle_token(char *tmp_token, t_token *token)
+void handle_token(char *tmp_token, t_token *token) //"'la"
 {
 	int i;
 	int j;
 	int quotes;
-
+	int flag;
+	
 	i = 0;
 	quotes = 0;
 	while (tmp_token[i])
@@ -309,12 +310,56 @@ void handle_token(char *tmp_token, t_token *token)
 	token->str = (char *)malloc(ft_strlen(tmp_token) - quotes + 1);
 	i = -1;
 	j = 0;
+	flag = 0;
 	while (tmp_token[++i])
 	{
-		if (tmp_token[i] == '\'' || tmp_token[i] == '\"')
-			continue;
-		token->str[j] = tmp_token[i];
-		j++;
+		if (tmp_token[i] == '\'' && flag == 0)
+		{
+			flag = 1;
+			i++;
+		}
+		else if (tmp_token[i] == '\'' && flag == 1)
+		{
+			flag = 0;
+			i++;
+		}
+		else if (tmp_token[i] == '\"' && flag == 0)
+		{
+			flag = 2;
+			i++;
+		}
+		else if (tmp_token[i] == '\"' && flag == 2)
+		{
+			flag = 0;
+			i++;
+		}
+		if (flag == 1)
+		{
+			while (tmp_token[i] && tmp_token[i] != '\'')
+			{
+				token->str[j] = tmp_token[i];
+				i++;
+				j++;
+			}
+		}
+		else if (flag == 2)
+		{
+			while (tmp_token[i] && tmp_token[i] != '\"')
+			{
+				token->str[j] = tmp_token[i];
+				i++;
+				j++;
+			}
+		}
+		else if (flag == 0)
+		{
+			while (tmp_token[i] && tmp_token[i] != '\"' && tmp_token[i] != '\'')
+			{
+				token->str[j] = tmp_token[i];
+				i++;
+				j++;
+			}
+		}
 	}
 	token->str[j] = '\0';
 }
@@ -451,7 +496,6 @@ void define_types(t_info *info)
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
 			command_args(info->tokens, i);
-			
 		}
 		else if (info->tokens[i].type[0] == 'p')
 		{
