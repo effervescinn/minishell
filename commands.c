@@ -483,7 +483,6 @@ void export(t_info *info)
     char *var_name;
     int a;
 
-    // info->i++;
     a = 0;
     if (!info->tokens[info->i].args[0])
         print_exp_vars(info);
@@ -541,10 +540,70 @@ void export(t_info *info)
                 free_paths_array(info);
                 make_paths(info);
             }
-            // info->i++;
             a++;
         }
     }
+}
+
+char *up_dir(char *str)
+{
+    char *new;
+    int i;
+    int r;
+
+    i = 0;
+    while (str[i])
+    {
+        if (str[i] == '/')
+            r = i;
+        i++;
+    }
+    new = malloc(sizeof(char) * r + 1);
+    i = 0;
+    while (i < r)
+    {
+        new[i] = str[i];
+        i++;
+    }
+    new[r - 1] = '\0';
+    free(str);
+    return (new);
+}
+
+
+void new_pwd_frst(t_info *info)
+{
+    if (info->oldpwd)
+    {
+        if (info->str_oldpwd)
+        {
+            free(info->str_oldpwd);
+            info->str_oldpwd = NULL;
+            if (info->pwd)
+                info->str_oldpwd = ft_strdup(info->pwd->content);
+        }
+        if (info->oldpwd)
+        {
+            free(info->oldpwd->content);
+            if (info->str_pwd)
+                info->oldpwd->content = ft_strjoin("OLD", info->str_pwd);
+            else
+                info->oldpwd->content = ft_strdup("OLDPWD=");
+        }
+    }
+}
+
+void new_pwd_scnd(t_info *info, char *buf)
+{
+    if (info->str_pwd)
+        free(info->str_pwd);
+    info->str_pwd = ft_strjoin("PWD=", buf);
+    if (info->pwd)
+    {
+        free(info->pwd->content);
+        info->pwd->content = ft_strdup(info->str_pwd);
+    }
+    free(buf);
 }
 
 void cd(t_info *info)
@@ -553,43 +612,32 @@ void cd(t_info *info)
     char *tmp2;
     int a;
 
-	// info->i++;
+    if (!info->tokens[info->i].args[0])
+        return;
     a = chdir(info->tokens[info->i].args[0]);
     if (!a)
     {
-        if (info->oldpwd)
-        {
-            if (info->str_oldpwd)
-            {
-                free(info->str_oldpwd);
-                info->str_oldpwd = NULL;
-                if (info->pwd)
-                    info->str_oldpwd = ft_strdup(info->pwd->content);
-            }
-            if (info->oldpwd)
-            {
-                free(info->oldpwd->content);
-                if (info->str_pwd)
-                    info->oldpwd->content = ft_strjoin("OLD", info->str_pwd);
-                else
-                    info->oldpwd->content = ft_strdup("OLDPWD=");
-            }
-        }
+        new_pwd_frst(info);
 	    buf = getcwd(NULL, 100);
         if (buf && info->pwd)
-        {
-            if (info->str_pwd)
-                free(info->str_pwd);
-            info->str_pwd = ft_strjoin("PWD=", buf);
-            if (info->pwd)
-            {
-                free(info->pwd->content);
-                info->pwd->content = ft_strdup(info->str_pwd);
-            }
-            free(buf);
-        }
+            new_pwd_scnd(info, buf);
 	    else if (!buf)
-		    exit(0);
+        {
+            while (!buf)
+            {
+                free(info->tokens[info->i].args[0]);
+                info->tokens[info->i].args[0] = ft_strdup(info->str_pwd + 4);
+                info->tokens[info->i].args[0] = up_dir(info->tokens[info->i].args[0]);
+                a = chdir(info->tokens[info->i].args[0]);
+                if (!a)
+                {
+                    new_pwd_frst(info);
+                    buf = getcwd(NULL, 100);
+                    if (buf && info->pwd)
+                        new_pwd_scnd(info, buf);
+                }
+            }
+        }
     }
     else
     {

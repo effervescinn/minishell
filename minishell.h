@@ -72,6 +72,8 @@ void print_export_error(char *str);
 void export(t_info *info);
 void program_define(t_info *info);
 void set_pointers(t_info *info);
+void new_pwd(t_info *info);
+
 
 //tokens.c
 void make_env(char **envp, t_list **head);
