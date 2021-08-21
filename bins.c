@@ -21,31 +21,39 @@ void make_paths(t_info *info)
         info->pths_array = NULL;
 }
 
-char *find_bin(t_info *info) //info->pths_array
+char *find_bin(t_info *info)
 {
 	struct stat buf;
 	char *ret;
     int i;
     char *tmp;
+    char **tmp_arr;
+    int j;
 
-	i =-1;
+	i = 0;
+    while (info->pths_array[i])
+        i++;
+    tmp_arr = (char**)malloc(sizeof(char*) * (i + 1));
+    tmp_arr[i] = NULL;
+    i =-1;
     while (info->pths_array[++i])
     {
-        tmp = info->pths_array[i];
-        info->pths_array[i] = ft_strjoin(tmp, "/");
-        free(tmp);
-        tmp = info->pths_array[i];
-		info->pths_array[i] = ft_strjoin(tmp, info->tokens[info->i].str);
+        tmp = ft_strjoin(info->pths_array[i], "/");
+        tmp_arr[i] = ft_strjoin(tmp, info->tokens[info->i].str);
         free(tmp);
     }
     i =-1;
-	while (info->pths_array[++i])
-	{
-		if (stat(info->pths_array[i], &buf) == 0)
-		{
-			ret = ft_strdup(info->pths_array[i]);
-			return (ret);
-		}
-	}
+    while (tmp_arr[++i])
+    {
+        if (stat(tmp_arr[i], &buf) == 0)
+        {
+            ret = ft_strdup(tmp_arr[i]);
+            j = -1;
+            while (tmp_arr[++j])
+                free(tmp_arr[j]);
+            free(tmp_arr);
+            return (ret);
+        }
+    }
 	return (NULL);
 }
