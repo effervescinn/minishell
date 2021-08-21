@@ -464,12 +464,13 @@ void command_args(t_token *tokens, int i)
 			}
 		}
 	}
-	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 1));
-	tokens[j].args[q] = NULL;
+	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 2));//
+	tokens[j].args[q + 1] = NULL;
+	tokens[j].args[0] = ft_strdup(tokens[j].str);
 	k = 0;
 	while (tokens[j + k + 1].str && tokens[j + k + 1].type[0] == 'w')
 	{
-		tokens[j].args[k] = ft_strdup(tokens[j + k + 1].str);
+		tokens[j].args[k + 1] = ft_strdup(tokens[j + k + 1].str);
 		k++;
 	}
 	i = j + k + 1;
@@ -480,7 +481,7 @@ void command_args(t_token *tokens, int i)
 			i += 2;
 			while (tokens[i].str && tokens[i].type[0] == 'w')
 			{
-				tokens[j].args[k] = ft_strdup(tokens[i].str);
+				tokens[j].args[k + 1] = ft_strdup(tokens[i].str);
 				k++;
 				i++;
 			}
@@ -503,9 +504,7 @@ void define_types(t_info *info)
 			command_args(info->tokens, i);
 		}
 		else if (info->tokens[i].type[0] == 'p')
-		{
 			info->tokens[i + 1].type = "command";
-		}
 		if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
 		{
 			free(info->tokens[i].args[0]);
