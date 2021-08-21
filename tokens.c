@@ -509,7 +509,7 @@ void define_types(t_info *info)
 		{
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
-			info->tokens[i].args = (char **)malloc(sizeof(char *) + 1);
+			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
 			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
 			info->tokens[i].args[1] = NULL;
 		}
