@@ -112,7 +112,7 @@ void echo(t_info *info)
     int a;
 
 	n = 0;
-    a = 0;
+    a = 1;
     if (!info->tokens[info->i].args[a])
     {
         info->result = ft_strdup("\n\0");
@@ -483,8 +483,8 @@ void export(t_info *info)
     char *var_name;
     int a;
 
-    a = 0;
-    if (!info->tokens[info->i].args[0])
+    a = 1;
+    if (!info->tokens[info->i].args[1])
         print_exp_vars(info);
     else
     {
@@ -612,9 +612,9 @@ void cd(t_info *info)
     char *tmp2;
     int a;
 
-    if (!info->tokens[info->i].args[0])
+    if (!info->tokens[info->i].args[1])
         return;
-    a = chdir(info->tokens[info->i].args[0]);
+    a = chdir(info->tokens[info->i].args[1]);
     if (!a)
     {
         new_pwd_frst(info);
@@ -625,10 +625,10 @@ void cd(t_info *info)
         {
             while (!buf)
             {
-                free(info->tokens[info->i].args[0]);
-                info->tokens[info->i].args[0] = ft_strdup(info->str_pwd + 4);
-                info->tokens[info->i].args[0] = up_dir(info->tokens[info->i].args[0]);
-                a = chdir(info->tokens[info->i].args[0]);
+                free(info->tokens[info->i].args[1]);
+                info->tokens[info->i].args[1] = ft_strdup(info->str_pwd + 4);
+                info->tokens[info->i].args[1] = up_dir(info->tokens[info->i].args[1]);
+                a = chdir(info->tokens[info->i].args[1]);
                 if (!a)
                 {
                     new_pwd_frst(info);
@@ -642,9 +642,9 @@ void cd(t_info *info)
     else
     {
         if (errno == 20)
-            printf("-dashBash: cd: %s: Not a directory\n", info->tokens[info->i].args[0]);
+            printf("-dashBash: cd: %s: Not a directory\n", info->tokens[info->i].args[1]);
         else if (errno == 2)
-            printf("-dashBash: cd: %s: No such file or directory\n", info->tokens[info->i].args[0]);
+            printf("-dashBash: cd: %s: No such file or directory\n", info->tokens[info->i].args[1]);
         else
             printf("zapomni chto ty sdelal\n");
         errno = 0;
@@ -687,7 +687,7 @@ void unset(t_info *info)
     int i;
     int a;
 
-    a = 0;
+    a = 1;
     while (info->tokens[info->i].args[a])
     {
         i = 0;
