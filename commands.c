@@ -718,6 +718,8 @@ void exit_minishell(t_info *info)
     free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
+    close(info->fd_in_copy);
+    close(info->fd_out_copy);
     write(1, "exit\n", 6);
     exit(1);
 }
@@ -726,6 +728,7 @@ void program_define(t_info *info)
 {
     char *cmd;
     pid_t pid;
+    int fd;
 
     cmd = find_bin(info);
     if (!info->tokens[info->i].str)
@@ -748,9 +751,17 @@ void program_define(t_info *info)
     {        
         pid = fork();
 		if (pid == 0)
-		execve(cmd, info->tokens[info->i].args, 0);
+        {
+            define_fd_out(info);
+            define_fd_in(info);
+		    execve(cmd, info->tokens[info->i].args, 0);
+            // close(fd);
+            // dup2(fd, info->fd_out_copy);
+        }
 		waitpid(pid, 0, 0);
         free(cmd);
+        free(info->result);
+        info->result = NULL;
     }
     else
     {
@@ -761,9 +772,12 @@ void program_define(t_info *info)
     }
     if (info->result)
     {
-        printf("%s", info->result);
+        fd = define_fd_built_in(info);
+        write(fd, info->result, ft_strlen(info->result));
 	    free(info->result);
     }
+    free_args(info);
+    free_tokens(info);
     info->result = malloc(1);
     info->result[0] = '\0';
 	info->i = 0;

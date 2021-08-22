@@ -182,6 +182,9 @@ int main(int ac, char **av, char **envp)
     info.exp = NULL;
     info.extra_exp = NULL;
 
+    info.fd_out_copy = dup(1);
+    info.fd_in_copy = dup(0);
+
     info.result = ft_strdup("\0");
     info.i = 0;
     history(&info);

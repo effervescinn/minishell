@@ -8,6 +8,8 @@
 #include <errno.h>
 #include "libft/libft.h"
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
 typedef struct	s_token
 {
@@ -32,6 +34,8 @@ typedef struct	s_info
 	char **pths_array;
 	char *str_pwd;
 	char *str_oldpwd;
+    int fd_out_copy;
+    int fd_in_copy;
 }				t_info;
 
 char *input;
@@ -51,6 +55,9 @@ int unexpected_tokens(t_token *tokens);
 void make_paths(t_info *info);
 void copy_pwds(t_info *info);
 void free_paths_array(t_info *info);
+void define_fd_out(t_info *info);
+void define_fd_in(t_info *info);
+int define_fd_built_in(t_info *info);
 
 
 
