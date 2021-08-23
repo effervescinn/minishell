@@ -730,9 +730,9 @@ void program_define(t_info *info)
     pid_t pid;
     int fd;
 
-    cmd = find_bin(info);
     if (!info->tokens[info->i].str)
         return;
+    cmd = find_bin(info);
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
 		pwd(info);
     else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
