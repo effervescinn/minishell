@@ -541,3 +541,28 @@ void define_types(t_info *info)
 		i++;
 	}
 }
+
+void set_pipes(t_token *tokens)
+{
+	int i;
+	int j;
+
+	i = -1;
+	while (tokens[++i].str)
+		tokens[i].pipe = 0;
+	i = 0;
+	while (tokens[i].str)
+	{
+		if (tokens[i].type[0] == 'c')
+		{
+			j = i + 1;
+			while (tokens[j].str)
+			{
+				if (tokens[j].type[0] == 'p')
+					tokens[i].pipe = 1;
+				j++;
+			}
+		}
+		i++;
+	}
+}
