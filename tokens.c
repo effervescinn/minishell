@@ -405,6 +405,10 @@ void less_args(t_token *tokens, int i)
 	int q;
 	int j;
 
+	// if (i == 0 || tokens[i])
+	// {
+
+	// }
 	q = 0;
 	i++;
 	while (tokens[i].str && tokens[i].type[0] == 'w')
@@ -419,7 +423,6 @@ void less_args(t_token *tokens, int i)
 	while (q)
 	{
 		tokens[i].args[j] = ft_strdup(tokens[i + j + 1].str);
-		printf("arg is %s\n", tokens[i + j + 1].str);
 		j++;
 		q--;
 	}
@@ -504,7 +507,11 @@ void define_types(t_info *info)
 			command_args(info->tokens, i);
 		}
 		else if (info->tokens[i].type[0] == 'p')
-			info->tokens[i + 1].type = "command";
+		{
+			if (info->tokens[i + 1].type[0] == 'w')
+				info->tokens[i + 1].type = "command";
+		}
+			
 		if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
 		{
 			free(info->tokens[i].args[0]);
