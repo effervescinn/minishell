@@ -301,7 +301,7 @@ void handle_token(char *tmp_token, t_token *token)
 	int j;
 	int quotes;
 	int flag;
-	
+
 	i = 0;
 	quotes = 0;
 	while (tmp_token[i])
@@ -405,26 +405,34 @@ void less_args(t_token *tokens, int i)
 	int q;
 	int j;
 
-	// if (i == 0 || tokens[i])
-	// {
-
-	// }
-	q = 0;
-	i++;
-	while (tokens[i].str && tokens[i].type[0] == 'w')
+	if ((i != 0) && (tokens[i - 1].type[0] != 'p'))
 	{
+		q = 0;
 		i++;
-		q++;
+		while (tokens[i].str && tokens[i].type[0] == 'w')
+		{
+			i++;
+			q++;
+		}
+		i -= q + 1;
+		tokens[i].args = (char **)malloc(sizeof(char *) * (q + 1));
+		tokens[i].args[q] = NULL;
+		j = 0;
+		while (q)
+		{
+			tokens[i].args[j] = ft_strdup(tokens[i + j + 1].str);
+			j++;
+			q--;
+		}
 	}
-	i -= q + 1;
-	tokens[i].args = (char **)malloc(sizeof(char *) * (q + 1));
-	tokens[i].args[q] = NULL;
-	j = 0;
-	while (q)
+	else
 	{
-		tokens[i].args[j] = ft_strdup(tokens[i + j + 1].str);
-		j++;
-		q--;
+		tokens[i].args = (char **)malloc(sizeof(char *) * 2);
+		tokens[i].args[1] = NULL;
+		tokens[i].args[0] = ft_strdup(tokens[i + 1].str);
+		if (tokens[i + 2].str)
+			if (tokens[i + 2].type[0] == 'w')
+				tokens[i + 2].type = "command";
 	}
 }
 
@@ -467,7 +475,7 @@ void command_args(t_token *tokens, int i)
 			}
 		}
 	}
-	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 2));//
+	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 2)); //
 	tokens[j].args[q + 1] = NULL;
 	tokens[j].args[0] = ft_strdup(tokens[j].str);
 	k = 0;
@@ -508,17 +516,21 @@ void define_types(t_info *info)
 		}
 		else if (info->tokens[i].type[0] == 'p')
 		{
-			if (info->tokens[i + 1].type[0] == 'w')
-				info->tokens[i + 1].type = "command";
+			if (info->tokens[i + 1].str)
+				if (info->tokens[i + 1].type[0] == 'w')
+					info->tokens[i + 1].type = "command";
 		}
-			
-		if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
+		else if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
 		{
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
 			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
 			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
 			info->tokens[i].args[1] = NULL;
+			if (!((i != 0) && (info->tokens[i - 1].type[0] != 'p')))
+				if (info->tokens[i + 2].str)
+					if (info->tokens[i + 2].type[0] == 'w')
+						info->tokens[i + 2].type = "command";
 		}
 		else if (info->tokens[i].type[0] == 'l')
 		{
