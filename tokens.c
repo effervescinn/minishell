@@ -405,10 +405,10 @@ void less_args(t_token *tokens, int i)
 	int q;
 	int j;
 
-	if (i == 0 || tokens[i])
-	{
+	// if (i == 0 || tokens[i])
+	// {
 
-	}
+	// }
 	q = 0;
 	i++;
 	while (tokens[i].str && tokens[i].type[0] == 'w')
