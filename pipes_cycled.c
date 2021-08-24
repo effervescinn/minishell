@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
     num = 2;
     fd = (int **)malloc(sizeof(int *) * num);
     pids = (int *)malloc(sizeof(int) * (num + 1));
-    
+
     i = 0;
     while (i < num)
     {
@@ -37,10 +37,14 @@ int main(int argc, char const *argv[])
         pids[i] = fork();
         if (i == 0 && pids[i] == 0)
         {
-            dup2(fd[i][1], STDOUT_FILENO);
-            close(fd[i][0]);
-            close(fd[i][1]);
-            execlp("yes", "yes", NULL);
+            if (num != 0)
+            {
+                dup2(fd[i][1], STDOUT_FILENO);
+                close(fd[i][0]);
+                close(fd[i][1]);
+            }
+            execlp("echo", "echo", "hello world", NULL);
+            return (0);
         }
         else if (i != num && pids[i] == 0)
         {
@@ -52,7 +56,7 @@ int main(int argc, char const *argv[])
                 close(fd[j][1]);
                 j++;
             }
-            execlp("head", "head", "-n", "6", NULL);
+            execlp("cat", "cat", "-e", NULL);
         }
         else if (i == num && pids[i] == 0)
         {
@@ -63,9 +67,9 @@ int main(int argc, char const *argv[])
                 close(fd[j][1]);
                 j++;
             }
-            execlp("cat", "cat", "-e", NULL);
+            execlp("grep", "grep", "hello", NULL);
         }
-        
+
         i++;
     }
 
