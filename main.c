@@ -140,13 +140,9 @@ void history(t_info *info)
                 set_args(info);
                 define_types(info);
                 set_pipes(info->tokens);
-                int k = 0;
-                while (info->tokens[k].str)
-                {
-                    printf("pipe %d\n", info->tokens[k].pipe);
-                    k++;
-                }
                 program_define(info);
+                free_args(info);
+                free_tokens(info);
             }
             else
                 printf_tokens_err(tokens_err);

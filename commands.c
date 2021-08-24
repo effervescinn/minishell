@@ -730,55 +730,61 @@ void program_define(t_info *info)
     pid_t pid;
     int fd;
 
-    if (!info->tokens[info->i].str)
-        return;
-    cmd = find_bin(info);
-    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
-		pwd(info);
-    else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
-        cd(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
-		echo(info);
-	else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
-		env(info);
-	else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
-		export(info);
-	else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
-        unset(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
-        exit_minishell(info);
-    else if (cmd)
-    {        
-        pid = fork();
-		if (pid == 0)
-        {
-            define_fd_out(info);
-            define_fd_in(info);
-		    execve(cmd, info->tokens[info->i].args, 0);
-            // close(fd);
-            // dup2(fd, info->fd_out_copy);
+    while (info->tokens[info->i].str)
+    {
+        cmd = find_bin(info);
+        if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
+            pwd(info);
+        else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+            cd(info);
+        else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
+            echo(info);
+        else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
+            env(info);
+        else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
+            export(info);
+        else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
+            unset(info);
+        else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
+            exit_minishell(info);
+        else if (cmd)
+        {        
+            pid = fork();
+            if (pid == 0)
+            {
+                define_fd_out(info);
+                define_fd_in(info);
+                execve(cmd, info->tokens[info->i].args, 0);
+                // close(fd);
+                // dup2(fd, info->fd_out_copy);
+            }
+            waitpid(pid, 0, 0);
+            free(cmd);
+            free(info->result);
+            info->result = NULL;
         }
-		waitpid(pid, 0, 0);
-        free(cmd);
-        free(info->result);
-        info->result = NULL;
+        else
+        {
+            write(1, "dashBash: ", 11);
+            write(1, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
+            write(1, ": command not found\n", 21);
+            info->result = NULL;
+        }
+        if (info->result)
+        {
+            fd = define_fd_built_in(info);
+            write(fd, info->result, ft_strlen(info->result));
+            free(info->result);
+        }
+        info->result = malloc(1);
+        info->result[0] = '\0';
+        (info->i)++;
+        while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
+            (info->i)++;
+        if (info->tokens[info->i].str == 0)
+        {
+            info->i = 0;
+            return ;
+        }
     }
-    else
-    {
-        write(1, "dashBash: ", 11);
-        write(1, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
-        write(1, ": command not found\n", 21);
-        info->result = NULL;
-    }
-    if (info->result)
-    {
-        fd = define_fd_built_in(info);
-        write(fd, info->result, ft_strlen(info->result));
-	    free(info->result);
-    }
-    free_args(info);
-    free_tokens(info);
-    info->result = malloc(1);
-    info->result[0] = '\0';
-	info->i = 0;
 }
