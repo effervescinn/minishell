@@ -98,20 +98,20 @@ void make_exp(t_info *info)
 
 char *no_leaks_join(char *str1, char *str2)
 {
-	char *tmp;
+    char *tmp;
 
-	tmp = str1;
-	str1 = ft_strjoin(str1, str2);
-	free(tmp);
-	return (str1);
+    tmp = str1;
+    str1 = ft_strjoin(str1, str2);
+    free(tmp);
+    return (str1);
 }
 
 void echo(t_info *info)
 {
-	int n;
+    int n;
     int a;
 
-	n = 0;
+    n = 0;
     a = 1;
     if (!info->tokens[info->i].args[a])
     {
@@ -120,51 +120,51 @@ void echo(t_info *info)
     }
     if (ft_strlen(info->tokens[info->i].args[a]) == 2 && !ft_strncmp(info->tokens[info->i].args[a], "-n", 2))
     {
-		a++;
+        a++;
         if (!info->tokens[info->i].args[a])
         {
             info->result = ft_strdup("\0");
             return;
         }
-		n = 1;
+        n = 1;
     }
     while (info->tokens[info->i].args[a])
     {
-		info->result = no_leaks_join(info->result, info->tokens[info->i].args[a]);
+        info->result = no_leaks_join(info->result, info->tokens[info->i].args[a]);
         if (info->tokens[info->i].args[a + 1])
             info->result = no_leaks_join(info->result, " ");
         a++;
     }
-	if (!n)
-		info->result = no_leaks_join(info->result, "\n");
+    if (!n)
+        info->result = no_leaks_join(info->result, "\n");
 }
 
 void pwd(t_info *info)
 {
-	char *buf;
+    char *buf;
 
-	buf = getcwd(NULL, 100);
+    buf = getcwd(NULL, 100);
     if (buf)
     {
-		info->result = no_leaks_join(info->result, buf);
+        info->result = no_leaks_join(info->result, buf);
         free(buf);
-		info->result = no_leaks_join(info->result, "\n");
+        info->result = no_leaks_join(info->result, "\n");
     }
-	else
-		exit(0);
+    else
+        exit(0);
 }
 
 void env(t_info *info)
 {
-	t_list *tmp;
+    t_list *tmp;
 
-	tmp = info->head;
-	while (tmp)
-	{
-		info->result = no_leaks_join(info->result, tmp->content);
-		info->result = no_leaks_join(info->result, "\n");
-		tmp = tmp->next;
-	}
+    tmp = info->head;
+    while (tmp)
+    {
+        info->result = no_leaks_join(info->result, tmp->content);
+        info->result = no_leaks_join(info->result, "\n");
+        tmp = tmp->next;
+    }
 }
 
 char *add_quotes(char *str)
@@ -220,13 +220,13 @@ void print_exp_vars(t_info *info)
         tmp = tmp->next;
     }
     tmp = info->exp;
-	while (tmp)
-	{
-		info->result = no_leaks_join(info->result, "declare -x ");
-		info->result = no_leaks_join(info->result, tmp->content);
-		info->result = no_leaks_join(info->result, "\n");
-		tmp = tmp->next;
-	}
+    while (tmp)
+    {
+        info->result = no_leaks_join(info->result, "declare -x ");
+        info->result = no_leaks_join(info->result, tmp->content);
+        info->result = no_leaks_join(info->result, "\n");
+        tmp = tmp->next;
+    }
     free_list(&info->exp);
 }
 
@@ -250,7 +250,7 @@ void no_quotes(char *str)
     new_string = malloc(sizeof(char) * (ft_strlen(str) - quotes + 1));
     i = 0;
     k = 0;
-    while(str[i])
+    while (str[i])
     {
         if (str[i] != 34 && str[i] != 39)
         {
@@ -321,7 +321,7 @@ void print_export_error(char *str)
         i++;
     }
     i = 0;
-    while(array[i++])
+    while (array[i++])
         free(array[i]);
     free(array);
 }
@@ -433,7 +433,7 @@ char *remove_eqs(char *str, char *ptr_to_eq)
     while (str[a])
     {
         new[b] = str[a];
-        if(str[a] == '=')
+        if (str[a] == '=')
         {
             a += i - 1;
             i = 0;
@@ -494,18 +494,18 @@ void export(t_info *info)
             ptr_to_eq = ft_strchr(info->tokens[info->i].args[a], '=');
             if ((!ft_strncmp(info->tokens[info->i].args[a], "PWD\0", 4) && ft_strlen(info->tokens[info->i].args[a]) == 3 && !info->pwd) ||
                 (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].args[a]) == 6 && !info->oldpwd))
-                {
-                    find_and_join(ptr_to_eq, info, info->tokens[info->i].args[a], a);
-                    set_pointers(info);
-                    a++;
-                    continue;
-                }
+            {
+                find_and_join(ptr_to_eq, info, info->tokens[info->i].args[a], a);
+                set_pointers(info);
+                a++;
+                continue;
+            }
             if ((!ft_strncmp(info->tokens[info->i].args[a], "PWD\0", 4) && ft_strlen(info->tokens[info->i].args[a]) == 3 && info->pwd) ||
                 (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD\0", 7) && ft_strlen(info->tokens[info->i].args[a]) == 6 && info->oldpwd))
-                {
-                    a++;
-                    continue;
-                }
+            {
+                a++;
+                continue;
+            }
             if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].args[a])
                 info->tokens[info->i].args[a] = remove_eqs(info->tokens[info->i].args[a], ptr_to_eq);
             ptr_to_eq = ft_strchr(info->tokens[info->i].args[a], '=');
@@ -570,7 +570,6 @@ char *up_dir(char *str)
     return (new);
 }
 
-
 void new_pwd_frst(t_info *info)
 {
     if (info->oldpwd)
@@ -618,10 +617,10 @@ void cd(t_info *info)
     if (!a)
     {
         new_pwd_frst(info);
-	    buf = getcwd(NULL, 100);
+        buf = getcwd(NULL, 100);
         if (buf && info->pwd)
             new_pwd_scnd(info, buf);
-	    else if (!buf)
+        else if (!buf)
         {
             while (!buf)
             {
@@ -702,10 +701,8 @@ void unset(t_info *info)
         }
         remove_var(info, &info->head, a);
         remove_from_extra_exp(&info->extra_exp, info->tokens[info->i].args[a]);
-        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4)
-            || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3)
-            || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
-                set_pointers(info);
+        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4) || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3) || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
+            set_pointers(info);
         a++;
     }
 }
@@ -724,56 +721,112 @@ void exit_minishell(t_info *info)
     exit(1);
 }
 
+void exec_command(t_info *info)
+{
+    char *cmd;
+
+    cmd = find_bin(info);
+    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
+        pwd(info);
+    else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+        cd(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
+        echo(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
+        env(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
+        export(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
+        unset(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
+        exit_minishell(info);
+    else if (cmd)
+    {
+        // pid = fork();
+        // if (pid == 0)
+        // {
+        define_fd_out(info);
+        define_fd_in(info);
+        execve(cmd, info->tokens[info->i].args, 0);
+        // close(fd);
+        // dup2(fd, info->fd_out_copy);
+        // }
+        // waitpid(pid, 0, 0);
+        free(cmd);
+        free(info->result);
+        info->result = NULL;
+    }
+    else
+    {
+        write(1, "dashBash: ", 11);
+        write(1, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
+        write(1, ": command not found\n", 21);
+        info->result = NULL;
+    }
+}
+
 void program_define(t_info *info)
 {
     char *cmd;
     pid_t pid;
-    int fd;
+    int fd_dasha;
+    // int *pids; //for pipes
+    // int **fd; //for pipes
+    int pids[info->pipes_num + 1];
+    int fd[info->pipes_num][2];
+    int k = 0; //счетчик для пайпов
+    int j;
 
-    while (info->tokens[info->i].str)
+    while (k < info->pipes_num + 1)
     {
-        cmd = find_bin(info);
-        if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
-            pwd(info);
-        else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
-            cd(info);
-        else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
-            echo(info);
-        else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
-            env(info);
-        else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
-            export(info);
-        else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
-            unset(info);
-        else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
-            exit_minishell(info);
-        else if (cmd)
-        {        
-            pid = fork();
-            if (pid == 0)
-            {
-                define_fd_out(info);
-                define_fd_in(info);
-                execve(cmd, info->tokens[info->i].args, 0);
-                // close(fd);
-                // dup2(fd, info->fd_out_copy);
-            }
-            waitpid(pid, 0, 0);
-            free(cmd);
-            free(info->result);
-            info->result = NULL;
-        }
-        else
+        j = 0;
+        if (k < info->pipes_num)
+            if (pipe(fd[k]) < 0)
+                return;
+        pids[k] = fork();
+
+        if (k == 0 && pids[k] == 0)
         {
-            write(1, "dashBash: ", 11);
-            write(1, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
-            write(1, ": command not found\n", 21);
-            info->result = NULL;
+            if (info->pipes_num != 0)
+            {
+                dup2(fd[k][1], STDOUT_FILENO);
+                close(fd[k][0]);
+                close(fd[k][1]);
+            }
+            exec_command(info);
+            
+            return;
         }
+        else if (k != info->pipes_num && pids[k] == 0)
+        {
+            dup2(fd[k - 1][0], STDIN_FILENO);
+            dup2(fd[k][1], STDOUT_FILENO);
+            while (j <= k)
+            {
+                close(fd[j][0]);
+                close(fd[j][1]);
+                k++;
+            }
+            exec_command(info);
+            return;
+        }
+        else if (k == info->pipes_num && pids[k] == 0)
+        {
+            dup2(fd[k - 1][0], STDIN_FILENO);
+            while (j <= k - 1)
+            {
+                close(fd[j][0]);
+                close(fd[j][1]);
+                j++;
+            }
+            exec_command(info);
+            return;
+        }
+
         if (info->result)
         {
-            fd = define_fd_built_in(info);
-            write(fd, info->result, ft_strlen(info->result));
+            fd_dasha = define_fd_built_in(info);
+            write(fd_dasha, info->result, ft_strlen(info->result));
             free(info->result);
         }
         info->result = malloc(1);
@@ -781,10 +834,62 @@ void program_define(t_info *info)
         (info->i)++;
         while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
             (info->i)++;
-        if (info->tokens[info->i].str == 0)
-        {
-            info->i = 0;
-            return ;
-        }
+
+        k++;
+        // cmd = find_bin(info);
+        // if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
+        //     pwd(info);
+        // else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+        //     cd(info);
+        // else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
+        //     echo(info);
+        // else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
+        //     env(info);
+        // else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
+        //     export(info);
+        // else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
+        //     unset(info);
+        // else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
+        //     exit_minishell(info);
+        // else if (cmd)
+        // {
+        //     pid = fork();
+        //     if (pid == 0)
+        //     {
+        //         define_fd_out(info);
+        //         define_fd_in(info);
+        //         execve(cmd, info->tokens[info->i].args, 0);
+        //         // close(fd);
+        //         // dup2(fd, info->fd_out_copy);
+        //     }
+        //     waitpid(pid, 0, 0);
+        //     free(cmd);
+        //     free(info->result);
+        //     info->result = NULL;
+        // }
+        // else
+        // {
+        //     write(1, "dashBash: ", 11);
+        //     write(1, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
+        //     write(1, ": command not found\n", 21);
+        //     info->result = NULL;
+        // }
+        
     }
+
+    k = 0;
+    while (k < info->pipes_num)
+    {
+        close(fd[k][0]);
+        close(fd[k][1]);
+        k++;
+    }
+
+    k = 0;
+    while (k < info->pipes_num + 1)
+    {
+        waitpid(pids[k], NULL, 0);
+        k++;
+    }
+    (info->i) = 0;
 }
