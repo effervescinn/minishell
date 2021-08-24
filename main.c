@@ -139,7 +139,7 @@ void history(t_info *info)
             {
                 set_args(info);
                 define_types(info);
-                set_pipes(info->tokens);
+                set_pipes(info);
                 program_define(info);
                 free_args(info);
                 free_tokens(info);

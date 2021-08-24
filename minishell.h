@@ -37,6 +37,7 @@ typedef struct	s_info
 	char *str_oldpwd;
     int fd_out_copy;
     int fd_in_copy;
+	int pipes_num;
 }				t_info;
 
 char *input;
@@ -97,7 +98,7 @@ void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
 void command_args(t_token *tokens, int i);
 void set_args(t_info *info);
-void set_pipes(t_token *tokens);
+void set_pipes(t_info *info);
 
 //bins.c
 char *find_bin(t_info *info);
