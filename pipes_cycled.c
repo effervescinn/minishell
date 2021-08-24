@@ -15,39 +15,57 @@ int main(int argc, char const *argv[])
     int **fd;
     int j;
 
-    num = 1;
+    num = 2;
+    fd = (int **)malloc(sizeof(int *) * num);
+    pids = (int *)malloc(sizeof(int) * (num + 1));
     
-    fd = (int**)malloc(sizeof(int*) * num);
-    pids = (int*)malloc(sizeof(int) * (num + 1));
     i = 0;
     while (i < num)
     {
-        fd[i] = (int*)malloc(sizeof(int) * 2);
+        fd[i] = (int *)malloc(sizeof(int) * 2);
         i++;
     }
+
     i = 0;
     while (i < num + 1)
     {
+        j = 0;
         if (i < num)
             if (pipe(fd[i]) < 0)
                 return (-1);
-        
+
         pids[i] = fork();
         if (i == 0 && pids[i] == 0)
         {
             dup2(fd[i][1], STDOUT_FILENO);
             close(fd[i][0]);
             close(fd[i][1]);
-            execlp("echo", "echo", "hello", NULL);
+            execlp("yes", "yes", NULL);
         }
-
-        else if (i == (num) && pids[i] == 0)
+        else if (i != num && pids[i] == 0)
         {
             dup2(fd[i - 1][0], STDIN_FILENO);
-            close(fd[i - 1][0]);
-            close(fd[i - 1][1]);
+            dup2(fd[i][1], STDOUT_FILENO);
+            while (j <= i)
+            {
+                close(fd[j][0]);
+                close(fd[j][1]);
+                j++;
+            }
+            execlp("head", "head", "-n", "6", NULL);
+        }
+        else if (i == num && pids[i] == 0)
+        {
+            dup2(fd[i - 1][0], STDIN_FILENO);
+            while (j <= i - 1)
+            {
+                close(fd[j][0]);
+                close(fd[j][1]);
+                j++;
+            }
             execlp("cat", "cat", "-e", NULL);
         }
+        
         i++;
     }
 
@@ -58,6 +76,7 @@ int main(int argc, char const *argv[])
         close(fd[i][1]);
         i++;
     }
+
     i = 0;
     while (i < num + 1)
     {
