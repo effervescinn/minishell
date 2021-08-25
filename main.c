@@ -28,14 +28,6 @@ void free_tokens(t_info *info)
 {
     int i;
 
-    t_list *tmp;
-    while (info->head)
-    {
-        free(info->head->content);
-        tmp = info->head->next;
-        free(info->head);
-        info->head = tmp;
-    }
     i = 0;
     while (info->tokens[i].str)
     {
@@ -51,18 +43,14 @@ void free_args(t_info *info)
     int j;
 
     i = 0;
-    j = 1;
     while (info->tokens[i].str)
     {
-        if (info->tokens[i].args[0])
+        j = 0;
+        while (info->tokens[i].args[j])
         {
-            while (info->tokens[i].args[j])
-            {
-                free(info->tokens[i].args[j]);
-                j++;
-            }
+            free(info->tokens[i].args[j]);
+            j++;
         }
-        free(info->tokens[i].args[0]);
         free(info->tokens[i].args);
         i++;
     }
@@ -159,7 +147,7 @@ void history(t_info *info)
         else
             write(1, "-dashBash: unclosed quote\n", 27);
         // if (input)
-            // free(input);
+        // free(input);
     }
 }
 
@@ -169,12 +157,16 @@ int main(int ac, char **av, char **envp)
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
+
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);
 
     info.exp = NULL;
     info.extra_exp = NULL;
+
+    info.fd_out_copy = dup(1);
+    info.fd_in_copy = dup(0);
 
     info.result = ft_strdup("\0");
     info.i = 0;

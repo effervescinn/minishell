@@ -112,7 +112,7 @@ void echo(t_info *info)
     int a;
 
 	n = 0;
-    a = 0;
+    a = 1;
     if (!info->tokens[info->i].args[a])
     {
         info->result = ft_strdup("\n\0");
@@ -483,9 +483,8 @@ void export(t_info *info)
     char *var_name;
     int a;
 
-    // info->i++;
-    a = 0;
-    if (!info->tokens[info->i].args[0])
+    a = 1;
+    if (!info->tokens[info->i].args[1])
         print_exp_vars(info);
     else
     {
@@ -541,10 +540,70 @@ void export(t_info *info)
                 free_paths_array(info);
                 make_paths(info);
             }
-            // info->i++;
             a++;
         }
     }
+}
+
+char *up_dir(char *str)
+{
+    char *new;
+    int i;
+    int r;
+
+    i = 0;
+    while (str[i])
+    {
+        if (str[i] == '/')
+            r = i;
+        i++;
+    }
+    new = malloc(sizeof(char) * r + 1);
+    i = 0;
+    while (i < r)
+    {
+        new[i] = str[i];
+        i++;
+    }
+    new[r - 1] = '\0';
+    free(str);
+    return (new);
+}
+
+
+void new_pwd_frst(t_info *info)
+{
+    if (info->oldpwd)
+    {
+        if (info->str_oldpwd)
+        {
+            free(info->str_oldpwd);
+            info->str_oldpwd = NULL;
+            if (info->pwd)
+                info->str_oldpwd = ft_strdup(info->pwd->content);
+        }
+        if (info->oldpwd)
+        {
+            free(info->oldpwd->content);
+            if (info->str_pwd)
+                info->oldpwd->content = ft_strjoin("OLD", info->str_pwd);
+            else
+                info->oldpwd->content = ft_strdup("OLDPWD=");
+        }
+    }
+}
+
+void new_pwd_scnd(t_info *info, char *buf)
+{
+    if (info->str_pwd)
+        free(info->str_pwd);
+    info->str_pwd = ft_strjoin("PWD=", buf);
+    if (info->pwd)
+    {
+        free(info->pwd->content);
+        info->pwd->content = ft_strdup(info->str_pwd);
+    }
+    free(buf);
 }
 
 void cd(t_info *info)
@@ -553,50 +612,39 @@ void cd(t_info *info)
     char *tmp2;
     int a;
 
-	// info->i++;
-    a = chdir(info->tokens[info->i].args[0]);
+    if (!info->tokens[info->i].args[1])
+        return;
+    a = chdir(info->tokens[info->i].args[1]);
     if (!a)
     {
-        if (info->oldpwd)
-        {
-            if (info->str_oldpwd)
-            {
-                free(info->str_oldpwd);
-                info->str_oldpwd = NULL;
-                if (info->pwd)
-                    info->str_oldpwd = ft_strdup(info->pwd->content);
-            }
-            if (info->oldpwd)
-            {
-                free(info->oldpwd->content);
-                if (info->str_pwd)
-                    info->oldpwd->content = ft_strjoin("OLD", info->str_pwd);
-                else
-                    info->oldpwd->content = ft_strdup("OLDPWD=");
-            }
-        }
+        new_pwd_frst(info);
 	    buf = getcwd(NULL, 100);
         if (buf && info->pwd)
-        {
-            if (info->str_pwd)
-                free(info->str_pwd);
-            info->str_pwd = ft_strjoin("PWD=", buf);
-            if (info->pwd)
-            {
-                free(info->pwd->content);
-                info->pwd->content = ft_strdup(info->str_pwd);
-            }
-            free(buf);
-        }
+            new_pwd_scnd(info, buf);
 	    else if (!buf)
-		    exit(0);
+        {
+            while (!buf)
+            {
+                free(info->tokens[info->i].args[1]);
+                info->tokens[info->i].args[1] = ft_strdup(info->str_pwd + 4);
+                info->tokens[info->i].args[1] = up_dir(info->tokens[info->i].args[1]);
+                a = chdir(info->tokens[info->i].args[1]);
+                if (!a)
+                {
+                    new_pwd_frst(info);
+                    buf = getcwd(NULL, 100);
+                    if (buf && info->pwd)
+                        new_pwd_scnd(info, buf);
+                }
+            }
+        }
     }
     else
     {
         if (errno == 20)
-            printf("-dashBash: cd: %s: Not a directory\n", info->tokens[info->i].args[0]);
+            printf("-dashBash: cd: %s: Not a directory\n", info->tokens[info->i].args[1]);
         else if (errno == 2)
-            printf("-dashBash: cd: %s: No such file or directory\n", info->tokens[info->i].args[0]);
+            printf("-dashBash: cd: %s: No such file or directory\n", info->tokens[info->i].args[1]);
         else
             printf("zapomni chto ty sdelal\n");
         errno = 0;
@@ -639,7 +687,7 @@ void unset(t_info *info)
     int i;
     int a;
 
-    a = 0;
+    a = 1;
     while (info->tokens[info->i].args[a])
     {
         i = 0;
@@ -670,14 +718,21 @@ void exit_minishell(t_info *info)
     free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
+    close(info->fd_in_copy);
+    close(info->fd_out_copy);
     write(1, "exit\n", 6);
     exit(1);
 }
 
 void program_define(t_info *info)
 {
+    char *cmd;
+    pid_t pid;
+    int fd;
+
     if (!info->tokens[info->i].str)
         return;
+    cmd = find_bin(info);
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
 		pwd(info);
     else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
@@ -692,6 +747,38 @@ void program_define(t_info *info)
         unset(info);
     else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
         exit_minishell(info);
+    else if (cmd)
+    {
+        int files;
+        int smb;
+        int q;
+        int flag = 0;
+        q = 0;
+
+        smb = count_redir(info);
+        if (!smb)
+            exec_once(info, cmd);
+        info->i2 = info->i;
+        while (q < smb)
+        {
+            files = count_files(info);
+            if (files == 1 && q + 1 < smb)
+            {
+                q++;
+                info->i2++;
+                continue;
+            }           
+            if ((files == 1 || files == 0) && !flag)
+                exec_once(info, cmd);
+            else 
+                exec_few_times(&flag, info, cmd, files);
+            info->i2++;
+            q++;
+        }
+        free(cmd);
+        free(info->result);
+        info->result = NULL;
+    }
     else
     {
         write(1, "dashBash: ", 11);
@@ -701,9 +788,12 @@ void program_define(t_info *info)
     }
     if (info->result)
     {
-        printf("%s", info->result);
+        fd = define_fd_built_in(info);
+        write(fd, info->result, ft_strlen(info->result));
 	    free(info->result);
     }
+    free_args(info);
+    free_tokens(info);
     info->result = malloc(1);
     info->result[0] = '\0';
 	info->i = 0;

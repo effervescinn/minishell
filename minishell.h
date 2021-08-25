@@ -7,6 +7,9 @@
 #include <readline/history.h>
 #include <errno.h>
 #include "libft/libft.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
 typedef struct	s_token
 {
@@ -31,6 +34,9 @@ typedef struct	s_info
 	char **pths_array;
 	char *str_pwd;
 	char *str_oldpwd;
+    int fd_out_copy;
+    int fd_in_copy;
+	int i2;
 }				t_info;
 
 char *input;
@@ -50,6 +56,17 @@ int unexpected_tokens(t_token *tokens);
 void make_paths(t_info *info);
 void copy_pwds(t_info *info);
 void free_paths_array(t_info *info);
+void define_fd_out(t_info *info);
+int define_fd_in(t_info *info);
+int define_fd_built_in(t_info *info);
+int count_files(t_info *info);
+int open_file_in(t_info *info, int a);
+int count_redir(t_info *info);
+void exec_once(t_info *info, char *cmd);
+void exec_few_times(int *flag, t_info *info, char *cmd, int files);
+
+
+
 
 
 
@@ -72,6 +89,8 @@ void print_export_error(char *str);
 void export(t_info *info);
 void program_define(t_info *info);
 void set_pointers(t_info *info);
+void new_pwd(t_info *info);
+
 
 //tokens.c
 void make_env(char **envp, t_list **head);
@@ -86,3 +105,6 @@ void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
 void command_args(t_token *tokens, int i);
 void set_args(t_info *info);
+
+//bins.c
+char *find_bin(t_info *info);
