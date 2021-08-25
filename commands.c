@@ -794,7 +794,6 @@ void program_define(t_info *info)
                 close(fd[k][1]);
             }
             exec_command(info);
-            
             return;
         }
         else if (k != info->pipes_num && pids[k] == 0)
@@ -805,7 +804,7 @@ void program_define(t_info *info)
             {
                 close(fd[j][0]);
                 close(fd[j][1]);
-                k++;
+                j++;
             }
             exec_command(info);
             return;
@@ -822,7 +821,6 @@ void program_define(t_info *info)
             exec_command(info);
             return;
         }
-
         if (info->result)
         {
             fd_dasha = define_fd_built_in(info);
@@ -834,47 +832,7 @@ void program_define(t_info *info)
         (info->i)++;
         while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
             (info->i)++;
-
         k++;
-        // cmd = find_bin(info);
-        // if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
-        //     pwd(info);
-        // else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
-        //     cd(info);
-        // else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
-        //     echo(info);
-        // else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
-        //     env(info);
-        // else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
-        //     export(info);
-        // else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
-        //     unset(info);
-        // else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
-        //     exit_minishell(info);
-        // else if (cmd)
-        // {
-        //     pid = fork();
-        //     if (pid == 0)
-        //     {
-        //         define_fd_out(info);
-        //         define_fd_in(info);
-        //         execve(cmd, info->tokens[info->i].args, 0);
-        //         // close(fd);
-        //         // dup2(fd, info->fd_out_copy);
-        //     }
-        //     waitpid(pid, 0, 0);
-        //     free(cmd);
-        //     free(info->result);
-        //     info->result = NULL;
-        // }
-        // else
-        // {
-        //     write(1, "dashBash: ", 11);
-        //     write(1, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
-        //     write(1, ": command not found\n", 21);
-        //     info->result = NULL;
-        // }
-        
     }
 
     k = 0;
