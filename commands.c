@@ -742,16 +742,9 @@ void exec_command(t_info *info)
         exit_minishell(info);
     else if (cmd)
     {
-        // pid = fork();
-        // if (pid == 0)
-        // {
         define_fd_out(info);
         define_fd_in(info);
         execve(cmd, info->tokens[info->i].args, 0);
-        // close(fd);
-        // dup2(fd, info->fd_out_copy);
-        // }
-        // waitpid(pid, 0, 0);
         free(cmd);
         free(info->result);
         info->result = NULL;
@@ -762,6 +755,7 @@ void exec_command(t_info *info)
         write(1, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
         write(1, ": command not found\n", 21);
         info->result = NULL;
+        // exit(0);  хз пока че с этим делать
     }
 }
 
@@ -783,6 +777,7 @@ void program_define(t_info *info)
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
+
         pids[k] = fork();
 
         if (k == 0 && pids[k] == 0)
@@ -794,7 +789,13 @@ void program_define(t_info *info)
                 close(fd[k][1]);
             }
             exec_command(info);
-            return;
+            if (info->result)
+            {
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+                free(info->result);
+            }
+            exit(0);
         }
         else if (k != info->pipes_num && pids[k] == 0)
         {
@@ -807,7 +808,13 @@ void program_define(t_info *info)
                 j++;
             }
             exec_command(info);
-            return;
+            if (info->result)
+            {
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+                free(info->result);
+            }
+            exit(0);
         }
         else if (k == info->pipes_num && pids[k] == 0)
         {
@@ -819,13 +826,13 @@ void program_define(t_info *info)
                 j++;
             }
             exec_command(info);
-            return;
-        }
-        if (info->result)
-        {
-            fd_dasha = define_fd_built_in(info);
-            write(fd_dasha, info->result, ft_strlen(info->result));
-            free(info->result);
+            if (info->result)
+            {
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+                free(info->result);
+            }
+            exit(0);
         }
         info->result = malloc(1);
         info->result[0] = '\0';
@@ -834,7 +841,6 @@ void program_define(t_info *info)
             (info->i)++;
         k++;
     }
-
     k = 0;
     while (k < info->pipes_num)
     {
@@ -842,12 +848,13 @@ void program_define(t_info *info)
         close(fd[k][1]);
         k++;
     }
-
     k = 0;
     while (k < info->pipes_num + 1)
     {
         waitpid(pids[k], NULL, 0);
         k++;
     }
+    info->result = malloc(1);
+    info->result[0] = '\0';
     (info->i) = 0;
 }
