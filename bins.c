@@ -65,12 +65,14 @@ void define_fd_out(t_info *info)
     int flag;
 
     flag = 0;
-    i = 0;
+    i = info->i;
     fd = -5;
+    printf("i = %d\n", i);
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
         if (info->tokens[i].type[0] == 'g')
         {
+            printf("&*&&*&*&*\n");
             write(fd, "\0", 1);
             close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
@@ -92,7 +94,7 @@ void define_fd_out(t_info *info)
 }
 
 
-void define_fd_in(t_info *info)
+int define_fd_in(t_info *info)
 {
     int i;
     int fd;
@@ -112,8 +114,9 @@ void define_fd_in(t_info *info)
         i++;
     }
     if (!flag)
-        return;
+        return (-1);
     dup2(fd, 0);
+    return (fd);
 }
 
 int define_fd_built_in(t_info *info)
@@ -121,7 +124,7 @@ int define_fd_built_in(t_info *info)
     int i;
     int fd;
 
-    i = 0;
+    i = info->i;
     fd = -5;
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
@@ -142,4 +145,98 @@ int define_fd_built_in(t_info *info)
     if (fd == -5)
         return (1);
     return (fd);
+}
+int count_files(t_info *info)
+{
+    int files;
+
+    files = 0;
+    while (info->tokens[info->i2].str)
+    {
+        if (info->tokens[info->i2].type[0] == 'l')
+        {
+            while (info->tokens[info->i2].args[files])
+                files++;
+            return (files);
+        }
+        info->i2++;
+    }
+    return (0);
+}
+int open_file_in(t_info *info, int a)
+{
+    int fd;
+
+    while (info->tokens[info->i2].str)
+    {
+        if (info->tokens[info->i2].type[0] == 'l')
+        {
+            fd = open(info->tokens[info->i2].args[a], O_RDONLY);
+            dup2(fd, 0);
+            return fd;
+        }
+        info->i2++;
+    }
+    return -1;
+}
+
+int count_redir(t_info *info)
+{
+    int i;
+    int smb;
+
+    i = 0;
+    smb = 0;
+    while (info->tokens[i].str)
+    {
+        if (info->tokens[i].type[0] == 'l')
+            smb++;
+        i++;
+    }
+    return (smb);
+}
+
+void exec_once(t_info *info, char *cmd)
+{
+    pid_t pid;
+    int fd;
+
+    // pid = fork();
+	// if (pid == 0)
+    // {
+        define_fd_out(info);
+        fd = define_fd_in(info);
+	    execve(cmd, info->tokens[info->i].args, 0);
+        close(fd);
+        // dup2(fd, info->fd_out_copy);
+    // }
+    // waitpid(pid, 0, 0);
+}
+
+void exec_few_times(int *flag, t_info *info, char *cmd, int files, int pipid)
+{
+    int a = 0;
+    int fd;
+    pid_t pid;
+
+    *flag = 1;
+    while (a++ < files - 1)
+    {
+        if (!pipid)
+        {
+            pid = fork();
+	        if (pid == 0)
+            {
+                define_fd_out(info);
+                fd = open_file_in(info, a);
+		        execve(cmd, info->tokens[info->i].args, 0);
+                close(fd);
+                // dup2(fd, info->fd_out_copy);
+            }
+    	    waitpid(pid, 0, 0);
+        }
+        else
+            exit(0);
+
+    }
 }

@@ -16,6 +16,7 @@ typedef struct	s_token
 	char *str;
 	char *type; //word, command, pipe, great, less, GREAT, LESS 
 	char **args;
+	int pipe;
 }				t_token;
 
 typedef struct	s_info
@@ -26,6 +27,7 @@ typedef struct	s_info
 	t_token *tokens;
     char *result;
 	int i;
+	int i2;
 	t_list *exp;
 	t_list *extra_exp;
 	t_list *pths;
@@ -36,6 +38,7 @@ typedef struct	s_info
 	char *str_oldpwd;
     int fd_out_copy;
     int fd_in_copy;
+	int pipes_num;
 }				t_info;
 
 char *input;
@@ -56,9 +59,13 @@ void make_paths(t_info *info);
 void copy_pwds(t_info *info);
 void free_paths_array(t_info *info);
 void define_fd_out(t_info *info);
-void define_fd_in(t_info *info);
+int define_fd_in(t_info *info);
 int define_fd_built_in(t_info *info);
-
+int count_files(t_info *info);
+int open_file_in(t_info *info, int a);
+int count_redir(t_info *info);
+void exec_once(t_info *info, char *cmd);
+void exec_few_times(int *flag, t_info *info, char *cmd, int files, int pipid);
 
 
 
@@ -81,6 +88,7 @@ void export(t_info *info);
 void program_define(t_info *info);
 void set_pointers(t_info *info);
 void new_pwd(t_info *info);
+void exec_command(t_info *info, int pid);
 
 
 //tokens.c
@@ -96,6 +104,7 @@ void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
 void command_args(t_token *tokens, int i);
 void set_args(t_info *info);
+void set_pipes(t_info *info);
 
 //bins.c
 char *find_bin(t_info *info);
