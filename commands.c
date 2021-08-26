@@ -522,6 +522,8 @@ void export(t_info *info)
             {
                 find_and_join(ptr_to_eq, info, var_name, a);
                 remove_from_extra_exp(&info->extra_exp, var_name);
+                set_pointers(info);
+                make_paths(info);
                 return;
             }
             if (ptr_to_eq)
@@ -529,16 +531,12 @@ void export(t_info *info)
                 find_existing_var(var_name, info, a);
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 set_pointers(info);
+                make_paths(info);
             }
             else
             {
                 if (!check_env_vars(info, a))
                     extra_export(info, a);
-            }
-            if (!ft_strncmp(var_name, "PATH", 4) && ft_strlen(var_name) == 4)
-            {
-                free_paths_array(info);
-                make_paths(info);
             }
             a++;
         }
