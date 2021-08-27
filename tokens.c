@@ -507,6 +507,7 @@ void define_types(t_info *info)
 	i = 0;
 	while (info->tokens[i].str)
 	{
+		info->tokens[i].b_in = 0;
 		if ((i == 0 && info->tokens[i].type[0] == 'w') || info->tokens[i].type[0] == 'c')
 		{
 			info->tokens[i].type = "command";
@@ -569,4 +570,24 @@ void set_pipes(t_info *info)
 	while (info->tokens[++i].str)
 		if (info->tokens[i].type[0] == 'p')
 			info->pipes_num++;
+}
+
+void command_types(t_info *info)
+{
+	int i;
+
+	i = 0;
+	while (info->tokens[i].str)
+	{
+		if ( (ft_strlen(info->tokens[i].str) == 3 && !ft_strncmp(info->tokens[i].str, "pwd", 3) && info->tokens[i].type[0] == 'c')
+		|| (!ft_strncmp(info->tokens[i].str, "cd", 2) && ft_strlen(info->tokens[i].str) == 2 && info->tokens[i].type[0] == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 4 && !ft_strncmp(info->tokens[i].str, "echo", 4) && info->tokens[i].type[0] == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 3 && !ft_strncmp(info->tokens[i].str, "env", 3) && info->tokens[i].type[0] == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 6 && !ft_strncmp(info->tokens[i].str, "export", 6) && info->tokens[i].type[0] == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 5 && !ft_strncmp(info->tokens[i].str, "unset", 5) && info->tokens[i].type[0] == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 4 && !ft_strncmp(info->tokens[i].str, "exit", 4) && info->tokens[i].type[0] == 'c')
+		)
+			info->tokens[i].b_in = 1;
+		i++;
+	}
 }

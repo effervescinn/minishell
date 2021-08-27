@@ -17,6 +17,7 @@ typedef struct	s_token
 	char *type; //word, command, pipe, great, less, GREAT, LESS 
 	char **args;
 	int pipe;
+	int b_in;
 }				t_token;
 
 typedef struct	s_info
@@ -105,6 +106,7 @@ void define_types(t_info *info);
 void command_args(t_token *tokens, int i);
 void set_args(t_info *info);
 void set_pipes(t_info *info);
+void command_types(t_info *info);
 
 //bins.c
 char *find_bin(t_info *info);

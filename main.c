@@ -140,6 +140,7 @@ void history(t_info *info)
                 set_args(info);
                 define_types(info);
                 set_pipes(info);
+                command_types(info);
                 program_define(info);
                 free_args(info);
                 free_tokens(info);
