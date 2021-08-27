@@ -139,7 +139,10 @@ void history(t_info *info)
             {
                 set_args(info);
                 define_types(info);
+                set_pipes(info);
                 program_define(info);
+                free_args(info);
+                free_tokens(info);
             }
             else
                 printf_tokens_err(tokens_err);
@@ -158,6 +161,7 @@ int main(int ac, char **av, char **envp)
     set_pointers(&info);
     make_paths(&info);
 
+    file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);
