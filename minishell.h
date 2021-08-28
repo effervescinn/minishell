@@ -17,7 +17,7 @@ typedef struct	s_token
 	char *type; //word, command, pipe, great, less, GREAT, LESS 
 	char **args;
 	int pipe;
-	int b_in;
+	int print;
 }				t_token;
 
 typedef struct	s_info
@@ -29,12 +29,17 @@ typedef struct	s_info
     char *result;
 	int i;
 	int i2;
+	int index;
 	t_list *exp;
 	t_list *extra_exp;
 	t_list *pths;
 	t_list *pwd;
 	t_list *oldpwd;
+
+
 	char **pths_array;
+
+	
 	char *str_pwd;
 	char *str_oldpwd;
     int fd_out_copy;
@@ -67,8 +72,10 @@ int open_file_in(t_info *info, int a);
 int count_redir(t_info *info);
 void exec_once(t_info *info, char *cmd);
 void exec_few_times(int *flag, t_info *info, char *cmd, int files, int pipid);
+void replace_index(t_info *info);
+void opening_error(char *filename);
 
-
+int file;
 
 //commands.c
 void extra_export(t_info *info, int a);

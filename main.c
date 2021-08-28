@@ -157,11 +157,13 @@ void history(t_info *info)
 
 int main(int ac, char **av, char **envp)
 {
+	signal(SIGTERM, SIG_IGN);
     t_info info;
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
 
+    file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);
