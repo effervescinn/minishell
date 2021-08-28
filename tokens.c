@@ -302,15 +302,7 @@ void handle_token(char *tmp_token, t_token *token)
 	int quotes;
 	int flag;
 
-	i = 0;
-	quotes = 0;
-	while (tmp_token[i])
-	{
-		if (tmp_token[i] == '\'' || tmp_token[i] == '\"')
-			quotes++;
-		i++;
-	}
-	token->str = (char *)malloc(ft_strlen(tmp_token) - quotes + 1);
+	token->str = (char *)malloc(ft_strlen(tmp_token) + 1);
 	i = 0;
 	j = 0;
 	flag = 0;
@@ -320,21 +312,25 @@ void handle_token(char *tmp_token, t_token *token)
 		{
 			flag = 1;
 			i++;
+			continue;
 		}
 		else if (tmp_token[i] == '\'' && flag == 1)
 		{
 			flag = 0;
 			i++;
+			continue;
 		}
 		else if (tmp_token[i] == '\"' && flag == 0)
 		{
 			flag = 2;
 			i++;
+			continue;
 		}
 		else if (tmp_token[i] == '\"' && flag == 2)
 		{
 			flag = 0;
 			i++;
+			continue;
 		}
 		if (flag == 1)
 		{
@@ -344,6 +340,7 @@ void handle_token(char *tmp_token, t_token *token)
 				i++;
 				j++;
 			}
+			continue ;
 		}
 		else if (flag == 2)
 		{
@@ -353,6 +350,7 @@ void handle_token(char *tmp_token, t_token *token)
 				i++;
 				j++;
 			}
+			continue ;
 		}
 		else
 		{
@@ -362,6 +360,7 @@ void handle_token(char *tmp_token, t_token *token)
 				i++;
 				j++;
 			}
+			continue ;
 		}
 		if (tmp_token[i])
 			i++;
@@ -382,6 +381,7 @@ t_token *delete_quotes(char **tmp_arr)
 	i = 0;
 	while (tmp_arr[i])
 	{
+		// printf("token is %s\n", tmp_arr[i]);
 		handle_token(tmp_arr[i], &tokens_arr[i]);
 		if (tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
 			tokens_arr[i].type = "pipe";
