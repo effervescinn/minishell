@@ -19,7 +19,10 @@ void set_pointers(t_info *info)
     while (tmp)
     {
         if (!ft_strncmp(tmp->content, "OLDPWD=", 7) || !ft_strncmp(tmp->content, "OLDPWD\0", 7))
+        {
+            write(file, "***\n", 4);
             info->oldpwd = tmp;
+        }
         if (!ft_strncmp(tmp->content, "PWD=", 4) || !ft_strncmp(tmp->content, "PWD\0", 4))
             info->pwd = tmp;
         else if (!ft_strncmp(tmp->content, "PATH=", 5))
@@ -308,27 +311,6 @@ char *var_name_in_str(char *str, char *ptr_to_eq)
     return (var_name);
 }
 
-void print_export_error(char *str) //////////////потестить
-{
-    char **array;
-    int i;
-
-    i = 0;
-    array = ft_split(str, ' ');
-    while (array[i])
-    {
-        write(2, "-dashBash: export: `", 20);
-        write(2, array[i], ft_strlen(array[i]));
-        write(2, "': not a valid identifier\n", 27);
-        // printf("-dashBash: export: `%s': not a valid identifier", array[i]);
-        i++;
-    }
-    i = 0;
-    while (array[i++])
-        free(array[i]);
-    free(array);
-}
-
 void extra_export(t_info *info, int a)
 {
     t_list *new;
@@ -573,8 +555,27 @@ char *up_dir(char *str)
     return (new);
 }
 
+void add_oldpwd(t_info *info)
+{
+    t_list *tmp;
+
+    if (!info->oldpwd_flag)
+    {
+        tmp = info->head;
+        while (tmp->next)
+            tmp = tmp->next;
+        tmp->next = malloc(sizeof(t_list));
+        tmp = tmp->next;
+        tmp->content = ft_strdup("OLDPWD=");
+        tmp->next = NULL;
+        info->oldpwd_flag = 1;
+        set_pointers(info);
+    }
+}
+
 void new_pwd_frst(t_info *info)
 {
+    add_oldpwd(info);
     if (info->oldpwd)
     {
         if (info->str_oldpwd)
@@ -698,8 +699,13 @@ void unset(t_info *info)
         }
         remove_var(info, &info->head, a);
         remove_from_extra_exp(&info->extra_exp, info->tokens[info->i].args[a]);
-        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4) || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3) || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
-            set_pointers(info);
+        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4)
+            || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3)
+            || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
+            {
+                set_pointers(info);
+                make_paths(info);
+            }
         a++;
     }
 }
@@ -712,8 +718,6 @@ void exit_minishell(t_info *info)
     free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
-    close(info->fd_in_copy);
-    close(info->fd_out_copy);
     write(1, "exit\n", 6);
     exit(1);
 }
@@ -735,7 +739,9 @@ void exec_printable(t_info *info, int pid)
     char *cmd;
 
     cmd = find_bin(info);
-    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
+    if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+        search_heredoc(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
         pwd(info);
     else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
         echo(info);
@@ -837,9 +843,11 @@ void program_define(t_info *info)
             j = 0;
 
             pids[k] = fork();
+            f = 1;
 
             if (k == 0 && pids[k] == 0)
             {
+                signal(SIGQUIT, SIG_DFL);
                 if (info->pipes_num != 0)
                 {
                     dup2(fd[k][1], STDOUT_FILENO);
@@ -914,6 +922,7 @@ void program_define(t_info *info)
         waitpid(pids[k], NULL, 0);
         k++;
     }
+    f = 0;
 
     info->result = malloc(1);
     info->result[0] = '\0';

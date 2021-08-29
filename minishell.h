@@ -35,6 +35,8 @@ typedef struct	s_info
 	t_list *pths;
 	t_list *pwd;
 	t_list *oldpwd;
+	int oldpwd_flag;
+	t_list *heredoc;
 
 
 	char **pths_array;
@@ -42,12 +44,13 @@ typedef struct	s_info
 	
 	char *str_pwd;
 	char *str_oldpwd;
-    int fd_out_copy;
-    int fd_in_copy;
 	int pipes_num;
 }				t_info;
 
 char *input;
+int f;
+int file;
+
 typedef void (*sighandler_t)(int);
 
 
@@ -74,8 +77,10 @@ void exec_once(t_info *info, char *cmd);
 void exec_few_times(int *flag, t_info *info, char *cmd, int files, int pipid);
 void replace_index(t_info *info);
 void opening_error(char *filename);
+void search_heredoc(t_info *info);
+char *heredoc_str(char *stop, char *buf, int *len);
 
-int file;
+
 
 //commands.c
 void extra_export(t_info *info, int a);
@@ -91,12 +96,13 @@ void print_exp_vars(t_info *info);
 void no_quotes(char *str);
 void find_existing_var(char *var_name, t_info *info, int a);
 char *var_name_in_str(char *str, char *ptr_to_eq);
-void print_export_error(char *str);
 void export(t_info *info);
 void program_define(t_info *info);
 void set_pointers(t_info *info);
 void new_pwd(t_info *info);
 void exec_command(t_info *info, int pid);
+void free_list(t_list **list);
+
 
 
 //tokens.c

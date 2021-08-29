@@ -10,7 +10,7 @@ void make_env(char **envp, t_list **head)
 	while (envp[i])
 	{
 		new = (t_list *)malloc(sizeof(t_list));
-		if (ft_strncmp("_=./", envp[i], 4))
+		if (ft_strncmp("_=./", envp[i], 4) && ft_strncmp("OLDPWD=", envp[i], 7))
 		{
 			new->content = ft_strdup(envp[i]);
 			new->next = NULL;
@@ -302,7 +302,15 @@ void handle_token(char *tmp_token, t_token *token)
 	int quotes;
 	int flag;
 
-	token->str = (char *)malloc(ft_strlen(tmp_token) + 1);
+	i = 0;
+	quotes = 0;
+	while (tmp_token[i])
+	{
+		if (tmp_token[i] == '\'' || tmp_token[i] == '\"')
+			quotes++;
+		i++;
+	}
+	token->str = (char *)malloc(ft_strlen(tmp_token) - quotes + 1);
 	i = 0;
 	j = 0;
 	flag = 0;
@@ -312,25 +320,21 @@ void handle_token(char *tmp_token, t_token *token)
 		{
 			flag = 1;
 			i++;
-			continue;
 		}
 		else if (tmp_token[i] == '\'' && flag == 1)
 		{
 			flag = 0;
 			i++;
-			continue;
 		}
 		else if (tmp_token[i] == '\"' && flag == 0)
 		{
 			flag = 2;
 			i++;
-			continue;
 		}
 		else if (tmp_token[i] == '\"' && flag == 2)
 		{
 			flag = 0;
 			i++;
-			continue;
 		}
 		if (flag == 1)
 		{
@@ -340,7 +344,6 @@ void handle_token(char *tmp_token, t_token *token)
 				i++;
 				j++;
 			}
-			continue ;
 		}
 		else if (flag == 2)
 		{
@@ -350,7 +353,6 @@ void handle_token(char *tmp_token, t_token *token)
 				i++;
 				j++;
 			}
-			continue ;
 		}
 		else
 		{
@@ -360,7 +362,6 @@ void handle_token(char *tmp_token, t_token *token)
 				i++;
 				j++;
 			}
-			continue ;
 		}
 		if (tmp_token[i])
 			i++;
@@ -381,7 +382,6 @@ t_token *delete_quotes(char **tmp_arr)
 	i = 0;
 	while (tmp_arr[i])
 	{
-		// printf("token is %s\n", tmp_arr[i]);
 		handle_token(tmp_arr[i], &tokens_arr[i]);
 		if (tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
 			tokens_arr[i].type = "pipe";
@@ -538,6 +538,14 @@ void define_types(t_info *info)
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
 			less_args(info->tokens, i);
+		}
+		else if (info->tokens[i].type[0] == 'L')
+		{
+			free(info->tokens[i].args[0]);
+			free(info->tokens[i].args);
+			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
+			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1]. str);
+			info->tokens[i].args[1] = NULL;
 		}
 		i++;
 	}

@@ -8,13 +8,16 @@ int ft_putchar(int c)
 
 void sig_int(int d)
 {
-    int right = 11;
+    int right = 50;
+    int left = 40;
 
     while (right--)
         tputs(cursor_right, 1, ft_putchar);
-    tputs(tgetstr("dc", NULL), 1, ft_putchar);
-    tputs(cursor_left, 1, ft_putchar);
-    tputs(tgetstr("dc", NULL), 1, ft_putchar);
+    while (left--)
+    {
+        tputs(cursor_left, 1, ft_putchar);
+        tputs(tgetstr("dc", NULL), 1, ft_putchar);
+    }
     write(1, "\n", 1);
     if (input)
         free(input);
@@ -22,6 +25,15 @@ void sig_int(int d)
     rl_on_new_line();
     rl_replace_line("", 0);
     rl_redisplay();
+    if (f)
+    {
+        int backspase = 10;
+        while (backspase--)
+        {
+            tputs(cursor_left, 1, ft_putchar);
+            tputs(tgetstr("dc", NULL), 1, ft_putchar);
+        }
+    }
 }
 
 void free_tokens(t_info *info)
@@ -63,15 +75,7 @@ int unexpected_tokens(t_token *tokens)
     i = 0;
     while (tokens[i].str)
     {
-        if (tokens[i].type[0] == 'p')
-        {
-            if (i == 0)
-                return (1);
-            if (tokens[i + 1].type)
-                if (tokens[i + 1].type[0] == 'p')
-                    return (1);
-        }
-        else if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
+        if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
         {
             if (tokens[i + 1].type)
             {
@@ -121,11 +125,16 @@ void history(t_info *info)
     while (1)
     {
         signal(SIGINT, &sig_int);
+        signal(SIGQUIT, SIG_IGN);
         input = NULL;
         input = readline(prompt);
         add_history(input);
         if (!input)
         {
+            free_list(&info->extra_exp);
+            free_list(&info->head);
+            free(info->str_pwd);
+            free(info->str_oldpwd);
             write(1, "\n", 1);
             exit(0);
         }
@@ -158,18 +167,20 @@ void history(t_info *info)
         }
         else
             write(1, "-dashBash: unclosed quote\n", 27);
-        // if (input)
-        // free(input);
+        if (input)
+            free(input);
     }
 }
 
 int main(int ac, char **av, char **envp)
 {
-	signal(SIGTERM, SIG_IGN);
     t_info info;
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
+    info.oldpwd_flag = 0;
+    f = 0;
+    info.heredoc = NULL;
 
     file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
     info.str_oldpwd = NULL;
@@ -179,10 +190,6 @@ int main(int ac, char **av, char **envp)
     info.exp = NULL;
     info.extra_exp = NULL;
 
-    info.fd_out_copy = dup(1);
-    info.fd_in_copy = dup(0);
-
-    info.result = ft_strdup("\0");
     info.i = 0;
     history(&info);
 }

@@ -30,7 +30,9 @@ char *find_bin(t_info *info)
     char **tmp_arr;
     int j;
 
-	i = 0;
+	if (!info->pths_array)
+        return (NULL);
+    i = 0;
     while (info->pths_array[i])
         i++;
     tmp_arr = (char**)malloc(sizeof(char*) * (i + 1));
@@ -138,6 +140,25 @@ int define_fd_in(t_info *info)
             }
             else
                 flag = 1;
+        }
+        if (info->tokens[i].type[0] == 'L')
+        {
+            close(fd);
+            fd = open("heredoc.tmp", O_CREAT | O_RDWR | O_TRUNC, 0777);
+            char *buf;
+            char *str;
+            int len;
+            buf = malloc(sizeof(char) * 100);
+            str = heredoc_str(info->tokens[i].args[0], buf, &len);
+            while (str)
+            {
+                write(fd, buf, len);
+                str = heredoc_str(info->tokens[i].args[0], buf, &len);
+            }
+            free(buf);
+            close(fd);
+            fd = open("heredoc.tmp", O_RDONLY);
+            flag = 1;
         }
         i++;
     }
@@ -247,17 +268,13 @@ void exec_once(t_info *info, char *cmd)
     pid_t pid;
     int fd;
 
-    // pid = fork();
-	// if (pid == 0)
-    // {
-        define_fd_out(info);
-        fd = define_fd_in(info);
-        if (fd != -1)
-	        execve(cmd, info->tokens[info->i].args, 0);
-        close(fd);
-        // dup2(fd, info->fd_out_copy);
-    // }
-    // waitpid(pid, 0, 0);
+    define_fd_out(info);
+    fd = define_fd_in(info);
+    if (fd != -1)
+        execve(cmd, info->tokens[info->i].args, 0);
+    // int a = unlink("heredoc.tmp");
+    // printf("a = %d\nerrno = %d\n", a, errno);
+    // close(fd);
 }
 
 void exec_few_times(int *flag, t_info *info, char *cmd, int files, int pipid)
