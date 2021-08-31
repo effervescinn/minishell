@@ -308,27 +308,6 @@ char *var_name_in_str(char *str, char *ptr_to_eq)
     return (var_name);
 }
 
-void print_export_error(char *str) //////////////потестить
-{
-    char **array;
-    int i;
-
-    i = 0;
-    array = ft_split(str, ' ');
-    while (array[i])
-    {
-        write(2, "-dashBash: export: `", 20);
-        write(2, array[i], ft_strlen(array[i]));
-        write(2, "': not a valid identifier\n", 27);
-        // printf("-dashBash: export: `%s': not a valid identifier", array[i]);
-        i++;
-    }
-    i = 0;
-    while (array[i++])
-        free(array[i]);
-    free(array);
-}
-
 void extra_export(t_info *info, int a)
 {
     t_list *new;
@@ -573,8 +552,27 @@ char *up_dir(char *str)
     return (new);
 }
 
+void add_oldpwd(t_info *info)
+{
+    t_list *tmp;
+
+    if (!info->oldpwd_flag)
+    {
+        tmp = info->head;
+        while (tmp->next)
+            tmp = tmp->next;
+        tmp->next = malloc(sizeof(t_list));
+        tmp = tmp->next;
+        tmp->content = ft_strdup("OLDPWD=");
+        tmp->next = NULL;
+        info->oldpwd_flag = 1;
+        set_pointers(info);
+    }
+}
+
 void new_pwd_frst(t_info *info)
 {
+    add_oldpwd(info);
     if (info->oldpwd)
     {
         if (info->str_oldpwd)
@@ -698,45 +696,63 @@ void unset(t_info *info)
         }
         remove_var(info, &info->head, a);
         remove_from_extra_exp(&info->extra_exp, info->tokens[info->i].args[a]);
-        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4) || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3) || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
-            set_pointers(info);
+        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4)
+            || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3)
+            || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
+            {
+                set_pointers(info);
+                make_paths(info);
+            }
         a++;
     }
 }
 
 void exit_minishell(t_info *info)
 {
+    write(1, "exit\n", 6);
+    if (info->tokens[info->i + 1].str)
+        {
+            write(2, "-dashBash: exit: ", 17);
+            write(2, info->tokens[info->i + 1].str, ft_strlen(info->tokens[info->i + 1].str));
+            write(2, ": numeric argument required\n", 28);
+        }
     free_list(&info->extra_exp);
     free_list(&info->head);
     free_args(info);
     free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
-    close(info->fd_in_copy);
-    close(info->fd_out_copy);
-    write(1, "exit\n", 6);
     exit(1);
 }
 
-void exec_command(t_info *info, int pid)
+void exec_builtin(t_info *info)
+{
+    if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+        cd(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
+        unset(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
+        exit_minishell(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
+        export(info);
+    g_global.ex_status = 0;
+}
+
+void exec_printable(t_info *info)
 {
     char *cmd;
 
     cmd = find_bin(info);
-    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
+    if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+        search_heredoc(info);
+    else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
         pwd(info);
-    else if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
-        cd(info);
     else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
         echo(info);
     else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
         env(info);
     else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
         export(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
-        unset(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
-        exit_minishell(info);
     else if (cmd)
     {
         int files;
@@ -749,6 +765,8 @@ void exec_command(t_info *info, int pid)
         smb = count_redir(info);
         if (!smb)
             exec_once(info, cmd);
+        // if (g_global.ex_flag)
+        //     exit(1);
         while (q < smb)
         {
             files = count_files(info);
@@ -757,11 +775,11 @@ void exec_command(t_info *info, int pid)
                 q++;
                 info->i2++;
                 continue;
-            }     
+            }
             if ((files == 1 || files == 0) && !flag)
                 exec_once(info, cmd);
-            else 
-                exec_few_times(&flag, info, cmd, files, pid);
+            else
+                exec_few_times(&flag, info, cmd, files);
             info->i2++;
             q++;
         }
@@ -775,6 +793,7 @@ void exec_command(t_info *info, int pid)
         write(2, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
         write(2, ": command not found\n", 21);
         info->result = NULL;
+        exit(127);
     }
 }
 
@@ -791,75 +810,106 @@ void program_define(t_info *info)
     int j;
 
     info->index = info->i;
+    info->result = malloc(1);
+    info->result[0] = '\0';
 
     while (k < info->pipes_num + 1)
     {
-        j = 0;
+
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
 
-        pids[k] = fork();
+        if (info->tokens[info->i].print == 0)
+        {
+            if (k == 0 && info->pipes_num == 0)
+            {
+                exec_builtin(info);
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+            }   
+            else
+            {
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+                // free(info->result);
 
-        if (k == 0 && pids[k] == 0)
-        {
-            if (info->pipes_num != 0)
-            {
-                dup2(fd[k][1], STDOUT_FILENO);
-                close(fd[k][0]);
-                close(fd[k][1]);
+                (info->i)++;
+                while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
+                    (info->i)++;
+                replace_index(info);
+                
+                if (k < info->pipes_num)
+                    write(fd[k][1], "\0", 1);
+                k++;
+                continue;
             }
-            exec_command(info, pids[k]);
-            if (info->result)
+        }
+        else
+        {
+            j = 0;
+
+            pids[k] = fork();
+            g_global.f = 1;
+
+            if (k == 0 && pids[k] == 0)
             {
-                fd_dasha = define_fd_built_in(info);
-                if (fd_dasha != -1)
+                signal(SIGQUIT, SIG_DFL);
+                if (info->pipes_num != 0)
+                {
+                    dup2(fd[k][1], STDOUT_FILENO);
+                    close(fd[k][0]);
+                    close(fd[k][1]);
+                }
+                exec_printable(info);
+                if (info->result)
+                {
+                    fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
-                free(info->result);
+                    free(info->result);
+                }
+                exit(0);
             }
-            exit(0);
+
+            else if (k != info->pipes_num && pids[k] == 0)
+            {
+                dup2(fd[k - 1][0], STDIN_FILENO);
+                dup2(fd[k][1], STDOUT_FILENO);
+                while (j <= k)
+                {
+                    close(fd[j][0]);
+                    close(fd[j][1]);
+                    j++;
+                }
+                exec_printable(info);
+                if (info->result)
+                {
+                    fd_dasha = define_fd_built_in(info);
+                    write(fd_dasha, info->result, ft_strlen(info->result));
+                    free(info->result);
+                }
+                exit(0);
+            }
+            else if (k == info->pipes_num && pids[k] == 0)
+            {
+                dup2(fd[k - 1][0], STDIN_FILENO);
+                while (j <= k - 1)
+                {
+                    close(fd[j][0]);
+                    close(fd[j][1]);
+                    j++;
+                }
+                info->i2 = info->i;
+                exec_printable(info);
+                if (info->result)
+                {
+                    fd_dasha = define_fd_built_in(info);
+                    write(fd_dasha, info->result, ft_strlen(info->result));
+                    free(info->result);
+                }
+                exit(0);
+            }
         }
-        
-        else if (k != info->pipes_num && pids[k] == 0)
-        {
-            dup2(fd[k - 1][0], STDIN_FILENO);
-            dup2(fd[k][1], STDOUT_FILENO);
-            while (j <= k)
-            {
-                close(fd[j][0]);
-                close(fd[j][1]);
-                j++;
-            }
-            exec_command(info, pids[k]);
-            if (info->result)
-            {
-                fd_dasha = define_fd_built_in(info);
-                write(fd_dasha, info->result, ft_strlen(info->result));
-                free(info->result);
-            }
-            exit(0);
-        }
-        else if (k == info->pipes_num && pids[k] == 0)
-        {
-            dup2(fd[k - 1][0], STDIN_FILENO);
-            while (j <= k - 1)
-            {
-                close(fd[j][0]);
-                close(fd[j][1]);
-                j++;
-            }
-            info->i2 = info->i;
-            exec_command(info, pids[k]);
-            if (info->result)
-            {
-                fd_dasha = define_fd_built_in(info);
-                write(fd_dasha, info->result, ft_strlen(info->result));
-                free(info->result);
-            }
-            exit(0);
-        }
-        info->result = malloc(1);
-        info->result[0] = '\0';
         (info->i)++;
         while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
             (info->i)++;
@@ -873,13 +923,8 @@ void program_define(t_info *info)
         close(fd[k][1]);
         k++;
     }
-    k = 0;
-    while (k < info->pipes_num + 1)
-    {
-        waitpid(pids[k], NULL, 0);
-        k++;
-    }
-    info->result = malloc(1);
-    info->result[0] = '\0';
-    (info->i) = 0;
+    int ex;
+    wait(&ex);
+    g_global.ex_status = WEXITSTATUS(ex);
+    g_global.f = 0;
 }

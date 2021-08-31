@@ -10,7 +10,7 @@ void make_env(char **envp, t_list **head)
 	while (envp[i])
 	{
 		new = (t_list *)malloc(sizeof(t_list));
-		if (ft_strncmp("_=./", envp[i], 4))
+		if (ft_strncmp("_=./", envp[i], 4) && ft_strncmp("OLDPWD=", envp[i], 7))
 		{
 			new->content = ft_strdup(envp[i]);
 			new->next = NULL;
@@ -162,8 +162,13 @@ char *replace_vars(char *str, t_info *info)
 		}
 		else if (*str == '$')
 		{
-			dollar(&str, &newstr, &start, info);
-			start = str;
+			// if (str[1] == '?' && str[2] == '\0') /////////////////////////////
+			// printf("pisya\n");
+			// else
+			// {
+				dollar(&str, &newstr, &start, info);
+				start = str;
+			// }
 		}
 		if (*str == '\0')
 		{
@@ -300,6 +305,7 @@ void handle_token(char *tmp_token, t_token *token)
 	int i;
 	int j;
 	int quotes;
+	int flag;
 
 	i = 0;
 	quotes = 0;
@@ -310,14 +316,60 @@ void handle_token(char *tmp_token, t_token *token)
 		i++;
 	}
 	token->str = (char *)malloc(ft_strlen(tmp_token) - quotes + 1);
-	i = -1;
+	i = 0;
 	j = 0;
-	while (tmp_token[++i])
+	flag = 0;
+	while (tmp_token[i])
 	{
-		if (tmp_token[i] == '\'' || tmp_token[i] == '\"')
-			continue;
-		token->str[j] = tmp_token[i];
-		j++;
+		if (tmp_token[i] == '\'' && flag == 0)
+		{
+			flag = 1;
+			i++;
+		}
+		else if (tmp_token[i] == '\'' && flag == 1)
+		{
+			flag = 0;
+			i++;
+		}
+		else if (tmp_token[i] == '\"' && flag == 0)
+		{
+			flag = 2;
+			i++;
+		}
+		else if (tmp_token[i] == '\"' && flag == 2)
+		{
+			flag = 0;
+			i++;
+		}
+		if (flag == 1)
+		{
+			while (tmp_token[i] && tmp_token[i] != '\'')
+			{
+				token->str[j] = tmp_token[i];
+				i++;
+				j++;
+			}
+		}
+		else if (flag == 2)
+		{
+			while (tmp_token[i] && tmp_token[i] != '\"')
+			{
+				token->str[j] = tmp_token[i];
+				i++;
+				j++;
+			}
+		}
+		else
+		{
+			while (tmp_token[i] && tmp_token[i] != '\"' && tmp_token[i] != '\'')
+			{
+				token->str[j] = tmp_token[i];
+				i++;
+				j++;
+			}
+		}
+		if (tmp_token[i])
+			i++;
 	}
 	token->str[j] = '\0';
 }
@@ -358,23 +410,34 @@ void less_args(t_token *tokens, int i)
 	int q;
 	int j;
 
-	q = 0;
-	i++;
-	while (tokens[i].str && tokens[i].type[0] == 'w')
+	if ((i != 0) && (tokens[i - 1].type[0] != 'p'))
 	{
+		q = 0;
 		i++;
-		q++;
+		while (tokens[i].str && tokens[i].type[0] == 'w')
+		{
+			i++;
+			q++;
+		}
+		i -= q + 1;
+		tokens[i].args = (char **)malloc(sizeof(char *) * (q + 1));
+		tokens[i].args[q] = NULL;
+		j = 0;
+		while (q)
+		{
+			tokens[i].args[j] = ft_strdup(tokens[i + j + 1].str);
+			j++;
+			q--;
+		}
 	}
-	i -= q + 1;
-	tokens[i].args = (char **)malloc(sizeof(char *) * (q + 1));
-	tokens[i].args[q] = NULL;
-	j = 0;
-	while (q)
+	else
 	{
-		tokens[i].args[j] = ft_strdup(tokens[i + j + 1].str);
-		printf("arg is %s\n", tokens[i + j + 1].str);
-		j++;
-		q--;
+		tokens[i].args = (char **)malloc(sizeof(char *) * 2);
+		tokens[i].args[1] = NULL;
+		tokens[i].args[0] = ft_strdup(tokens[i + 1].str);
+		if (tokens[i + 2].str)
+			if (tokens[i + 2].type[0] == 'w')
+				tokens[i + 2].type = "command";
 	}
 }
 
@@ -417,12 +480,13 @@ void command_args(t_token *tokens, int i)
 			}
 		}
 	}
-	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 1));
-	tokens[j].args[q] = NULL;
+	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 2)); //
+	tokens[j].args[q + 1] = NULL;
+	tokens[j].args[0] = ft_strdup(tokens[j].str);
 	k = 0;
 	while (tokens[j + k + 1].str && tokens[j + k + 1].type[0] == 'w')
 	{
-		tokens[j].args[k] = ft_strdup(tokens[j + k + 1].str);
+		tokens[j].args[k + 1] = ft_strdup(tokens[j + k + 1].str);
 		k++;
 	}
 	i = j + k + 1;
@@ -433,7 +497,7 @@ void command_args(t_token *tokens, int i)
 			i += 2;
 			while (tokens[i].str && tokens[i].type[0] == 'w')
 			{
-				tokens[j].args[k] = ft_strdup(tokens[i].str);
+				tokens[j].args[k + 1] = ft_strdup(tokens[i].str);
 				k++;
 				i++;
 			}
@@ -448,25 +512,31 @@ void define_types(t_info *info)
 	i = 0;
 	while (info->tokens[i].str)
 	{
+		info->tokens[i].print = 1;
 		if ((i == 0 && info->tokens[i].type[0] == 'w') || info->tokens[i].type[0] == 'c')
 		{
 			info->tokens[i].type = "command";
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
 			command_args(info->tokens, i);
-			
 		}
 		else if (info->tokens[i].type[0] == 'p')
 		{
-			info->tokens[i + 1].type = "command";
+			if (info->tokens[i + 1].str)
+				if (info->tokens[i + 1].type[0] == 'w')
+					info->tokens[i + 1].type = "command";
 		}
-		if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
+		else if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
 		{
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
-			info->tokens[i].args = (char **)malloc(sizeof(char *) + 1);
+			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
 			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
 			info->tokens[i].args[1] = NULL;
+			if (!((i != 0) && (info->tokens[i - 1].type[0] != 'p')))
+				if (info->tokens[i + 2].str)
+					if (info->tokens[i + 2].type[0] == 'w')
+						info->tokens[i + 2].type = "command";
 		}
 		else if (info->tokens[i].type[0] == 'l')
 		{
@@ -474,6 +544,60 @@ void define_types(t_info *info)
 			free(info->tokens[i].args);
 			less_args(info->tokens, i);
 		}
+		else if (info->tokens[i].type[0] == 'L')
+		{
+			free(info->tokens[i].args[0]);
+			free(info->tokens[i].args);
+			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
+			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1]. str);
+			info->tokens[i].args[1] = NULL;
+		}
+		i++;
+	}
+}
+
+void set_pipes(t_info *info)
+{
+	int i;
+	int j;
+
+	i = -1;
+	info->pipes_num = 0;
+	while (info->tokens[++i].str)
+		info->tokens[i].pipe = 0;
+	i = -1;
+	while (info->tokens[++i].str)
+	{
+		if (info->tokens[i].type[0] == 'c')
+		{
+			j = i + 1;
+			while (info->tokens[j].str)
+			{
+				if (info->tokens[j].type[0] == 'p')
+					info->tokens[i].pipe = 1;
+				j++;
+			}
+		}
+	}
+	i = -1;
+	while (info->tokens[++i].str)
+		if (info->tokens[i].type[0] == 'p')
+			info->pipes_num++;
+}
+
+void command_types(t_info *info)
+{
+	int i;
+
+	i = 0;
+	while (info->tokens[i].str)
+	{
+		if ( (!ft_strncmp(info->tokens[i].str, "cd", 2) && ft_strlen(info->tokens[i].str) == 2 && info->tokens[i].type[0] == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 6 && !ft_strncmp(info->tokens[i].str, "export", 6) && info->tokens[i].type[0] == 'c' && info->tokens[i].args[1])
+		|| (ft_strlen(info->tokens[i].str) == 5 && !ft_strncmp(info->tokens[i].str, "unset", 5) && info->tokens[i].type[0] == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 4 && !ft_strncmp(info->tokens[i].str, "exit", 4) && info->tokens[i].type[0] == 'c')
+		)
+			info->tokens[i].print = 0;
 		i++;
 	}
 }

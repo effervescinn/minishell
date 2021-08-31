@@ -1,5 +1,5 @@
 all:		
-			gcc $$LDFLAGS $$CPPFLAGS -L./libft -lft -ltermcap -lreadline commands.c main.c tokens.c
+			gcc -g -fsanitize=address $$LDFLAGS $$CPPFLAGS -L./libft -lft -ltermcap -lreadline heredoc.c commands.c main.c tokens.c bins.c
 
 
 fclean:	

@@ -17,6 +17,7 @@ typedef struct	s_token
 	char *type; //word, command, pipe, great, less, GREAT, LESS 
 	char **args;
 	int pipe;
+	int print;
 }				t_token;
 
 typedef struct	s_info
@@ -34,15 +35,31 @@ typedef struct	s_info
 	t_list *pths;
 	t_list *pwd;
 	t_list *oldpwd;
+	int oldpwd_flag;
+	t_list *heredoc;
+
+
 	char **pths_array;
+
+	
 	char *str_pwd;
 	char *str_oldpwd;
-    int fd_out_copy;
-    int fd_in_copy;
 	int pipes_num;
 }				t_info;
 
-char *input;
+typedef struct s_global
+{
+	char *input;
+	int f;
+	int ex_status;
+	char *prompt;
+}				t_global;
+
+
+
+int file;
+t_global g_global;
+
 typedef void (*sighandler_t)(int);
 
 
@@ -66,11 +83,13 @@ int count_files(t_info *info);
 int open_file_in(t_info *info, int a);
 int count_redir(t_info *info);
 void exec_once(t_info *info, char *cmd);
-void exec_few_times(int *flag, t_info *info, char *cmd, int files, int pipid);
+void exec_few_times(int *flag, t_info *info, char *cmd, int files);
 void replace_index(t_info *info);
 void opening_error(char *filename);
+void search_heredoc(t_info *info);
+char *heredoc_str(char *stop, char *buf, int *len);
 
-int file;
+
 
 //commands.c
 void extra_export(t_info *info, int a);
@@ -86,12 +105,13 @@ void print_exp_vars(t_info *info);
 void no_quotes(char *str);
 void find_existing_var(char *var_name, t_info *info, int a);
 char *var_name_in_str(char *str, char *ptr_to_eq);
-void print_export_error(char *str);
 void export(t_info *info);
 void program_define(t_info *info);
 void set_pointers(t_info *info);
 void new_pwd(t_info *info);
 void exec_command(t_info *info, int pid);
+void free_list(t_list **list);
+
 
 
 //tokens.c
@@ -108,6 +128,7 @@ void define_types(t_info *info);
 void command_args(t_token *tokens, int i);
 void set_args(t_info *info);
 void set_pipes(t_info *info);
+void command_types(t_info *info);
 
 //bins.c
 char *find_bin(t_info *info);
