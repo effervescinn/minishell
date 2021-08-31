@@ -30,6 +30,11 @@ char *find_bin(t_info *info)
     char **tmp_arr;
     int j;
 
+    if (!ft_strncmp("./", info->tokens[info->i].str, 2))
+    {
+        ret = ft_strdup(info->tokens[info->i].str + 2);
+        return (ret);
+    }
 	if (!info->pths_array)
         return (NULL);
     i = 0;
@@ -121,6 +126,7 @@ int define_fd_in(t_info *info)
         {
             close(fd);
             fd = open(info->tokens[i].args[0], O_RDONLY);
+            if (fd == -1)
                 opening_error(info->tokens[i].args[0]);
             else
                 flag = 1;

@@ -741,7 +741,10 @@ void exec_builtin(t_info *info)
 void exec_printable(t_info *info)
 {
     char *cmd;
-
+    if ((!ft_strncmp(info->tokens[info->i].str, ">>", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+        || (!ft_strncmp(info->tokens[info->i].str, ">", 1) && ft_strlen(info->tokens[info->i].str) == 1)
+        || (!ft_strncmp(info->tokens[info->i].str, "<", 1) && ft_strlen(info->tokens[info->i].str) == 1))
+            exit(0);
     cmd = find_bin(info);
     if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2)
         search_heredoc(info);
@@ -765,8 +768,6 @@ void exec_printable(t_info *info)
         smb = count_redir(info);
         if (!smb)
             exec_once(info, cmd);
-        // if (g_global.ex_flag)
-        //     exit(1);
         while (q < smb)
         {
             files = count_files(info);
