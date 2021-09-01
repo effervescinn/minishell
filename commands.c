@@ -930,10 +930,10 @@ void program_define(t_info *info)
         k++;
     }
     //Дашины приколы
-    // int ex;
+    int ex;
     // wait(&ex);
-    // g_global.ex_status = WEXITSTATUS(ex);
-    // g_global.f = 0;
+    g_global.ex_status = WEXITSTATUS(ex);
+    g_global.f = 0;
 
     //Так нет зомби
     k = 0;
