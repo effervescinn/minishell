@@ -19,10 +19,7 @@ void set_pointers(t_info *info)
     while (tmp)
     {
         if (!ft_strncmp(tmp->content, "OLDPWD=", 7) || !ft_strncmp(tmp->content, "OLDPWD\0", 7))
-        {
-            write(file, "***\n", 4);
             info->oldpwd = tmp;
-        }
         if (!ft_strncmp(tmp->content, "PWD=", 4) || !ft_strncmp(tmp->content, "PWD\0", 4))
             info->pwd = tmp;
         else if (!ft_strncmp(tmp->content, "PATH=", 5))
@@ -465,7 +462,7 @@ void export(t_info *info)
 {
     char *ptr_to_eq;
     char *ptr_to_space;
-    char *var_name;
+    char *var_name = 0;
     int a;
 
     a = 1;
@@ -475,6 +472,8 @@ void export(t_info *info)
     {
         while (info->tokens[info->i].args[a])
         {
+			if(var_name)
+				free(var_name);
             no_quotes(info->tokens[info->i].args[a]);
             ptr_to_eq = ft_strchr(info->tokens[info->i].args[a], '=');
             if ((!ft_strncmp(info->tokens[info->i].args[a], "PWD\0", 4) && ft_strlen(info->tokens[info->i].args[a]) == 3 && !info->pwd) ||
@@ -712,13 +711,19 @@ void unset(t_info *info)
 
 void exit_minishell(t_info *info)
 {
+    write(1, "exit\n", 6);
+    if (info->tokens[info->i + 1].str)
+        {
+            write(2, "-dashBash: exit: ", 17);
+            write(2, info->tokens[info->i + 1].str, ft_strlen(info->tokens[info->i + 1].str));
+            write(2, ": numeric argument required\n", 28);
+        }
     free_list(&info->extra_exp);
     free_list(&info->head);
     free_args(info);
     free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
-    write(1, "exit\n", 6);
     exit(1);
 }
 
@@ -732,12 +737,16 @@ void exec_builtin(t_info *info)
         exit_minishell(info);
     else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
         export(info);
+    g_global.ex_status = 0;
 }
 
-void exec_printable(t_info *info, int pid)
+void exec_printable(t_info *info)
 {
     char *cmd;
-
+    if ((!ft_strncmp(info->tokens[info->i].str, ">>", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+        || (!ft_strncmp(info->tokens[info->i].str, ">", 1) && ft_strlen(info->tokens[info->i].str) == 1)
+        || (!ft_strncmp(info->tokens[info->i].str, "<", 1) && ft_strlen(info->tokens[info->i].str) == 1))
+            exit(0);
     cmd = find_bin(info);
     if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2)
         search_heredoc(info);
@@ -773,7 +782,7 @@ void exec_printable(t_info *info, int pid)
             if ((files == 1 || files == 0) && !flag)
                 exec_once(info, cmd);
             else
-                exec_few_times(&flag, info, cmd, files, pid);
+                exec_few_times(&flag, info, cmd, files);
             info->i2++;
             q++;
         }
@@ -787,6 +796,7 @@ void exec_printable(t_info *info, int pid)
         write(2, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
         write(2, ": command not found\n", 21);
         info->result = NULL;
+        exit(127);
     }
 }
 
@@ -803,7 +813,10 @@ void program_define(t_info *info)
     int j;
 
     info->index = info->i;
+	char *tmp = info->result;
     info->result = malloc(1);
+	if (tmp)
+		free(tmp);
     info->result[0] = '\0';
 
     while (k < info->pipes_num + 1)
@@ -843,7 +856,7 @@ void program_define(t_info *info)
             j = 0;
 
             pids[k] = fork();
-            f = 1;
+            g_global.f = 1;
 
             if (k == 0 && pids[k] == 0)
             {
@@ -854,7 +867,7 @@ void program_define(t_info *info)
                     close(fd[k][0]);
                     close(fd[k][1]);
                 }
-                exec_printable(info, pids[k]);
+                exec_printable(info);
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
@@ -874,7 +887,7 @@ void program_define(t_info *info)
                     close(fd[j][1]);
                     j++;
                 }
-                exec_printable(info, pids[k]);
+                exec_printable(info);
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
@@ -893,7 +906,7 @@ void program_define(t_info *info)
                     j++;
                 }
                 info->i2 = info->i;
-                exec_printable(info, pids[k]);
+                exec_printable(info);
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
@@ -916,13 +929,19 @@ void program_define(t_info *info)
         close(fd[k][1]);
         k++;
     }
+    //Дашины приколы
+    // int ex;
+    // wait(&ex);
+    // g_global.ex_status = WEXITSTATUS(ex);
+    // g_global.f = 0;
+
+    //Так нет зомби
     k = 0;
     while (k < info->pipes_num + 1)
     {
         waitpid(pids[k], NULL, 0);
         k++;
     }
-    f = 0;
 
     info->result = malloc(1);
     info->result[0] = '\0';

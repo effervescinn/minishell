@@ -19,13 +19,13 @@ void sig_int(int d)
         tputs(tgetstr("dc", NULL), 1, ft_putchar);
     }
     write(1, "\n", 1);
-    if (input)
-        free(input);
-    input = NULL;
+    if (g_global.input)
+        free(g_global.input);
+    g_global.input = NULL;
     rl_on_new_line();
     rl_replace_line("", 0);
     rl_redisplay();
-    if (f)
+    if (g_global.f)
     {
         int backspase = 10;
         while (backspase--)
@@ -101,46 +101,48 @@ int unexpected_tokens(t_token *tokens)
 void printf_tokens_err(int error)
 {
     if (error == 1)
-        printf("dashBash: syntax error near unexpected token `|'\n");
+        printf("-dashBash: syntax error near unexpected token `|'\n");
     else if (error == 2)
-        printf("dashBash: syntax error near unexpected token `<<'\n");
+        printf("-dashBash: syntax error near unexpected token `<<'\n");
     else if (error == 3)
-        printf("dashBash: syntax error near unexpected token `<'\n");
+        printf("-dashBash: syntax error near unexpected token `<'\n");
     else if (error == 4)
-        printf("dashBash: syntax error near unexpected token `>'\n");
+        printf("-dashBash: syntax error near unexpected token `>'\n");
     else if (error == 5)
-        printf("dashBash: syntax error near unexpected token `>>'\n");
+        printf("-dashBash: syntax error near unexpected token `>>'\n");
     else if (error == 6)
-        printf("dashBash: syntax error near unexpected token `newline'\n");
+        printf("-dashBash: syntax error near unexpected token `newline'\n");
+    g_global.ex_status = 258;
 }
 
 void history(t_info *info)
 {
-    char *prompt;
     char *newstr;
     char **tmp_arr;
     int tokens_err;
 
-    prompt = ft_strdup("dashBash$ ");
+    g_global.prompt = ft_strdup("dashBash$ ");
     while (1)
     {
+        info->i = 0;
         signal(SIGINT, &sig_int);
         signal(SIGQUIT, SIG_IGN);
-        input = NULL;
-        input = readline(prompt);
-        add_history(input);
-        if (!input)
+        g_global.input = NULL;
+        g_global.input = readline(g_global.prompt);
+        add_history(g_global.input);
+        if (!g_global.input)
         {
             free_list(&info->extra_exp);
             free_list(&info->head);
             free(info->str_pwd);
             free(info->str_oldpwd);
+            free(g_global.prompt);
             write(1, "\n", 1);
             exit(0);
         }
-        if (count_quotes(input) % 2 == 0)
+        if (count_quotes(g_global.input) % 2 == 0)
         {
-            newstr = replace_vars(input, info);
+            newstr = replace_vars(g_global.input, info);
             tmp_arr = make_tokens(newstr);
             info->tokens = delete_quotes(tmp_arr);
             free(newstr);
@@ -167,22 +169,26 @@ void history(t_info *info)
         }
         else
             write(1, "-dashBash: unclosed quote\n", 27);
-        if (input)
-            free(input);
+        if (g_global.input)
+        {
+            free(g_global.input);
+            g_global.input = NULL;
+        }
     }
 }
 
 int main(int ac, char **av, char **envp)
 {
     t_info info;
+	info.result = 0;
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
     info.oldpwd_flag = 0;
-    f = 0;
+    g_global.f = 0;
     info.heredoc = NULL;
 
-    file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
+    // file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);
@@ -190,6 +196,5 @@ int main(int ac, char **av, char **envp)
     info.exp = NULL;
     info.extra_exp = NULL;
 
-    info.i = 0;
     history(&info);
 }

@@ -30,6 +30,11 @@ char *find_bin(t_info *info)
     char **tmp_arr;
     int j;
 
+    if (!ft_strncmp("./", info->tokens[info->i].str, 2))
+    {
+        ret = ft_strdup(info->tokens[info->i].str + 2);
+        return (ret);
+    }
 	if (!info->pths_array)
         return (NULL);
     i = 0;
@@ -76,18 +81,12 @@ void define_fd_out(t_info *info)
             int a;
             a = write(fd, "\0", 1);
             if (a == -1 && fd != -5)
-            {
                 opening_error(info->tokens[i].args[0]);
-                exit(0);
-            }
             close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
             a = write(fd, "\0", 1);
             if (a == -1)
-            {
                 opening_error(info->tokens[i].args[0]);
-                exit(0);
-            }
             flag = 1;
         }
         if (info->tokens[i].type[0] == 'G')
@@ -95,18 +94,12 @@ void define_fd_out(t_info *info)
             int a;
             a = write(fd, "\0", 1);
             if (a == -1 && fd != -5)
-            {
                 opening_error(info->tokens[i].args[0]);
-                exit(0);
-            }
             close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
             a = write(fd, "\0", 1);
             if (a == -1)
-            {
                 opening_error(info->tokens[i].args[0]);
-                exit(0);
-            }
             flag = 1;
         }
         i++;
@@ -134,10 +127,7 @@ int define_fd_in(t_info *info)
             close(fd);
             fd = open(info->tokens[i].args[0], O_RDONLY);
             if (fd == -1)
-            {
                 opening_error(info->tokens[i].args[0]);
-                return (-1);
-            }
             else
                 flag = 1;
         }
@@ -185,10 +175,7 @@ int define_fd_built_in(t_info *info)
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
             a = write (fd, "\0", 1);
             if (a != 1 && fd != -5)
-            {
                 opening_error(info->tokens[i].args[0]);
-                return (-1);
-            }
         }
         if (info->tokens[i].type[0] == 'G')
         {
@@ -197,10 +184,7 @@ int define_fd_built_in(t_info *info)
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
             a = write (fd, "\0", 1);
             if (a != 1 && fd != -5)
-            {
                 opening_error(info->tokens[i].args[0]);
-                return (-1);
-            }
         }
         i++;
     }
@@ -235,10 +219,7 @@ int open_file_in(t_info *info, int a)
         {
             fd = open(info->tokens[info->i2].args[a], O_RDONLY);
             if (fd == -1)
-            {
                 opening_error(info->tokens[info->i2].args[a]);
-                return (-1);
-            }
             dup2(fd, 0);
             return fd;
         }
@@ -265,19 +246,15 @@ int count_redir(t_info *info)
 
 void exec_once(t_info *info, char *cmd)
 {
-    pid_t pid;
     int fd;
 
     define_fd_out(info);
     fd = define_fd_in(info);
     if (fd != -1)
         execve(cmd, info->tokens[info->i].args, 0);
-    // int a = unlink("heredoc.tmp");
-    // printf("a = %d\nerrno = %d\n", a, errno);
-    // close(fd);
 }
 
-void exec_few_times(int *flag, t_info *info, char *cmd, int files, int pipid)
+void exec_few_times(int *flag, t_info *info, char *cmd, int files)
 {
     int a = 0;
     int fd;
@@ -317,8 +294,6 @@ void replace_index(t_info *info)
 
 void opening_error(char *filename)
 {
-    ft_putnbr_fd(errno, file);
-
     write(2, "-dashBash: ", 11);
     write(2, filename, ft_strlen(filename));
     if (errno == 2)
@@ -329,7 +304,5 @@ void opening_error(char *filename)
         write(2, ": Not a directory\n", 18);
     else if (errno == 2)
         write(2, ": No such file or directory\n", 28);
-    else
-        printf("zapomni chto ty sdelal\n");
-    errno = 0;
+    exit(1);
 }

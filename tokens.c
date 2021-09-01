@@ -16,6 +16,8 @@ void make_env(char **envp, t_list **head)
 			new->next = NULL;
 			ft_lstadd_back(head, new);
 		}
+		else
+			free(new);
 		i++;
 	}
 }
@@ -162,8 +164,13 @@ char *replace_vars(char *str, t_info *info)
 		}
 		else if (*str == '$')
 		{
-			dollar(&str, &newstr, &start, info);
-			start = str;
+			// if (str[1] == '?' && str[2] == '\0') /////////////////////////////
+			// printf("pisya\n");
+			// else
+			// {
+				dollar(&str, &newstr, &start, info);
+				start = str;
+			// }
 		}
 		if (*str == '\0')
 		{
