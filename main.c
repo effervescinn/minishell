@@ -123,10 +123,64 @@ void printf_tokens_err(int error)
     g_global.ex_status = 258;
 }
 
+char *close_pipe(char *line)
+{
+    int i;
+    char buf[1024 + 1];
+    int ret = 0;
+    char *closed_str;
+    char *no_enters;
+    int j;
+    char *tmp;
+
+    closed_str = ft_substr(line, 0, ft_strlen(line));
+    i = 0;
+    while (line[i])
+        i++;
+    i--;
+    while (line[i] == ' ')
+        i--;
+    if (line[i] == '|')
+    {
+        while((ret = read(0, buf, 1024)))
+        {
+            buf[ret] = '\0';
+            j = ret - 2;
+            while (buf[j] == ' ' && j > 0)
+                j--;
+            tmp = closed_str;
+            closed_str = ft_strjoin(tmp, buf);
+            free(tmp);
+            if (buf[j] == '|')
+                continue ;
+            else
+                break;         
+        }
+        no_enters = (char*)malloc(ft_strlen(closed_str) + 1);
+        i = 0;
+        while (*closed_str)
+        {
+            if (*closed_str != '\n')
+            {
+                no_enters[i] = *closed_str;
+                i++;
+            }
+            closed_str++;
+        }
+        no_enters[i] = '\0';
+        free(line);
+        free(closed_str);
+        return (no_enters);
+    }
+    free(line);
+    return closed_str;
+}
+
 void history(t_info *info)
 {
     char *newstr;
     char **tmp_arr;
+    char *closed_str;
     int tokens_err;
 
     g_global.prompt = ft_strdup("dashBash$ ");
@@ -137,6 +191,7 @@ void history(t_info *info)
         signal(SIGQUIT, SIG_IGN);
         g_global.input = NULL;
         g_global.input = readline(g_global.prompt);
+        g_global.input = close_pipe(g_global.input); //вот что добавила, сломался ctrl+D
         add_history(g_global.input);
         if (!g_global.input)
         {
@@ -153,7 +208,9 @@ void history(t_info *info)
             newstr = replace_vars(g_global.input, info);
             tmp_arr = make_tokens(newstr);
             info->tokens = delete_quotes(tmp_arr);
+
             free(newstr);
+
             int i = 0;
             while (tmp_arr[i])
             {
