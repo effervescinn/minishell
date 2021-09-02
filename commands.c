@@ -800,6 +800,22 @@ void exec_printable(t_info *info)
     }
 }
 
+void set_start(t_info *info)
+{
+    int i;
+
+    i = 0;
+    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    {
+        if (info->tokens[i].type[0] == 'c')
+        {
+            info->i = i;
+            return ;
+        }
+        i++;
+    }
+}
+
 void program_define(t_info *info)
 {
     char *cmd;
@@ -821,11 +837,9 @@ void program_define(t_info *info)
 
     while (k < info->pipes_num + 1)
     {
-
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
-
         if (info->tokens[info->i].print == 0)
         {
             if (k == 0 && info->pipes_num == 0)
@@ -839,12 +853,10 @@ void program_define(t_info *info)
                 fd_dasha = define_fd_built_in(info);
                 write(fd_dasha, info->result, ft_strlen(info->result));
                 // free(info->result);
-
                 (info->i)++;
                 while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
                     (info->i)++;
                 replace_index(info);
-                
                 if (k < info->pipes_num)
                     write(fd[k][1], "\0", 1);
                 k++;

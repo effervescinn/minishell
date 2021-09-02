@@ -193,7 +193,7 @@ void history(t_info *info)
         signal(SIGQUIT, SIG_IGN);
         g_global.input = NULL;
         g_global.input = readline(g_global.prompt);
-        g_global.input = close_pipe(g_global.input); //вот что добавила, сломался ctrl+D
+        g_global.input = close_pipe(g_global.input);
         add_history(g_global.input);
         if (!g_global.input)
         {
@@ -227,6 +227,7 @@ void history(t_info *info)
                 define_types(info);
                 set_pipes(info);
                 command_types(info);
+                set_start(info);
                 program_define(info);
                 free_args(info);
                 free_tokens(info);
