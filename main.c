@@ -171,7 +171,7 @@ char *close_pipe(char *line)
         }
         no_enters[i] = '\0';
         free(line);
-        free(closed_str);
+        // free(closed_str);
         return (no_enters);
     }
     free(line);
