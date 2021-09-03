@@ -140,7 +140,7 @@ char *close_pipe(char *line)
     while (line[i])
         i++;
     i--;
-    while (line[i] == ' ')
+    while (i > 0 && line[i] == ' ')
         i--;
     if (line[i] == '|')
     {

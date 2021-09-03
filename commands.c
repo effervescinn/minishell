@@ -740,14 +740,12 @@ void exec_builtin(t_info *info)
     g_global.ex_status = 0;
 }
 
-void exec_printable(t_info *info)
+void exec_printable(t_info *info, char *cmd)
 {
-    char *cmd;
     if ((!ft_strncmp(info->tokens[info->i].str, ">>", 2) && ft_strlen(info->tokens[info->i].str) == 2)
         || (!ft_strncmp(info->tokens[info->i].str, ">", 1) && ft_strlen(info->tokens[info->i].str) == 1)
         || (!ft_strncmp(info->tokens[info->i].str, "<", 1) && ft_strlen(info->tokens[info->i].str) == 1))
             exit(0);
-    cmd = find_bin(info);
     if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2)
         search_heredoc(info);
     else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
@@ -786,7 +784,6 @@ void exec_printable(t_info *info)
             info->i2++;
             q++;
         }
-        free(cmd);
         free(info->result);
         info->result = NULL;
     }
@@ -866,7 +863,8 @@ void program_define(t_info *info)
         else
         {
             j = 0;
-
+            char *cmd;
+            cmd = find_bin(info);
             pids[k] = fork();
             g_global.f = 1;
 
@@ -879,7 +877,7 @@ void program_define(t_info *info)
                     close(fd[k][0]);
                     close(fd[k][1]);
                 }
-                exec_printable(info);
+                exec_printable(info, cmd);
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
@@ -899,7 +897,7 @@ void program_define(t_info *info)
                     close(fd[j][1]);
                     j++;
                 }
-                exec_printable(info);
+                exec_printable(info, cmd);
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
@@ -918,7 +916,7 @@ void program_define(t_info *info)
                     j++;
                 }
                 info->i2 = info->i;
-                exec_printable(info);
+                exec_printable(info, cmd);
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
@@ -927,6 +925,7 @@ void program_define(t_info *info)
                 }
                 exit(0);
             }
+            free(cmd);
         }
         (info->i)++;
         while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
