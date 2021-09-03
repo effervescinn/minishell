@@ -825,11 +825,12 @@ void program_define(t_info *info)
     int k = -1; //счетчик для пайпов
     int j;
 
+    // printf("res |%s|\n", info->result);
     info->index = info->i;
-	char *tmp = info->result;
+	// char *tmp = info->result;
     info->result = malloc(1);
-	if (tmp)
-		free(tmp);
+	// if (tmp)
+	// 	free(tmp);
     info->result[0] = '\0';
 
     while (++k < info->pipes_num + 1)
@@ -851,23 +852,16 @@ void program_define(t_info *info)
         if (info->tokens[info->i].print == 0)
         {
             if (k == 0 && info->pipes_num == 0)
-            {
                 exec_builtin(info);
-                fd_dasha = define_fd_built_in(info);
-                write(fd_dasha, info->result, ft_strlen(info->result));
-            }   
             else
             {
-                fd_dasha = define_fd_built_in(info);
-                write(fd_dasha, info->result, ft_strlen(info->result));
-                // free(info->result);
                 (info->i)++;
-                while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
+                while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'p')
                     (info->i)++;
+                (info->i)++;
                 replace_index(info);
                 if (k < info->pipes_num)
                     write(fd[k][1], "\0", 1);
-                k++;
                 continue;
             }
         }
@@ -897,7 +891,6 @@ void program_define(t_info *info)
                 }
                 exit(0);
             }
-
             else if (k != info->pipes_num && pids[k] == 0)
             {
                 dup2(fd[k - 1][0], STDIN_FILENO);
@@ -938,7 +931,6 @@ void program_define(t_info *info)
             }
             free(cmd);
         }
-        // (info->i)++;
         while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'p')
             (info->i)++;
         (info->i)++;
