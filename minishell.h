@@ -111,6 +111,8 @@ void set_pointers(t_info *info);
 void new_pwd(t_info *info);
 void exec_command(t_info *info, int pid);
 void free_list(t_list **list);
+void remove_from_extra_exp(t_list **list, char *var);
+
 
 
 

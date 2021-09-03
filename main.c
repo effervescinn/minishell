@@ -75,7 +75,15 @@ int unexpected_tokens(t_token *tokens)
     i = 0;
     while (tokens[i].str)
     {
-        if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
+        if (tokens[i].type[0] == 'p')
+        {
+            if (i == 0)
+                return (1);
+            if (tokens[i + 1].type)
+                if (tokens[i + 1].type[0] == 'p')
+                    return (1);
+        }
+        else if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
         {
             if (tokens[i + 1].type)
             {
@@ -137,6 +145,7 @@ void history(t_info *info)
             free(info->str_pwd);
             free(info->str_oldpwd);
             free(g_global.prompt);
+            free_paths_array(info);
             write(1, "\n", 1);
             exit(0);
         }
@@ -168,7 +177,7 @@ void history(t_info *info)
                 printf_tokens_err(tokens_err);
         }
         else
-            write(1, "-dashBash: unclosed quote\n", 27);
+            write(2, "-dashBash: unclosed quote\n", 27);
         if (g_global.input)
         {
             free(g_global.input);
@@ -180,6 +189,7 @@ void history(t_info *info)
 int main(int ac, char **av, char **envp)
 {
     t_info info;
+	info.result = 0;
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);

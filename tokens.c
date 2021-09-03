@@ -16,6 +16,8 @@ void make_env(char **envp, t_list **head)
 			new->next = NULL;
 			ft_lstadd_back(head, new);
 		}
+		else
+			free(new);
 		i++;
 	}
 }
@@ -94,8 +96,10 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 	if (**str == ' ' || **str == '\0')
 	{
 		tmp = *newstr;
-		*newstr = ft_strjoin(tmp, "$");
+		glue = ft_substr(*start, 0, *str - *start);
+		*newstr = ft_strjoin(tmp, glue);
 		free(tmp);
+		free(glue);
 		return;
 	}
 	if ((info->d_quote == 0 && info->s_quote == 1))
@@ -116,18 +120,33 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 	}
 	else
 	{
-		var = vars(str, info->head);
-		glue = ft_substr(*start, 0, *str - *start - 1);
-		tmp = *newstr;
-		*newstr = ft_strjoin(tmp, glue);
-		free(tmp);
-		free(glue);
-		tmp = *newstr;
-		*newstr = ft_strjoin(tmp, var);
-		free(tmp);
-		free(var);
-		while (**str != ' ' && **str != '\0' && **str != '\'' && **str != '\"' && **str != '$')
+		if (**str == '?')
+		{
+			tmp = *newstr;
+			glue = ft_substr(*start, 0, *str - *start);
+			*newstr = ft_strjoin(tmp, glue);
+			free(tmp);
+			free(glue);
+			tmp = *newstr;
+			*newstr = ft_strjoin(tmp, ft_itoa(g_global.ex_status));
+			free(tmp);
 			(*str)++;
+		}
+		else
+		{
+			var = vars(str, info->head);
+			glue = ft_substr(*start, 0, *str - *start - 1);
+			tmp = *newstr;
+			*newstr = ft_strjoin(tmp, glue);
+			free(tmp);
+			free(glue);
+			tmp = *newstr;
+			*newstr = ft_strjoin(tmp, var);
+			free(tmp);
+			free(var);
+			while (**str != ' ' && **str != '\0' && **str != '\'' && **str != '\"' && **str != '$')
+				(*str)++;
+		}
 	}
 }
 
@@ -162,13 +181,8 @@ char *replace_vars(char *str, t_info *info)
 		}
 		else if (*str == '$')
 		{
-			// if (str[1] == '?' && str[2] == '\0') /////////////////////////////
-			// printf("pisya\n");
-			// else
-			// {
-				dollar(&str, &newstr, &start, info);
-				start = str;
-			// }
+			dollar(&str, &newstr, &start, info);
+			start = str;
 		}
 		if (*str == '\0')
 		{

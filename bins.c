@@ -6,8 +6,8 @@ void free_paths_array(t_info *info)
 
     if (!info->pths_array)  
         return;
-    i = 0;
-    while (info->pths_array[i++])
+    i = -1;
+    while (info->pths_array[++i])
         free(info->pths_array[i]);
     free(info->pths_array);
     info->pths_array = NULL;
@@ -30,6 +30,10 @@ char *find_bin(t_info *info)
     char **tmp_arr;
     int j;
 
+    // if ((!ft_strncmp("echo", info->tokens[info->i].str, 4) && ft_strlen(info->tokens[info->i].str) == 4)
+    // || (!ft_strncmp("export", info->tokens[info->i].str, 6) && ft_strlen(info->tokens[info->i].str) == 6)
+    // || (!ft_strncmp("env", info->tokens[info->i].str, 3) && ft_strlen(info->tokens[info->i].str) == 3))
+    //     return (NULL);
     if (!ft_strncmp("./", info->tokens[info->i].str, 2))
     {
         ret = ft_strdup(info->tokens[info->i].str + 2);
