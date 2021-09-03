@@ -178,6 +178,25 @@ char *close_pipe(char *line)
     return closed_str;
 }
 
+void check_pipe()
+{
+    int i;
+
+    if (g_global.input == NULL)
+        return;
+    i = 0;
+    if (g_global.input[i] == '|')
+    {
+        i++;
+        while (g_global.input[i] && g_global.input[i] == ' ')
+            i++;
+        if (g_global.input[i] == '\0')
+            return ;
+    }
+    g_global.input = close_pipe(g_global.input);
+    return ;
+}
+
 void history(t_info *info)
 {
     char *newstr;
@@ -193,7 +212,7 @@ void history(t_info *info)
         signal(SIGQUIT, SIG_IGN);
         g_global.input = NULL;
         g_global.input = readline(g_global.prompt);
-        g_global.input = close_pipe(g_global.input);
+        check_pipe();
         add_history(g_global.input);
         if (!g_global.input)
         {
