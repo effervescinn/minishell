@@ -85,7 +85,7 @@ int unexpected_tokens(t_token *tokens)
         }
         else if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
         {
-            if (tokens[i + 1].type)
+            if (tokens[i + 1].str)
             {
                 if (tokens[i + 1].type[0] == 'p')
                     return (1);
