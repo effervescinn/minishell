@@ -822,7 +822,7 @@ void program_define(t_info *info)
     // int **fd; //for pipes
     int pids[info->pipes_num + 1];
     int fd[info->pipes_num][2];
-    int k = 0; //счетчик для пайпов
+    int k = -1; //счетчик для пайпов
     int j;
 
     info->index = info->i;
@@ -832,11 +832,22 @@ void program_define(t_info *info)
 		free(tmp);
     info->result[0] = '\0';
 
-    while (k < info->pipes_num + 1)
+    while (++k < info->pipes_num + 1)
     {
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
+        if (info->tokens[info->i].type[0] != 'c') //если ввод такой: > file command args (> 1 echo hi), мотаем индекс до command (echo)
+        {
+            if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type[0] == 'c')
+                info->i += 2;
+            else
+            {
+                //функция, которая обрабатывает "> file" или "< file" без функции после
+                if (info->tokens[info->i + 2].str)
+                    info->i += 3;
+                continue ;            }
+        }
         if (info->tokens[info->i].print == 0)
         {
             if (k == 0 && info->pipes_num == 0)
@@ -927,11 +938,11 @@ void program_define(t_info *info)
             }
             free(cmd);
         }
-        (info->i)++;
-        while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'c')
+        // (info->i)++;
+        while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'p')
             (info->i)++;
+        (info->i)++;
         replace_index(info);
-        k++;
     }
     k = 0;
     while (k < info->pipes_num)
