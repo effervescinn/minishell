@@ -784,15 +784,15 @@ void exec_printable(t_info *info, char *cmd)
             info->i2++;
             q++;
         }
-        free(info->result);
-        info->result = NULL;
+        // free(info->result);
+        // info->result = NULL;
     }
     else
     {
         write(2, "dashBash: ", 11);
         write(2, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
         write(2, ": command not found\n", 21);
-        info->result = NULL;
+        // info->result = NULL;
         exit(127);
     }
 }
@@ -868,7 +868,6 @@ void program_define(t_info *info)
         else
         {
             j = 0;
-            char *cmd;
             cmd = find_bin(info);
             pids[k] = fork();
             g_global.f = 1;
@@ -883,12 +882,9 @@ void program_define(t_info *info)
                     close(fd[k][1]);
                 }
                 exec_printable(info, cmd);
-                if (info->result)
-                {
-                    fd_dasha = define_fd_built_in(info);
-                    write(fd_dasha, info->result, ft_strlen(info->result));
-                    free(info->result);
-                }
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+                free(info->result);
                 exit(0);
             }
             else if (k != info->pipes_num && pids[k] == 0)
@@ -902,12 +898,9 @@ void program_define(t_info *info)
                     j++;
                 }
                 exec_printable(info, cmd);
-                if (info->result)
-                {
-                    fd_dasha = define_fd_built_in(info);
-                    write(fd_dasha, info->result, ft_strlen(info->result));
-                    free(info->result);
-                }
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+                free(info->result);
                 exit(0);
             }
             else if (k == info->pipes_num && pids[k] == 0)
@@ -921,12 +914,9 @@ void program_define(t_info *info)
                 }
                 info->i2 = info->i;
                 exec_printable(info, cmd);
-                if (info->result)
-                {
-                    fd_dasha = define_fd_built_in(info);
-                    write(fd_dasha, info->result, ft_strlen(info->result));
-                    free(info->result);
-                }
+                fd_dasha = define_fd_built_in(info);
+                write(fd_dasha, info->result, ft_strlen(info->result));
+                free(info->result);
                 exit(0);
             }
             free(cmd);
@@ -956,9 +946,5 @@ void program_define(t_info *info)
         waitpid(pids[k], NULL, 0);
         k++;
     }
-
-    info->result = malloc(1);
-    info->result[0] = '\0';
-
     (info->i) = 0;
 }
