@@ -25,7 +25,7 @@ void heredoc(t_info *info, char *stop)
 void search_heredoc(t_info *info)
 {
     int i;
-    i = info->index;
+    i = info->i2;
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
         if (info->tokens[i].type[0] == 'L')

@@ -161,7 +161,7 @@ int define_fd_built_in(t_info *info)
     int fd;
     int a;
 
-    i = info->i;
+    i = info->i2;
     fd = -1;
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
@@ -213,24 +213,6 @@ int count_files(t_info *info, int q)
     }
     return (files);
 }
-// int open_file_in(t_info *info, int a)
-// {
-//     int fd;
-
-//     while (info->tokens[info->i2].str && info->tokens[info->i2].type[0] != 'p')
-//     {
-//         if (info->tokens[info->i2].type[0] == 'l')
-//         {
-//             fd = open(info->tokens[info->i2].args[a], O_RDONLY);
-//             if (fd == -1)
-//                 opening_error(info->tokens[info->i2].args[a]);
-//             dup2(fd, 0);
-//             return fd;
-//         }
-//         info->i2++;
-//     }
-//     return 0;
-// }
 
 int count_redir(t_info *info)
 {
@@ -246,54 +228,6 @@ int count_redir(t_info *info)
         i++;
     }
     return (smb);
-}
-
-// void exec_once(t_info *info, char *cmd)
-// {
-//     int fd;
-
-//     define_fd_out(info);
-//     fd = define_fd_in(info);
-//     if (fd != -1)
-//         execve(cmd, info->tokens[info->i].args, 0);
-// }
-
-// void exec_few_times(int *flag, t_info *info, char *cmd, int files)
-// {
-//     int a = 0;
-//     int fd;
-//     pid_t pid;
-
-//     *flag = 1;
-//     fd = open_file_in(info, a);
-//     if (fd == -1)
-//         return;
-//     while (a < files - 1)
-//     {
-//         a++;
-//         define_fd_out(info);
-//         fd = open_file_in(info, a);
-//         pid = fork();
-// 	    if (pid == 0)
-//         {
-//             if (fd != -1)
-// 		        execve(cmd, info->tokens[info->i].args, 0);
-//             exit(0);
-//         }
-//         else
-//         {
-//         	waitpid(pid, 0, 0);
-//             close(fd);
-//         }
-//     }
-// }
-
-void replace_index(t_info *info)
-{
-    while (info->tokens[info->index].str && info->tokens[info->index].type[0] != 'p')
-        info->index++;
-    if (info->tokens[info->index].str)
-        info->index++;
 }
 
 void opening_error(char *filename)

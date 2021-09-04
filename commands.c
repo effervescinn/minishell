@@ -111,6 +111,7 @@ void echo(t_info *info)
     int n;
     int a;
 
+// printf("*echo*   %d\n", info->i);
     n = 0;
     a = 1;
     if (!info->tokens[info->i].args[a])
@@ -811,7 +812,6 @@ void prepare_args_and_fd(t_info *info)
     int q;
     int flag = 0;
     q = 0;
-    // info->i2 = info->index;
     smb = count_redir(info);
     while (q < smb)
     {
@@ -827,19 +827,16 @@ void prepare_args_and_fd(t_info *info)
 }
 void start_of_line(t_info *info)
 {
-    write(1, "&**&&*&&*\n", 10);
     while (info->i2 != 0 && info->tokens[info->i2].type[0] != 'p')
         info->i2--;
     if (info->tokens[info->i2].type[0] == 'p')
         info->i2++;
-    printf ("%d\n", info->i2);
 }
+
 void exec_printable(t_info *info, char *cmd)
 {
-    if (!set_start(info))
-        exit(0);
-    printf("i2 = %d\n", info->i2);
     start_of_line(info);
+    printf("%s str\n", info->tokens[info->i].str);
     if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
         search_heredoc(info);
     else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
@@ -852,6 +849,9 @@ void exec_printable(t_info *info, char *cmd)
         export(info);
     else if (cmd)
     {
+        if (info->result)
+            free(info->result);
+        info->result = NULL;
         prepare_args_and_fd(info);
         execve(cmd, info->tokens[info->i].args, 0);
     }
@@ -895,7 +895,6 @@ void program_define(t_info *info)
     int j;
 
     // printf("res |%s|\n", info->result);
-    info->index = info->i;
 	// char *tmp = info->result;
     info->result = malloc(1);
 	// if (tmp)
@@ -929,7 +928,6 @@ void program_define(t_info *info)
                 while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'p')
                     (info->i)++;
                 (info->i)++;
-                replace_index(info);
                 if (k < info->pipes_num)
                     write(fd[k][1], "\0", 1);
                 continue;
@@ -1004,7 +1002,6 @@ void program_define(t_info *info)
         while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'p')
             (info->i)++;
         (info->i)++;
-        replace_index(info);
     }
     k = 0;
     while (k < info->pipes_num)
