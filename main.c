@@ -160,19 +160,18 @@ char *close_pipe(char *line)
         }
         no_enters = (char*)malloc(ft_strlen(closed_str) + 1);
         i = 0;
-        j = 0;
-        while (closed_str[j])
+        while (*closed_str)
         {
-            if (closed_str[j] != '\n')
+            if (*closed_str != '\n')
             {
-                no_enters[i] = closed_str[j];
+                no_enters[i] = *closed_str;
                 i++;
             }
-            j++;
+            closed_str++;
         }
         no_enters[i] = '\0';
         free(line);
-        free(closed_str);
+        // free(closed_str);
         return (no_enters);
     }
     free(line);

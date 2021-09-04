@@ -72,7 +72,7 @@ void define_fd_out(t_info *info)
     int flag;
 
     flag = 0;
-    i = info->i;
+    i = info->i2;
     fd = -5;
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
@@ -118,22 +118,22 @@ int define_fd_in(t_info *info)
     int flag;
 
     flag = 0;
-    i = info->index;
-    fd = -5;
+    i = info->i2;
+    fd = 0;
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
         if (info->tokens[i].type[0] == 'l')
         {
-            close(fd);
+            if (fd)
+                close(fd);
             fd = open(info->tokens[i].args[0], O_RDONLY);
             if (fd == -1)
                 opening_error(info->tokens[i].args[0]);
-            else
-                flag = 1;
         }
         if (info->tokens[i].type[0] == 'L')
         {
-            close(fd);
+            if (fd)
+                close(fd);
             fd = open("heredoc.tmp", O_CREAT | O_RDWR | O_TRUNC, 0777);
             char *buf;
             char *str;
@@ -148,12 +148,9 @@ int define_fd_in(t_info *info)
             free(buf);
             close(fd);
             fd = open("heredoc.tmp", O_RDONLY);
-            flag = 1;
         }
         i++;
     }
-    if (!flag)
-        return (0);
     dup2(fd, 0);
     return (fd);
 }
@@ -192,48 +189,55 @@ int define_fd_built_in(t_info *info)
         return (1);
     return (fd);
 }
-int count_files(t_info *info)
+int count_files(t_info *info, int q)
 {
     int files;
+    int q2;
+    int i = info->i2;
 
     files = 0;
-    while (info->tokens[info->i2].str && info->tokens[info->i2].type[0] != 'p')
+    q2 = 0;
+    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
-        if (info->tokens[info->i2].type[0] == 'l')
+        if (info->tokens[i].type[0] == 'l')
         {
-            while (info->tokens[info->i2].args[files])
-                files++;
-            return (files);
+            if (q == q2)
+            {
+                while (info->tokens[i].args[files])
+                    files++;
+                return (files);
+            }
+            q2++;
         }
-        info->i2++;
+        i++;
     }
-    return (0);
+    return (files);
 }
-int open_file_in(t_info *info, int a)
-{
-    int fd;
+// int open_file_in(t_info *info, int a)
+// {
+//     int fd;
 
-    while (info->tokens[info->i2].str && info->tokens[info->i2].type[0] != 'p')
-    {
-        if (info->tokens[info->i2].type[0] == 'l')
-        {
-            fd = open(info->tokens[info->i2].args[a], O_RDONLY);
-            if (fd == -1)
-                opening_error(info->tokens[info->i2].args[a]);
-            dup2(fd, 0);
-            return fd;
-        }
-        info->i2++;
-    }
-    return 0;
-}
+//     while (info->tokens[info->i2].str && info->tokens[info->i2].type[0] != 'p')
+//     {
+//         if (info->tokens[info->i2].type[0] == 'l')
+//         {
+//             fd = open(info->tokens[info->i2].args[a], O_RDONLY);
+//             if (fd == -1)
+//                 opening_error(info->tokens[info->i2].args[a]);
+//             dup2(fd, 0);
+//             return fd;
+//         }
+//         info->i2++;
+//     }
+//     return 0;
+// }
 
 int count_redir(t_info *info)
 {
     int i;
     int smb;
 
-    i = info->index;
+    i = info->i2;
     smb = 0;
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
@@ -244,45 +248,45 @@ int count_redir(t_info *info)
     return (smb);
 }
 
-void exec_once(t_info *info, char *cmd)
-{
-    int fd;
+// void exec_once(t_info *info, char *cmd)
+// {
+//     int fd;
 
-    define_fd_out(info);
-    fd = define_fd_in(info);
-    if (fd != -1)
-        execve(cmd, info->tokens[info->i].args, 0);
-}
+//     define_fd_out(info);
+//     fd = define_fd_in(info);
+//     if (fd != -1)
+//         execve(cmd, info->tokens[info->i].args, 0);
+// }
 
-void exec_few_times(int *flag, t_info *info, char *cmd, int files)
-{
-    int a = 0;
-    int fd;
-    pid_t pid;
+// void exec_few_times(int *flag, t_info *info, char *cmd, int files)
+// {
+//     int a = 0;
+//     int fd;
+//     pid_t pid;
 
-    *flag = 1;
-    fd = open_file_in(info, a);
-    if (fd == -1)
-        return;
-    while (a < files - 1)
-    {
-        a++;
-        define_fd_out(info);
-        fd = open_file_in(info, a);
-        pid = fork();
-	    if (pid == 0)
-        {
-            if (fd != -1)
-		        execve(cmd, info->tokens[info->i].args, 0);
-            exit(0);
-        }
-        else
-        {
-        	waitpid(pid, 0, 0);
-            close(fd);
-        }
-    }
-}
+//     *flag = 1;
+//     fd = open_file_in(info, a);
+//     if (fd == -1)
+//         return;
+//     while (a < files - 1)
+//     {
+//         a++;
+//         define_fd_out(info);
+//         fd = open_file_in(info, a);
+//         pid = fork();
+// 	    if (pid == 0)
+//         {
+//             if (fd != -1)
+// 		        execve(cmd, info->tokens[info->i].args, 0);
+//             exit(0);
+//         }
+//         else
+//         {
+//         	waitpid(pid, 0, 0);
+//             close(fd);
+//         }
+//     }
+// }
 
 void replace_index(t_info *info)
 {

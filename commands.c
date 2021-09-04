@@ -740,13 +740,107 @@ void exec_builtin(t_info *info)
     g_global.ex_status = 0;
 }
 
+void add_from_the_first(t_info *info, int q, char **array, int *k)
+{
+    int q2 = 0;
+    int files = 1;
+    int i = info->i2;
+
+    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    {
+        if (info->tokens[i].type[0] == 'l')
+        {
+            if (q == q2)
+            {
+                while (info->tokens[i].args[files] && info->tokens[i].args[0])
+                {
+                    array[*k] = ft_strdup(info->tokens[i].args[files]);
+                    (*k)++;
+                    files++;
+                }
+                return;
+            }
+            q2++;
+        }
+        i++;
+    }
+}
+
+void add_redirect_args(char **array, int *k, t_info *info, int smb)
+{
+    int i = info->i;
+    int q = 0;
+    while (q < smb)
+    {
+        add_from_the_first(info, q, array, k);
+        q++;
+    }
+}
+
+char **create_new_exec_array(t_info *info, int files, int smb)
+{
+    char **array;
+    int k;
+
+    k = 0;
+    while (info->tokens[info->i].args[k])
+        k++;
+    array = (char **)malloc(sizeof(char *) * (k + files + 1));
+    k = 0;
+    while (info->tokens[info->i].args[k])
+    {
+        array[k] = ft_strdup(info->tokens[info->i].args[k]);
+        k++;
+    }
+    add_redirect_args(array, &k, info, smb);
+    array[k] = NULL;
+    k = 0;
+    while (info->tokens[info->i].args[k])
+    {
+        free(info->tokens[info->i].args[k]);
+        k++;
+    }
+    free(info->tokens[info->i].args);
+    return (array);
+}
+
+void prepare_args_and_fd(t_info *info)
+{
+    int files = 0;
+    int smb;
+    int q;
+    int flag = 0;
+    q = 0;
+    // info->i2 = info->index;
+    smb = count_redir(info);
+    while (q < smb)
+    {
+        files += count_files(info, q);
+        q++;
+    }
+    if (smb > 0 && files > 1)
+        files = files - smb;
+    if (smb)
+        info->tokens[info->i].args = create_new_exec_array(info, files, smb);
+    define_fd_out(info);
+    define_fd_in(info);
+}
+void start_of_line(t_info *info)
+{
+    write(1, "&**&&*&&*\n", 10);
+    while (info->i2 != 0 && info->tokens[info->i2].type[0] != 'p')
+        info->i2--;
+    if (info->tokens[info->i2].type[0] == 'p')
+        info->i2++;
+    printf ("%d\n", info->i2);
+}
 void exec_printable(t_info *info, char *cmd)
 {
-    if ((!ft_strncmp(info->tokens[info->i].str, ">>", 2) && ft_strlen(info->tokens[info->i].str) == 2)
-        || (!ft_strncmp(info->tokens[info->i].str, ">", 1) && ft_strlen(info->tokens[info->i].str) == 1)
-        || (!ft_strncmp(info->tokens[info->i].str, "<", 1) && ft_strlen(info->tokens[info->i].str) == 1))
-            exit(0);
-    if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2)
+    if (!set_start(info))
+        exit(0);
+    printf("i2 = %d\n", info->i2);
+    start_of_line(info);
+    if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
         search_heredoc(info);
     else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
         pwd(info);
@@ -758,46 +852,20 @@ void exec_printable(t_info *info, char *cmd)
         export(info);
     else if (cmd)
     {
-        int files;
-        int smb;
-        int q;
-        int flag = 0;
-        q = 0;
-
-        info->i2 = info->index;
-        smb = count_redir(info);
-        if (!smb)
-            exec_once(info, cmd);
-        while (q < smb)
-        {
-            files = count_files(info);
-            if (files == 1 && q + 1 < smb)
-            {
-                q++;
-                info->i2++;
-                continue;
-            }
-            if ((files == 1 || files == 0) && !flag)
-                exec_once(info, cmd);
-            else
-                exec_few_times(&flag, info, cmd, files);
-            info->i2++;
-            q++;
-        }
-        // free(info->result);
-        // info->result = NULL;
+        prepare_args_and_fd(info);
+        execve(cmd, info->tokens[info->i].args, 0);
     }
     else
     {
         write(2, "dashBash: ", 11);
         write(2, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
         write(2, ": command not found\n", 21);
-        // info->result = NULL;
+        info->result = NULL;
         exit(127);
     }
 }
 
-void set_start(t_info *info)
+int set_start(t_info *info)
 {
     int i;
 
@@ -807,10 +875,11 @@ void set_start(t_info *info)
         if (info->tokens[i].type[0] == 'c')
         {
             info->i = i;
-            return ;
+            return 1;
         }
         i++;
     }
+    return (0);
 }
 
 void program_define(t_info *info)
@@ -847,7 +916,8 @@ void program_define(t_info *info)
                 //функция, которая обрабатывает "> file" или "< file" без функции после
                 if (info->tokens[info->i + 2].str)
                     info->i += 3;
-                continue ;            }
+                continue ;
+            }
         }
         if (info->tokens[info->i].print == 0)
         {
@@ -868,6 +938,7 @@ void program_define(t_info *info)
         else
         {
             j = 0;
+            char *cmd;
             cmd = find_bin(info);
             pids[k] = fork();
             g_global.f = 1;
@@ -882,9 +953,12 @@ void program_define(t_info *info)
                     close(fd[k][1]);
                 }
                 exec_printable(info, cmd);
-                fd_dasha = define_fd_built_in(info);
-                write(fd_dasha, info->result, ft_strlen(info->result));
-                free(info->result);
+                if (info->result)
+                {
+                    fd_dasha = define_fd_built_in(info);
+                    write(fd_dasha, info->result, ft_strlen(info->result));
+                    free(info->result);
+                }
                 exit(0);
             }
             else if (k != info->pipes_num && pids[k] == 0)
@@ -898,9 +972,12 @@ void program_define(t_info *info)
                     j++;
                 }
                 exec_printable(info, cmd);
-                fd_dasha = define_fd_built_in(info);
-                write(fd_dasha, info->result, ft_strlen(info->result));
-                free(info->result);
+                if (info->result)
+                {
+                    fd_dasha = define_fd_built_in(info);
+                    write(fd_dasha, info->result, ft_strlen(info->result));
+                    free(info->result);
+                }
                 exit(0);
             }
             else if (k == info->pipes_num && pids[k] == 0)
@@ -914,9 +991,12 @@ void program_define(t_info *info)
                 }
                 info->i2 = info->i;
                 exec_printable(info, cmd);
-                fd_dasha = define_fd_built_in(info);
-                write(fd_dasha, info->result, ft_strlen(info->result));
-                free(info->result);
+                if (info->result)
+                {
+                    fd_dasha = define_fd_built_in(info);
+                    write(fd_dasha, info->result, ft_strlen(info->result));
+                    free(info->result);
+                }
                 exit(0);
             }
             free(cmd);
@@ -933,18 +1013,19 @@ void program_define(t_info *info)
         close(fd[k][1]);
         k++;
     }
-    //Дашины приколы
     int ex;
-    // wait(&ex);
-    g_global.ex_status = WEXITSTATUS(ex);
-    g_global.f = 0;
-
-    //Так нет зомби
     k = 0;
     while (k < info->pipes_num + 1)
     {
-        waitpid(pids[k], NULL, 0);
+        waitpid(pids[k], &ex, 0);
         k++;
     }
+    g_global.ex_status = WEXITSTATUS(ex);
+    g_global.f = 0;
+    unlink("heredoc.tmp");
+
+    info->result = malloc(1);
+    info->result[0] = '\0';
+
     (info->i) = 0;
 }
