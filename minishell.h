@@ -79,11 +79,11 @@ void free_paths_array(t_info *info);
 void define_fd_out(t_info *info);
 int define_fd_in(t_info *info);
 int define_fd_built_in(t_info *info);
-int count_files(t_info *info, int q);
-// int open_file_in(t_info *info, int a);
+int count_files(t_info *info);
+int open_file_in(t_info *info, int a);
 int count_redir(t_info *info);
-// void exec_once(t_info *info, char *cmd);
-// void exec_few_times(int *flag, t_info *info, char *cmd, int files);
+void exec_once(t_info *info, char *cmd);
+void exec_few_times(int *flag, t_info *info, char *cmd, int files);
 void replace_index(t_info *info);
 void opening_error(char *filename);
 void search_heredoc(t_info *info);
@@ -111,7 +111,7 @@ void set_pointers(t_info *info);
 void new_pwd(t_info *info);
 void exec_command(t_info *info, int pid);
 void free_list(t_list **list);
-int set_start(t_info *info);
+void set_start(t_info *info);
 
 
 
