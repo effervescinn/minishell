@@ -811,7 +811,6 @@ void prepare_args_and_fd(t_info *info)
     int q;
     int flag = 0;
     q = 0;
-    // info->i2 = info->index;
     smb = count_redir(info);
     while (q < smb)
     {
@@ -827,19 +826,16 @@ void prepare_args_and_fd(t_info *info)
 }
 void start_of_line(t_info *info)
 {
-    write(1, "&**&&*&&*\n", 10);
     while (info->i2 != 0 && info->tokens[info->i2].type[0] != 'p')
         info->i2--;
     if (info->tokens[info->i2].type[0] == 'p')
         info->i2++;
-    printf ("%d\n", info->i2);
 }
 void exec_printable(t_info *info, char *cmd)
 {
-    if (!set_start(info))
-        exit(0);
-    printf("i2 = %d\n", info->i2);
-    start_of_line(info);
+    // if (!set_start(info))
+    //     exit(0);
+    // start_of_line(info);
     if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
         search_heredoc(info);
     else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
@@ -875,6 +871,7 @@ int set_start(t_info *info)
         if (info->tokens[i].type[0] == 'c')
         {
             info->i = i;
+            info->i2 = i;
             return 1;
         }
         i++;
@@ -910,7 +907,10 @@ void program_define(t_info *info)
         if (info->tokens[info->i].type[0] != 'c') //если ввод такой: > file command args (> 1 echo hi), мотаем индекс до command (echo)
         {
             if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type[0] == 'c')
+            {
+                info->i2 = info->i;
                 info->i += 2;
+            }
             else
             {
                 //функция, которая обрабатывает "> file" или "< file" без функции после
@@ -942,7 +942,7 @@ void program_define(t_info *info)
             cmd = find_bin(info);
             pids[k] = fork();
             g_global.f = 1;
-
+            
             if (k == 0 && pids[k] == 0)
             {
                 signal(SIGQUIT, SIG_DFL);

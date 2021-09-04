@@ -246,7 +246,8 @@ void history(t_info *info)
                 define_types(info);
                 set_pipes(info);
                 command_types(info);
-                set_start(info);
+                // set_start(info);
+                // printf("first %d\n", info->i);
                 program_define(info);
                 free_args(info);
                 free_tokens(info);
