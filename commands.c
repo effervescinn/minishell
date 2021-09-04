@@ -497,13 +497,14 @@ void export(t_info *info)
             if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].args[a])
                 var_name = var_name_in_str(info->tokens[info->i].args[a], ptr_to_eq);
             else
-                var_name = info->tokens[info->i].args[a];
+                var_name = ft_strdup(info->tokens[info->i].args[a]);
             if (!check_var_name(var_name))
             {
                 write(2, "-dashBash: export: `", 20);
                 write(2, info->tokens[info->i].args[a], ft_strlen(info->tokens[info->i].args[a]));
                 write(2, "': not a valid identifier\n", 27);
                 a++;
+                free(var_name);
                 continue;
             }
             if (ptr_to_eq && *(ptr_to_eq - 1) == '+')
@@ -512,6 +513,7 @@ void export(t_info *info)
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 set_pointers(info);
                 make_paths(info);
+                free(var_name);
                 return;
             }
             if (ptr_to_eq)
@@ -526,6 +528,7 @@ void export(t_info *info)
                     extra_export(info, a);
             }
             a++;
+            free(var_name);
         }
     }
 }
@@ -725,6 +728,7 @@ void exit_minishell(t_info *info)
     free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
+    free_paths_array(info);
     exit(1);
 }
 
@@ -835,8 +839,8 @@ void start_of_line(t_info *info)
 
 void exec_printable(t_info *info, char *cmd)
 {
+    info->i2 = info->i;
     start_of_line(info);
-    printf("%s str\n", info->tokens[info->i].str);
     if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
         search_heredoc(info);
     else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
@@ -894,12 +898,8 @@ void program_define(t_info *info)
     int k = -1; //счетчик для пайпов
     int j;
 
-    // printf("res |%s|\n", info->result);
-	// char *tmp = info->result;
-    info->result = malloc(1);
-	// if (tmp)
-	// 	free(tmp);
-    info->result[0] = '\0';
+    if (!info->result)
+        info->result = ft_strdup("\0");///////утекает
 
     while (++k < info->pipes_num + 1)
     {
@@ -956,6 +956,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -975,6 +976,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -994,6 +996,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -1020,9 +1023,5 @@ void program_define(t_info *info)
     g_global.ex_status = WEXITSTATUS(ex);
     g_global.f = 0;
     unlink("heredoc.tmp");
-
-    info->result = malloc(1);
-    info->result[0] = '\0';
-
     (info->i) = 0;
 }

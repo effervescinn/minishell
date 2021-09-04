@@ -221,6 +221,7 @@ void history(t_info *info)
             free(info->str_pwd);
             free(info->str_oldpwd);
             free(g_global.prompt);
+            free_paths_array(info);
             write(1, "\n", 1);
             exit(0);
         }
