@@ -85,7 +85,7 @@ int unexpected_tokens(t_token *tokens)
         }
         else if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
         {
-            if (tokens[i + 1].type)
+            if (tokens[i + 1].str)
             {
                 if (tokens[i + 1].type[0] == 'p')
                     return (1);
@@ -123,10 +123,85 @@ void printf_tokens_err(int error)
     g_global.ex_status = 258;
 }
 
+char *close_pipe(char *line)
+{
+    int i;
+    char buf[1024 + 1];
+    int ret = 0;
+    char *closed_str;
+    char *no_enters;
+    int j;
+    char *tmp;
+
+    if (!line)
+        return (NULL);
+    closed_str = ft_substr(line, 0, ft_strlen(line));
+    i = 0;
+    while (line[i])
+        i++;
+    i--;
+    while (i > 0 && line[i] == ' ')
+        i--;
+    if (line[i] == '|')
+    {
+        while((ret = read(0, buf, 1024)))
+        {
+            buf[ret] = '\0';
+            j = ret - 2;
+            while (buf[j] == ' ' && j > 0)
+                j--;
+            tmp = closed_str;
+            closed_str = ft_strjoin(tmp, buf);
+            free(tmp);
+            if (buf[j] == '|')
+                continue ;
+            else
+                break;         
+        }
+        no_enters = (char*)malloc(ft_strlen(closed_str) + 1);
+        i = 0;
+        while (*closed_str)
+        {
+            if (*closed_str != '\n')
+            {
+                no_enters[i] = *closed_str;
+                i++;
+            }
+            closed_str++;
+        }
+        no_enters[i] = '\0';
+        free(line);
+        // free(closed_str);
+        return (no_enters);
+    }
+    free(line);
+    return closed_str;
+}
+
+void check_pipe()
+{
+    int i;
+
+    if (g_global.input == NULL)
+        return;
+    i = 0;
+    if (g_global.input[i] == '|')
+    {
+        i++;
+        while (g_global.input[i] && g_global.input[i] == ' ')
+            i++;
+        if (g_global.input[i] == '\0')
+            return ;
+    }
+    g_global.input = close_pipe(g_global.input);
+    return ;
+}
+
 void history(t_info *info)
 {
     char *newstr;
     char **tmp_arr;
+    char *closed_str;
     int tokens_err;
 
     g_global.prompt = ft_strdup("dashBash$ ");
@@ -137,6 +212,7 @@ void history(t_info *info)
         signal(SIGQUIT, SIG_IGN);
         g_global.input = NULL;
         g_global.input = readline(g_global.prompt);
+        check_pipe();
         add_history(g_global.input);
         if (!g_global.input)
         {
@@ -145,7 +221,6 @@ void history(t_info *info)
             free(info->str_pwd);
             free(info->str_oldpwd);
             free(g_global.prompt);
-            free_paths_array(info);
             write(1, "\n", 1);
             exit(0);
         }
@@ -154,7 +229,9 @@ void history(t_info *info)
             newstr = replace_vars(g_global.input, info);
             tmp_arr = make_tokens(newstr);
             info->tokens = delete_quotes(tmp_arr);
+
             free(newstr);
+
             int i = 0;
             while (tmp_arr[i])
             {
@@ -169,6 +246,7 @@ void history(t_info *info)
                 define_types(info);
                 set_pipes(info);
                 command_types(info);
+                set_start(info);
                 program_define(info);
                 free_args(info);
                 free_tokens(info);
@@ -177,7 +255,7 @@ void history(t_info *info)
                 printf_tokens_err(tokens_err);
         }
         else
-            write(2, "-dashBash: unclosed quote\n", 27);
+            write(1, "-dashBash: unclosed quote\n", 27);
         if (g_global.input)
         {
             free(g_global.input);
