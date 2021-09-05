@@ -62,6 +62,10 @@ char *find_bin(t_info *info)
             return (ret);
         }
     }
+    i = -1;
+    while (tmp_arr[++i])
+        free(tmp_arr[i]);
+    free(tmp_arr);
 	return (NULL);
 }
 
