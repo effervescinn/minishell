@@ -52,8 +52,8 @@ typedef struct s_global
 
 
 
-int file;
-t_global g_global;
+extern int file;
+extern t_global g_global;
 
 typedef void (*sighandler_t)(int);
 

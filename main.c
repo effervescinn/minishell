@@ -1,5 +1,8 @@
 #include "minishell.h"
 
+int file;
+t_global g_global;
+
 int ft_putchar(int c)
 {
     write(1, &c, 1);
@@ -176,6 +179,8 @@ char *close_pipe(char *line)
         return (no_enters);
     }
     free(line);
+    return (closed_str);
+}
 
 void check_pipe()
 {
