@@ -111,7 +111,6 @@ void echo(t_info *info)
     int n;
     int a;
 
-// printf("*echo*   %d\n", info->i);
     n = 0;
     a = 1;
     if (!info->tokens[info->i].args[a])
@@ -497,14 +496,13 @@ void export(t_info *info)
             if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].args[a])
                 var_name = var_name_in_str(info->tokens[info->i].args[a], ptr_to_eq);
             else
-                var_name = ft_strdup(info->tokens[info->i].args[a]);
+                var_name = info->tokens[info->i].args[a];
             if (!check_var_name(var_name))
             {
                 write(2, "-dashBash: export: `", 20);
                 write(2, info->tokens[info->i].args[a], ft_strlen(info->tokens[info->i].args[a]));
                 write(2, "': not a valid identifier\n", 27);
                 a++;
-                free(var_name);
                 continue;
             }
             if (ptr_to_eq && *(ptr_to_eq - 1) == '+')
@@ -513,7 +511,6 @@ void export(t_info *info)
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 set_pointers(info);
                 make_paths(info);
-                free(var_name);
                 return;
             }
             if (ptr_to_eq)
@@ -528,7 +525,6 @@ void export(t_info *info)
                     extra_export(info, a);
             }
             a++;
-            free(var_name);
         }
     }
 }
@@ -728,7 +724,6 @@ void exit_minishell(t_info *info)
     free_tokens(info);
     free(info->str_pwd);
     free(info->str_oldpwd);
-    free_paths_array(info);
     exit(1);
 }
 
@@ -839,7 +834,6 @@ void start_of_line(t_info *info)
 
 void exec_printable(t_info *info, char *cmd)
 {
-    info->i2 = info->i;
     start_of_line(info);
     if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
         search_heredoc(info);
@@ -898,26 +892,37 @@ void program_define(t_info *info)
     int k = -1; //счетчик для пайпов
     int j;
 
-    if (!info->result)
-        info->result = ft_strdup("\0");///////утекает
+    // printf("res |%s|\n", info->result);
+	// char *tmp = info->result;
+    info->result = malloc(1);
+	// if (tmp)
+	// 	free(tmp);
+    info->result[0] = '\0';
 
     while (++k < info->pipes_num + 1)
     {
+        
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
-        if (info->tokens[info->i].type[0] != 'c') //если ввод такой: > file command args (> 1 echo hi), мотаем индекс до command (echo)
+        if (info->tokens[info->i].type[0] != 'c' && info->tokens[info->i].type[0] != 'L') //если в начале или после пайпа info->i на > , >> или <
         {
-            if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type[0] == 'c')
-                info->i += 2;
-            else
+            if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type[0] == 'c')  //если "> 1 echo shtonibud"
+                info->i += 2;                                                               //info->i будет на echo
+            else                                                                            //если "> 1" или "> 1 > 2 > 3" и в таком духе
             {
-                //функция, которая обрабатывает "> file" или "< file" без функции после
-                if (info->tokens[info->i + 2].str)
+                //тут должна быть функция, которая обрабатывает "> file" или "< file" без функции после ("> file > file > file" и "< file < file" в том числе)
+                //эта функция должна отмотать info->i до последнего редиректа, если их несколько (т.е если "> 1 > 2 > 3", info->i должен быть на редиректе перед 3)
+                //  ^
+                //  |
+                //  |
+                // это нужно чтобы потом отмотать индекс на следующий токен после пайпа вот тут -
+                if (info->tokens[info->i + 2].str)                           //  <--------------|
                     info->i += 3;
                 continue ;
             }
         }
+
         if (info->tokens[info->i].print == 0)
         {
             if (k == 0 && info->pipes_num == 0)
@@ -956,7 +961,6 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
-                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -970,13 +974,13 @@ void program_define(t_info *info)
                     close(fd[j][1]);
                     j++;
                 }
+                info->i2 = info->i;
                 exec_printable(info, cmd);
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
-                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -996,7 +1000,6 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
-                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -1023,5 +1026,9 @@ void program_define(t_info *info)
     g_global.ex_status = WEXITSTATUS(ex);
     g_global.f = 0;
     unlink("heredoc.tmp");
+
+    info->result = malloc(1);
+    info->result[0] = '\0';
+
     (info->i) = 0;
 }

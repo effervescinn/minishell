@@ -128,11 +128,8 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 			free(tmp);
 			free(glue);
 			tmp = *newstr;
-			char *tmp2;
-			tmp2 = ft_itoa(g_global.ex_status);
-			*newstr = ft_strjoin(tmp, tmp2);
+			*newstr = ft_strjoin(tmp, ft_itoa(g_global.ex_status));
 			free(tmp);
-			free(tmp2);
 			(*str)++;
 		}
 		else

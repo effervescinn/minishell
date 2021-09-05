@@ -40,7 +40,7 @@ char *find_bin(t_info *info)
     i = 0;
     while (info->pths_array[i])
         i++;
-    tmp_arr = (char**)malloc(sizeof(char*) * (i + 1));////течет
+    tmp_arr = (char**)malloc(sizeof(char*) * (i + 1));
     tmp_arr[i] = NULL;
     i =-1;
     while (info->pths_array[++i])
@@ -162,14 +162,13 @@ int define_fd_built_in(t_info *info)
     int a;
 
     i = info->i2;
-    fd = 0;
+    fd = -1;
     while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
     {
         if (info->tokens[i].type[0] == 'g')
         {
             write (fd, "\0", 1);
-            if (fd)
-                close(fd);
+            close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
             a = write (fd, "\0", 1);
             if (a != 1 && fd != -5)
@@ -178,8 +177,7 @@ int define_fd_built_in(t_info *info)
         if (info->tokens[i].type[0] == 'G')
         {
             write(fd, "\0", 1);
-            if (fd)
-                close(fd);
+            close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
             a = write (fd, "\0", 1);
             if (a != 1 && fd != -5)
@@ -187,8 +185,8 @@ int define_fd_built_in(t_info *info)
         }
         i++;
     }
-    // if (fd == -1)
-    //     return (1);
+    if (fd == -1)
+        return (1);
     return (fd);
 }
 int count_files(t_info *info, int q)
