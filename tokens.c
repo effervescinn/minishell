@@ -123,7 +123,7 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 		if (**str == '?')
 		{
 			tmp = *newstr;
-			glue = ft_substr(*start, 0, *str - *start);
+			glue = ft_substr(*start, 0, *str - *start - 1);
 			*newstr = ft_strjoin(tmp, glue);
 			free(tmp);
 			free(glue);
