@@ -403,17 +403,17 @@ t_token *delete_quotes(char **tmp_arr)
 	{
 		handle_token(tmp_arr[i], &tokens_arr[i]);
 		if (tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = "pipe";
+			tokens_arr[i].type = ft_strdup("pipe");
 		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = "great";
+			tokens_arr[i].type = ft_strdup("great");
 		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = "less";
+			tokens_arr[i].type = ft_strdup("less");
 		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = "GREAT";
+			tokens_arr[i].type = ft_strdup("GREAT");
 		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = "LESS";
+			tokens_arr[i].type = ft_strdup("LESS");
 		else
-			tokens_arr[i].type = "word";
+			tokens_arr[i].type = ft_strdup("word");
 		i++;
 	}
 	return (tokens_arr);

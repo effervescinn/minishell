@@ -835,9 +835,9 @@ void start_of_line(t_info *info)
 void exec_printable(t_info *info, char *cmd)
 {
     start_of_line(info);
-    if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
-        search_heredoc(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
+    // if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
+    //     search_heredoc(info);
+    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
         pwd(info);
     else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
         echo(info);
@@ -898,6 +898,7 @@ void program_define(t_info *info)
 	// if (tmp)
 	// 	free(tmp);
     info->result[0] = '\0';
+    search_heredoc(info);
 
     while (++k < info->pipes_num + 1)
     {
@@ -911,6 +912,7 @@ void program_define(t_info *info)
                 info->i += 2;                                                               //info->i будет на echo
             else                                                                            //если "> 1" или "> 1 > 2 > 3" и в таком духе
             {
+                redirects_solo(info);
                 //тут должна быть функция, которая обрабатывает "> file" или "< file" без функции после ("> file > file > file" и "< file < file" в том числе)
                 //эта функция должна отмотать info->i до последнего редиректа, если их несколько (т.е если "> 1 > 2 > 3", info->i должен быть на редиректе перед 3)
                 //  ^
@@ -1025,7 +1027,7 @@ void program_define(t_info *info)
     }
     g_global.ex_status = WEXITSTATUS(ex);
     g_global.f = 0;
-    unlink("heredoc.tmp");
+    unlink_files(info);
 
     info->result = malloc(1);
     info->result[0] = '\0';

@@ -130,25 +130,6 @@ int define_fd_in(t_info *info)
             if (fd == -1)
                 opening_error(info->tokens[i].args[0]);
         }
-        if (info->tokens[i].type[0] == 'L')
-        {
-            if (fd)
-                close(fd);
-            fd = open("heredoc.tmp", O_CREAT | O_RDWR | O_TRUNC, 0777);
-            char *buf;
-            char *str;
-            int len;
-            buf = malloc(sizeof(char) * 100);
-            str = heredoc_str(info->tokens[i].args[0], buf, &len);
-            while (str)
-            {
-                write(fd, buf, len);
-                str = heredoc_str(info->tokens[i].args[0], buf, &len);
-            }
-            free(buf);
-            close(fd);
-            fd = open("heredoc.tmp", O_RDONLY);
-        }
         i++;
     }
     dup2(fd, 0);
