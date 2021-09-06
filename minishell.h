@@ -14,7 +14,7 @@
 typedef struct	s_token
 {
 	char *str;
-	char *type; //word, command, pipe, great, less, GREAT, LESS 
+	char type; //word, command, pipe, great, less, GREAT, LESS 
 	char **args;
 	int pipe;
 	int print;
@@ -81,6 +81,7 @@ void search_heredoc(t_info *info);
 char *heredoc_str(char *stop, char *buf, int *len);
 void redirects_solo(t_info *info);
 void unlink_files(t_info *info);
+void join_result(t_info *info, char *str);
 
 
 

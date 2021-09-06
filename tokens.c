@@ -403,17 +403,17 @@ t_token *delete_quotes(char **tmp_arr)
 	{
 		handle_token(tmp_arr[i], &tokens_arr[i]);
 		if (tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = ft_strdup("pipe");
+			tokens_arr[i].type = 'p';
 		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = ft_strdup("great");
+			tokens_arr[i].type = 'g';
 		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = ft_strdup("less");
+			tokens_arr[i].type = 'l';
 		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = ft_strdup("GREAT");
+			tokens_arr[i].type = 'G';
 		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = ft_strdup("LESS");
+			tokens_arr[i].type = 'L';
 		else
-			tokens_arr[i].type = ft_strdup("word");
+			tokens_arr[i].type = 'w';
 		i++;
 	}
 	return (tokens_arr);
@@ -424,11 +424,11 @@ void less_args(t_token *tokens, int i)
 	int q;
 	int j;
 
-	if ((i != 0) && (tokens[i - 1].type[0] != 'p'))
+	if ((i != 0) && (tokens[i - 1].type != 'p'))
 	{
 		q = 0;
 		i++;
-		while (tokens[i].str && tokens[i].type[0] == 'w')
+		while (tokens[i].str && tokens[i].type == 'w')
 		{
 			i++;
 			q++;
@@ -450,8 +450,8 @@ void less_args(t_token *tokens, int i)
 		tokens[i].args[1] = NULL;
 		tokens[i].args[0] = ft_strdup(tokens[i + 1].str);
 		if (tokens[i + 2].str)
-			if (tokens[i + 2].type[0] == 'w')
-				tokens[i + 2].type = "command";
+			if (tokens[i + 2].type == 'w')
+				tokens[i + 2].type = 'c';
 	}
 }
 
@@ -477,17 +477,17 @@ void command_args(t_token *tokens, int i)
 	q = 0;
 	j = i;
 	i++;
-	while (tokens[i].str && tokens[i].type[0] == 'w')
+	while (tokens[i].str && tokens[i].type == 'w')
 	{
 		i++;
 		q++;
 	}
 	if (tokens[i].str)
 	{
-		if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G')
+		if (tokens[i].type == 'g' || tokens[i].type == 'G')
 		{
 			i += 2;
-			while (tokens[i].str && tokens[i].type[0] == 'w')
+			while (tokens[i].str && tokens[i].type == 'w')
 			{
 				i++;
 				q++;
@@ -498,7 +498,7 @@ void command_args(t_token *tokens, int i)
 	tokens[j].args[q + 1] = NULL;
 	tokens[j].args[0] = ft_strdup(tokens[j].str);
 	k = 0;
-	while (tokens[j + k + 1].str && tokens[j + k + 1].type[0] == 'w')
+	while (tokens[j + k + 1].str && tokens[j + k + 1].type == 'w')
 	{
 		tokens[j].args[k + 1] = ft_strdup(tokens[j + k + 1].str);
 		k++;
@@ -506,10 +506,10 @@ void command_args(t_token *tokens, int i)
 	i = j + k + 1;
 	if (tokens[i].str)
 	{
-		if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G')
+		if (tokens[i].type == 'g' || tokens[i].type == 'G')
 		{
 			i += 2;
-			while (tokens[i].str && tokens[i].type[0] == 'w')
+			while (tokens[i].str && tokens[i].type == 'w')
 			{
 				tokens[j].args[k + 1] = ft_strdup(tokens[i].str);
 				k++;
@@ -527,38 +527,38 @@ void define_types(t_info *info)
 	while (info->tokens[i].str)
 	{
 		info->tokens[i].print = 1;
-		if ((i == 0 && info->tokens[i].type[0] == 'w') || info->tokens[i].type[0] == 'c')
+		if ((i == 0 && info->tokens[i].type == 'w') || info->tokens[i].type == 'c')
 		{
-			info->tokens[i].type = "command";
+			info->tokens[i].type = 'c';
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
 			command_args(info->tokens, i);
 		}
-		else if (info->tokens[i].type[0] == 'p')
+		else if (info->tokens[i].type == 'p')
 		{
 			if (info->tokens[i + 1].str)
-				if (info->tokens[i + 1].type[0] == 'w')
-					info->tokens[i + 1].type = "command";
+				if (info->tokens[i + 1].type == 'w')
+					info->tokens[i + 1].type = 'c';
 		}
-		else if (info->tokens[i].type[0] == 'g' || info->tokens[i].type[0] == 'G')
+		else if (info->tokens[i].type == 'g' || info->tokens[i].type == 'G')
 		{
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
 			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
 			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
 			info->tokens[i].args[1] = NULL;
-			if (!((i != 0) && (info->tokens[i - 1].type[0] != 'p')))
+			if (!((i != 0) && (info->tokens[i - 1].type != 'p')))
 				if (info->tokens[i + 2].str)
-					if (info->tokens[i + 2].type[0] == 'w')
-						info->tokens[i + 2].type = "command";
+					if (info->tokens[i + 2].type == 'w')
+						info->tokens[i + 2].type = 'c';
 		}
-		else if (info->tokens[i].type[0] == 'l')
+		else if (info->tokens[i].type == 'l')
 		{
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
 			less_args(info->tokens, i);
 		}
-		else if (info->tokens[i].type[0] == 'L')
+		else if (info->tokens[i].type == 'L')
 		{
 			free(info->tokens[i].args[0]);
 			free(info->tokens[i].args);
@@ -582,12 +582,12 @@ void set_pipes(t_info *info)
 	i = -1;
 	while (info->tokens[++i].str)
 	{
-		if (info->tokens[i].type[0] == 'c')
+		if (info->tokens[i].type == 'c')
 		{
 			j = i + 1;
 			while (info->tokens[j].str)
 			{
-				if (info->tokens[j].type[0] == 'p')
+				if (info->tokens[j].type == 'p')
 					info->tokens[i].pipe = 1;
 				j++;
 			}
@@ -595,7 +595,7 @@ void set_pipes(t_info *info)
 	}
 	i = -1;
 	while (info->tokens[++i].str)
-		if (info->tokens[i].type[0] == 'p')
+		if (info->tokens[i].type == 'p')
 			info->pipes_num++;
 }
 
@@ -606,10 +606,10 @@ void command_types(t_info *info)
 	i = 0;
 	while (info->tokens[i].str)
 	{
-		if ( (!ft_strncmp(info->tokens[i].str, "cd", 2) && ft_strlen(info->tokens[i].str) == 2 && info->tokens[i].type[0] == 'c')
-		|| (ft_strlen(info->tokens[i].str) == 6 && !ft_strncmp(info->tokens[i].str, "export", 6) && info->tokens[i].type[0] == 'c' && info->tokens[i].args[1])
-		|| (ft_strlen(info->tokens[i].str) == 5 && !ft_strncmp(info->tokens[i].str, "unset", 5) && info->tokens[i].type[0] == 'c')
-		|| (ft_strlen(info->tokens[i].str) == 4 && !ft_strncmp(info->tokens[i].str, "exit", 4) && info->tokens[i].type[0] == 'c')
+		if ( (!ft_strncmp(info->tokens[i].str, "cd", 2) && ft_strlen(info->tokens[i].str) == 2 && info->tokens[i].type == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 6 && !ft_strncmp(info->tokens[i].str, "export", 6) && info->tokens[i].type == 'c' && info->tokens[i].args[1])
+		|| (ft_strlen(info->tokens[i].str) == 5 && !ft_strncmp(info->tokens[i].str, "unset", 5) && info->tokens[i].type == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 4 && !ft_strncmp(info->tokens[i].str, "exit", 4) && info->tokens[i].type == 'c')
 		)
 			info->tokens[i].print = 0;
 		i++;

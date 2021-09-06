@@ -78,27 +78,27 @@ int unexpected_tokens(t_token *tokens)
     i = 0;
     while (tokens[i].str)
     {
-        if (tokens[i].type[0] == 'p')
+        if (tokens[i].type == 'p')
         {
             if (i == 0)
                 return (1);
-            if (tokens[i + 1].type)
-                if (tokens[i + 1].type[0] == 'p')
+            if (tokens[i + 1].str)
+                if (tokens[i + 1].type == 'p')
                     return (1);
         }
-        else if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
+        else if (tokens[i].type == 'g' || tokens[i].type == 'G' || tokens[i].type == 'l' || tokens[i].type == 'L')
         {
             if (tokens[i + 1].str)
             {
-                if (tokens[i + 1].type[0] == 'p')
+                if (tokens[i + 1].type == 'p')
                     return (1);
-                else if (tokens[i + 1].type[0] == 'L')
+                else if (tokens[i + 1].type == 'L')
                     return (2);
-                else if (tokens[i + 1].type[0] == 'l')
+                else if (tokens[i + 1].type == 'l')
                     return (3);
-                else if (tokens[i + 1].type[0] == 'g')
+                else if (tokens[i + 1].type == 'g')
                     return (4);
-                else if (tokens[i + 1].type[0] == 'G')
+                else if (tokens[i + 1].type == 'G')
                     return (5);
             }
             else
@@ -271,7 +271,6 @@ void history(t_info *info)
 int main(int ac, char **av, char **envp)
 {
     t_info info;
-	info.result = 0;
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);

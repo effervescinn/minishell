@@ -73,23 +73,24 @@ void define_fd_out(t_info *info)
 
     flag = 0;
     i = info->i2;
-    fd = -5;
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    fd = 0;
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'g')
+        if (info->tokens[i].type == 'g')
         {
             int a;
-            a = write(fd, "\0", 1);
-            if (a == -1 && fd != -5)
-                opening_error(info->tokens[i].args[0]);
-            close(fd);
+            // a = write(fd, NULL, 0);
+            // if (a == -1 && fd != -5)
+            //     opening_error(info->tokens[i].args[0]);
+            if (fd)
+                close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
-            a = write(fd, "\0", 1);
+            a = write(fd, NULL, 0);
             if (a == -1)
                 opening_error(info->tokens[i].args[0]);
             flag = 1;
         }
-        if (info->tokens[i].type[0] == 'G')
+        if (info->tokens[i].type == 'G')
         {
             int a;
             a = write(fd, "\0", 1);
@@ -120,9 +121,9 @@ int define_fd_in(t_info *info)
     flag = 0;
     i = info->i2;
     fd = 0;
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'l')
+        if (info->tokens[i].type == 'l')
         {
             if (fd)
                 close(fd);
@@ -144,9 +145,9 @@ int define_fd_built_in(t_info *info)
 
     i = info->i2;
     fd = -1;
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'g')
+        if (info->tokens[i].type == 'g')
         {
             write (fd, "\0", 1);
             close(fd);
@@ -155,7 +156,7 @@ int define_fd_built_in(t_info *info)
             if (a != 1 && fd != -5)
                 opening_error(info->tokens[i].args[0]);
         }
-        if (info->tokens[i].type[0] == 'G')
+        if (info->tokens[i].type == 'G')
         {
             write(fd, "\0", 1);
             close(fd);
@@ -178,9 +179,9 @@ int count_files(t_info *info, int q)
 
     files = 0;
     q2 = 0;
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'l')
+        if (info->tokens[i].type == 'l')
         {
             if (q == q2)
             {
@@ -202,9 +203,9 @@ int count_redir(t_info *info)
 
     i = info->i2;
     smb = 0;
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'l')
+        if (info->tokens[i].type == 'l')
             smb++;
         i++;
     }

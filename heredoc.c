@@ -51,7 +51,7 @@ void search_heredoc(t_info *info)
     i = 0;
     while (info->tokens[i].str)
     {
-        if (info->tokens[i].type[0] == 'L')
+        if (info->tokens[i].type == 'L')
         {
             filename = ft_strjoin(info->tokens[i].args[0], ".tmp");
             fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0777);
@@ -69,7 +69,7 @@ void search_heredoc(t_info *info)
             close(fd);
             free(info->tokens[i].args[0]);
             info->tokens[i].args[0] = ft_strdup(filename);
-            info->tokens[i].type[0] = 'l';
+            info->tokens[i].type = 'l';
             files_to_unlink(info, filename);
             free(filename);
         }
@@ -84,9 +84,9 @@ void redirects_solo(t_info *info)
     int a;
 
     i = info->i;
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'g')
+        if (info->tokens[i].type == 'g')
         {
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
             a = write(fd, "\0", 1);
@@ -94,7 +94,7 @@ void redirects_solo(t_info *info)
                 opening_error(info->tokens[i].args[0]);
             close(fd);
         }
-        if (info->tokens[i].type[0] == 'G')
+        if (info->tokens[i].type == 'G')
         {
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
             a = write(fd, "\0", 1);
@@ -102,7 +102,7 @@ void redirects_solo(t_info *info)
                 opening_error(info->tokens[i].args[0]);
             close(fd);
         }
-        if (info->tokens[i].type[0] == 'l')
+        if (info->tokens[i].type == 'l')
         {
             fd = open(info->tokens[i].args[0], O_RDONLY);
             if (fd == -1)
@@ -111,4 +111,13 @@ void redirects_solo(t_info *info)
         }
         i++;
     }
+}
+
+void join_result(t_info *info, char *str)
+{
+    if (info->result)
+        no_leaks_join(info->result, str);
+    else
+        info->result = ft_strdup(str);
+        
 }

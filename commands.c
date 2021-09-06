@@ -115,7 +115,7 @@ void echo(t_info *info)
     a = 1;
     if (!info->tokens[info->i].args[a])
     {
-        info->result = ft_strdup("\n\0");
+        info->result = ft_strdup("\n");
         return;
     }
     if (ft_strlen(info->tokens[info->i].args[a]) == 2 && !ft_strncmp(info->tokens[info->i].args[a], "-n", 2))
@@ -123,14 +123,15 @@ void echo(t_info *info)
         a++;
         if (!info->tokens[info->i].args[a])
         {
-            info->result = ft_strdup("\0");
+            // info->result = ft_strdup("\0");
             return;
         }
         n = 1;
     }
     while (info->tokens[info->i].args[a])
     {
-        info->result = no_leaks_join(info->result, info->tokens[info->i].args[a]);
+        join_result(info, info->tokens[info->i].args[a]);
+        // info->result = no_leaks_join(info->result, info->tokens[info->i].args[a]);
         if (info->tokens[info->i].args[a + 1])
             info->result = no_leaks_join(info->result, " ");
         a++;
@@ -146,7 +147,8 @@ void pwd(t_info *info)
     buf = getcwd(NULL, 100);
     if (buf)
     {
-        info->result = no_leaks_join(info->result, buf);
+        join_result(info, buf);
+        // info->result = no_leaks_join(info->result, buf);
         free(buf);
         info->result = no_leaks_join(info->result, "\n");
     }
@@ -161,7 +163,8 @@ void env(t_info *info)
     tmp = info->head;
     while (tmp)
     {
-        info->result = no_leaks_join(info->result, tmp->content);
+        join_result(info, tmp->content);
+        // info->result = no_leaks_join(info->result, tmp->content);
         info->result = no_leaks_join(info->result, "\n");
         tmp = tmp->next;
     }
@@ -222,7 +225,8 @@ void print_exp_vars(t_info *info)
     tmp = info->exp;
     while (tmp)
     {
-        info->result = no_leaks_join(info->result, "declare -x ");
+        join_result(info, "declare -x ");
+        // info->result = no_leaks_join(info->result, "declare -x ");
         info->result = no_leaks_join(info->result, tmp->content);
         info->result = no_leaks_join(info->result, "\n");
         tmp = tmp->next;
@@ -746,9 +750,9 @@ void add_from_the_first(t_info *info, int q, char **array, int *k)
     int files = 1;
     int i = info->i2;
 
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'l')
+        if (info->tokens[i].type == 'l')
         {
             if (q == q2)
             {
@@ -826,9 +830,9 @@ void prepare_args_and_fd(t_info *info)
 }
 void start_of_line(t_info *info)
 {
-    while (info->i2 != 0 && info->tokens[info->i2].type[0] != 'p')
+    while (info->i2 != 0 && info->tokens[info->i2].type != 'p')
         info->i2--;
-    if (info->tokens[info->i2].type[0] == 'p')
+    if (info->tokens[info->i2].type == 'p')
         info->i2++;
 }
 
@@ -847,9 +851,6 @@ void exec_printable(t_info *info, char *cmd)
         export(info);
     else if (cmd)
     {
-        if (info->result)
-            free(info->result);
-        info->result = NULL;
         prepare_args_and_fd(info);
         execve(cmd, info->tokens[info->i].args, 0);
     }
@@ -858,7 +859,6 @@ void exec_printable(t_info *info, char *cmd)
         write(2, "dashBash: ", 11);
         write(2, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
         write(2, ": command not found\n", 21);
-        info->result = NULL;
         exit(127);
     }
 }
@@ -868,9 +868,9 @@ int set_start(t_info *info)
     int i;
 
     i = 0;
-    while (info->tokens[i].str && info->tokens[i].type[0] != 'p')
+    while (info->tokens[i].str && info->tokens[i].type != 'p')
     {
-        if (info->tokens[i].type[0] == 'c')
+        if (info->tokens[i].type == 'c')
         {
             info->i = i;
             return 1;
@@ -894,10 +894,9 @@ void program_define(t_info *info)
 
     // printf("res |%s|\n", info->result);
 	// char *tmp = info->result;
-    info->result = malloc(1);
 	// if (tmp)
 	// 	free(tmp);
-    info->result[0] = '\0';
+    info->result = NULL;
     search_heredoc(info);
 
     while (++k < info->pipes_num + 1)
@@ -906,9 +905,9 @@ void program_define(t_info *info)
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
-        if (info->tokens[info->i].type[0] != 'c' && info->tokens[info->i].type[0] != 'L') //если в начале или после пайпа info->i на > , >> или <
+        if (info->tokens[info->i].type != 'c' && info->tokens[info->i].type != 'L') //если в начале или после пайпа info->i на > , >> или <
         {
-            if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type[0] == 'c')  //если "> 1 echo shtonibud"
+            if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type == 'c')  //если "> 1 echo shtonibud"
                 info->i += 2;                                                               //info->i будет на echo
             else                                                                            //если "> 1" или "> 1 > 2 > 3" и в таком духе
             {
@@ -932,7 +931,7 @@ void program_define(t_info *info)
             else
             {
                 (info->i)++;
-                while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'p')
+                while (info->tokens[info->i].str && info->tokens[info->i].type != 'p')
                     (info->i)++;
                 (info->i)++;
                 if (k < info->pipes_num)
@@ -963,6 +962,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -983,6 +983,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -1002,12 +1003,13 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
             free(cmd);
         }
-        while (info->tokens[info->i].str && info->tokens[info->i].type[0] != 'p')
+        while (info->tokens[info->i].str && info->tokens[info->i].type != 'p')
             (info->i)++;
         (info->i)++;
     }
@@ -1028,9 +1030,5 @@ void program_define(t_info *info)
     g_global.ex_status = WEXITSTATUS(ex);
     g_global.f = 0;
     unlink_files(info);
-
-    info->result = malloc(1);
-    info->result[0] = '\0';
-
     (info->i) = 0;
 }
