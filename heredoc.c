@@ -89,7 +89,7 @@ void redirects_solo(t_info *info)
         if (info->tokens[i].type == 'g')
         {
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
-            a = write(fd, "\0", 1);
+            a = write(fd, NULL, 0);
             if (a == -1)
                 opening_error(info->tokens[i].args[0]);
             close(fd);
@@ -97,7 +97,7 @@ void redirects_solo(t_info *info)
         if (info->tokens[i].type == 'G')
         {
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
-            a = write(fd, "\0", 1);
+            a = write(fd, NULL, 0);
             if (a == -1)
                 opening_error(info->tokens[i].args[0]);
             close(fd);

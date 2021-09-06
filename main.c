@@ -142,6 +142,8 @@ char *close_pipe(char *line)
     i = 0;
     while (line[i])
         i++;
+    if (i == 0)
+        return (line);
     i--;
     while (i > 0 && line[i] == ' ')
         i--;
@@ -225,10 +227,10 @@ void history(t_info *info)
             free(info->str_pwd);
             free(info->str_oldpwd);
             free(g_global.prompt);
-            write(1, "\n", 1);
+            write(1, "exit\n", 1);
             exit(0);
         }
-        if (count_quotes(g_global.input) % 2 == 0)
+        if (count_quotes(g_global.input) % 2 == 0 && ft_strlen(g_global.input))
         {
             newstr = replace_vars(g_global.input, info);
             tmp_arr = make_tokens(newstr);
@@ -258,7 +260,7 @@ void history(t_info *info)
             else
                 printf_tokens_err(tokens_err);
         }
-        else
+        else if (count_quotes(g_global.input) % 2 != 0)
             write(1, "-dashBash: unclosed quote\n", 27);
         if (g_global.input)
         {

@@ -115,7 +115,7 @@ void echo(t_info *info)
     a = 1;
     if (!info->tokens[info->i].args[a])
     {
-        info->result = ft_strdup("\n");
+        info->result = ft_strdup("\n\0");
         return;
     }
     if (ft_strlen(info->tokens[info->i].args[a]) == 2 && !ft_strncmp(info->tokens[info->i].args[a], "-n", 2))
@@ -123,15 +123,14 @@ void echo(t_info *info)
         a++;
         if (!info->tokens[info->i].args[a])
         {
-            // info->result = ft_strdup("\0");
+            info->result = ft_strdup("\0");
             return;
         }
         n = 1;
     }
     while (info->tokens[info->i].args[a])
     {
-        join_result(info, info->tokens[info->i].args[a]);
-        // info->result = no_leaks_join(info->result, info->tokens[info->i].args[a]);
+        info->result = no_leaks_join(info->result, info->tokens[info->i].args[a]);
         if (info->tokens[info->i].args[a + 1])
             info->result = no_leaks_join(info->result, " ");
         a++;
@@ -147,8 +146,7 @@ void pwd(t_info *info)
     buf = getcwd(NULL, 100);
     if (buf)
     {
-        join_result(info, buf);
-        // info->result = no_leaks_join(info->result, buf);
+        info->result = no_leaks_join(info->result, buf);
         free(buf);
         info->result = no_leaks_join(info->result, "\n");
     }
@@ -163,8 +161,7 @@ void env(t_info *info)
     tmp = info->head;
     while (tmp)
     {
-        join_result(info, tmp->content);
-        // info->result = no_leaks_join(info->result, tmp->content);
+        info->result = no_leaks_join(info->result, tmp->content);
         info->result = no_leaks_join(info->result, "\n");
         tmp = tmp->next;
     }
@@ -225,8 +222,7 @@ void print_exp_vars(t_info *info)
     tmp = info->exp;
     while (tmp)
     {
-        join_result(info, "declare -x ");
-        // info->result = no_leaks_join(info->result, "declare -x ");
+        info->result = no_leaks_join(info->result, "declare -x ");
         info->result = no_leaks_join(info->result, tmp->content);
         info->result = no_leaks_join(info->result, "\n");
         tmp = tmp->next;
@@ -851,6 +847,9 @@ void exec_printable(t_info *info, char *cmd)
         export(info);
     else if (cmd)
     {
+        if (info->result)
+            free(info->result);
+        info->result = NULL;
         prepare_args_and_fd(info);
         execve(cmd, info->tokens[info->i].args, 0);
     }
@@ -859,6 +858,7 @@ void exec_printable(t_info *info, char *cmd)
         write(2, "dashBash: ", 11);
         write(2, info->tokens[info->i].str, ft_strlen(info->tokens[info->i].str));
         write(2, ": command not found\n", 21);
+        info->result = NULL;
         exit(127);
     }
 }
@@ -894,9 +894,10 @@ void program_define(t_info *info)
 
     // printf("res |%s|\n", info->result);
 	// char *tmp = info->result;
+    info->result = malloc(1);
 	// if (tmp)
 	// 	free(tmp);
-    info->result = NULL;
+    info->result[0] = '\0';
     search_heredoc(info);
 
     while (++k < info->pipes_num + 1)
@@ -959,10 +960,10 @@ void program_define(t_info *info)
                 exec_printable(info, cmd);
                 if (info->result)
                 {
+
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
-                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -983,7 +984,6 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
-                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -998,12 +998,12 @@ void program_define(t_info *info)
                 }
                 info->i2 = info->i;
                 exec_printable(info, cmd);
+                
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
-                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -1030,5 +1030,9 @@ void program_define(t_info *info)
     g_global.ex_status = WEXITSTATUS(ex);
     g_global.f = 0;
     unlink_files(info);
+
+    info->result = malloc(1);
+    info->result[0] = '\0';
+
     (info->i) = 0;
 }

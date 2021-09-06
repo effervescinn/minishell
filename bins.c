@@ -80,7 +80,7 @@ void define_fd_out(t_info *info)
         {
             int a;
             // a = write(fd, NULL, 0);
-            // if (a == -1 && fd != -5)
+            // if (a == -1)
             //     opening_error(info->tokens[i].args[0]);
             if (fd)
                 close(fd);
@@ -93,12 +93,12 @@ void define_fd_out(t_info *info)
         if (info->tokens[i].type == 'G')
         {
             int a;
-            a = write(fd, "\0", 1);
-            if (a == -1 && fd != -5)
-                opening_error(info->tokens[i].args[0]);
+            // a = write(fd, NULL, 0);
+            // if (a == -1 && fd != -5)
+            //     opening_error(info->tokens[i].args[0]);
             close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
-            a = write(fd, "\0", 1);
+            a = write(fd, NULL, 0);
             if (a == -1)
                 opening_error(info->tokens[i].args[0]);
             flag = 1;
@@ -149,20 +149,22 @@ int define_fd_built_in(t_info *info)
     {
         if (info->tokens[i].type == 'g')
         {
-            write (fd, "\0", 1);
-            close(fd);
+            a = write(fd, NULL, 0);
+            if (fd)
+                close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
-            a = write (fd, "\0", 1);
-            if (a != 1 && fd != -5)
+            a = write(fd, NULL, 0);
+            if (a == -1)
                 opening_error(info->tokens[i].args[0]);
         }
         if (info->tokens[i].type == 'G')
         {
-            write(fd, "\0", 1);
-            close(fd);
+            a = write(fd, NULL, 0);
+            if (fd)
+                close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
-            a = write (fd, "\0", 1);
-            if (a != 1 && fd != -5)
+            a = write(fd, NULL, 0);
+            if (a == -1)
                 opening_error(info->tokens[i].args[0]);
         }
         i++;
