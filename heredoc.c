@@ -111,6 +111,7 @@ void redirects_solo(t_info *info)
         }
         i++;
     }
+    info->i = i;
 }
 
 void join_result(t_info *info, char *str)

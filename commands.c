@@ -919,8 +919,8 @@ void program_define(t_info *info)
                 //  |
                 //  |
                 // это нужно чтобы потом отмотать индекс на следующий токен после пайпа вот тут -
-                if (info->tokens[info->i + 2].str)                           //  <--------------|
-                    info->i += 3;
+                if (info->tokens[info->i + 1].str)                           //  <--------------|
+                    info->i += 1;
                 continue ;
             }
         }
