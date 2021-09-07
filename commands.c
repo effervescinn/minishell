@@ -141,17 +141,22 @@ void echo(t_info *info)
 
 void pwd(t_info *info)
 {
-    char *buf;
+    char *buf = NULL;
 
     buf = getcwd(NULL, 100);
     if (buf)
     {
         info->result = no_leaks_join(info->result, buf);
-        free(buf);
         info->result = no_leaks_join(info->result, "\n");
     }
-    else
-        exit(0);
+    while (!buf)
+    {
+        chdir("..");
+        buf = getcwd(NULL, 100);
+        info->result = no_leaks_join(info->result, buf);
+        info->result = no_leaks_join(info->result, "\n");
+    }
+    free(buf);
 }
 
 void env(t_info *info)
@@ -522,6 +527,7 @@ void export(t_info *info)
                 find_existing_var(var_name, info, a);
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 set_pointers(info);
+                make_paths(info);
             }
             else
             {
@@ -541,6 +547,7 @@ char *up_dir(char *str)
     int r;
 
     i = 0;
+    printf("privet\n");
     while (str[i])
     {
         if (str[i] == '/')
@@ -647,7 +654,7 @@ void cd(t_info *info)
         }
     }
     else
-        opening_error(info->tokens[info->i].args[1]);
+        opening_error_scnd(info->tokens[info->i].args[1]);
 }
 
 void remove_var(t_info *info, t_list **list, int a)
@@ -919,7 +926,7 @@ void program_define(t_info *info)
                 //  |
                 //  |
                 // это нужно чтобы потом отмотать индекс на следующий токен после пайпа вот тут -
-                if (info->tokens[info->i + 1].str)                           //  <--------------|
+                if (info->tokens[info->i].str && info->tokens[info->i + 1].str)                           //  <--------------|
                     info->i += 1;
                 continue ;
             }

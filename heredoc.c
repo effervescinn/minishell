@@ -5,7 +5,7 @@ char *heredoc_str(char *stop, char *buf, int *len)
     write (0, "> ", 2);
     *len = read(0, buf, 100);
     buf[*len] = '\0';
-    if (!ft_strncmp(buf, stop, ft_strlen(stop)))
+    if (!ft_strncmp(buf, stop, ft_strlen(stop)) && *len - 1 == ft_strlen(stop))
         return (NULL);
     return (buf);
 }

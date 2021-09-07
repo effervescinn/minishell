@@ -287,7 +287,7 @@ int main(int ac, char **av, char **envp)
     g_global.f = 0;
     info.heredoc = NULL;
 
-    // file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
+    file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);
