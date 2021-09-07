@@ -227,7 +227,7 @@ void history(t_info *info)
             free(info->str_pwd);
             free(info->str_oldpwd);
             free(g_global.prompt);
-            write(1, "exit\n", 1);
+            write(1, "exit\n", 5);
             exit(0);
         }
         if (count_quotes(g_global.input) % 2 == 0 && ft_strlen(g_global.input))

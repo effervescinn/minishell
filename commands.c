@@ -407,6 +407,8 @@ char *remove_eqs(char *str, char *ptr_to_eq)
     char *new;
 
     i = 0;
+        if (ptr_to_eq[i + 1] != '=')
+            return str;
     while (ptr_to_eq[i] && ptr_to_eq[i] == '=')
         i++;
     new = malloc(sizeof(char) * (ft_strlen(str) - i + 2));
@@ -496,13 +498,14 @@ void export(t_info *info)
             if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].args[a])
                 var_name = var_name_in_str(info->tokens[info->i].args[a], ptr_to_eq);
             else
-                var_name = info->tokens[info->i].args[a];
+                var_name = ft_strdup(info->tokens[info->i].args[a]);
             if (!check_var_name(var_name))
             {
                 write(2, "-dashBash: export: `", 20);
                 write(2, info->tokens[info->i].args[a], ft_strlen(info->tokens[info->i].args[a]));
                 write(2, "': not a valid identifier\n", 27);
                 a++;
+                free(var_name);
                 continue;
             }
             if (ptr_to_eq && *(ptr_to_eq - 1) == '+')
@@ -511,6 +514,7 @@ void export(t_info *info)
                 remove_from_extra_exp(&info->extra_exp, var_name);
                 set_pointers(info);
                 make_paths(info);
+                free(var_name);
                 return;
             }
             if (ptr_to_eq)
@@ -524,6 +528,7 @@ void export(t_info *info)
                 if (!check_env_vars(info, a))
                     extra_export(info, a);
             }
+            free(var_name);
             a++;
         }
     }
@@ -835,8 +840,6 @@ void start_of_line(t_info *info)
 void exec_printable(t_info *info, char *cmd)
 {
     start_of_line(info);
-    // if (!ft_strncmp(info->tokens[info->i].str, "<<", 2) && ft_strlen(info->tokens[info->i].str) == 2) //// пока не работает
-    //     search_heredoc(info);
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
         pwd(info);
     else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
@@ -894,10 +897,7 @@ void program_define(t_info *info)
 
     // printf("res |%s|\n", info->result);
 	// char *tmp = info->result;
-    info->result = malloc(1);
-	// if (tmp)
-	// 	free(tmp);
-    info->result[0] = '\0';
+    info->result = ft_strdup("\0");
     search_heredoc(info);
 
     while (++k < info->pipes_num + 1)
