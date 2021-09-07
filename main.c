@@ -191,12 +191,19 @@ void check_pipe()
     if (g_global.input == NULL)
         return;
     i = 0;
+    while (g_global.input[i])
+        i++;
+    if (i > 0)
+        i--;
+    while (g_global.input[i] == ' ' && i > 0)
+        i--;
     if (g_global.input[i] == '|')
     {
-        i++;
-        while (g_global.input[i] && g_global.input[i] == ' ')
-            i++;
-        if (g_global.input[i] == '\0')
+        if (i > 0)
+            i--;
+        while (g_global.input[i] == ' ' && i > 0)
+            i--;
+        if (g_global.input[i] == '|')
             return ;
     }
     g_global.input = close_pipe(g_global.input);
