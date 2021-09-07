@@ -1,19 +1,13 @@
 #include "minishell.h"
 
-char *heredoc_str(char *stop, char **buf, int *len, t_info *info)
+char *heredoc_str(char *stop, char *buf, int *len)
 {
-    char *buf2;
-
     write (0, "> ", 2);
-    *len = read(0, *buf, 100);
-    (*buf)[*len - 1] = '\0';
-    if (!ft_strncmp(*buf, stop, ft_strlen(stop)) && *len - 1 == ft_strlen(stop))
+    *len = read(0, buf, 100);
+    buf[*len] = '\0';
+    if (!ft_strncmp(buf, stop, ft_strlen(stop)) && *len - 1 == ft_strlen(stop))
         return (NULL);
-    buf2 = *buf;
-    *buf = replace_vars(buf2, info);
-    *buf = no_leaks_join(*buf, "\n");
-    *len = ft_strlen(*buf);
-    return (*buf);
+    return (buf);
 }
 
 void files_to_unlink(t_info *info, char *filename)
@@ -65,13 +59,11 @@ void search_heredoc(t_info *info)
             char *str;
             int len;
             buf = malloc(sizeof(char) * 100);
-            str = heredoc_str(info->tokens[i].args[0], &buf, &len, info);
+            str = heredoc_str(info->tokens[i].args[0], buf, &len);
             while (str)
             {
                 write(fd, buf, len);
-                free(buf);
-                buf = malloc(sizeof(char) * 100);
-                str = heredoc_str(info->tokens[i].args[0], &buf, &len, info);
+                str = heredoc_str(info->tokens[i].args[0], buf, &len);
             }
             free(buf);
             close(fd);

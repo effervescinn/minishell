@@ -540,31 +540,31 @@ void export(t_info *info)
     }
 }
 
-char *up_dir(char *str)
-{
-    char *new;
-    int i;
-    int r;
+// char *up_dir(char *str)
+// {
+//     char *new;
+//     int i;
+//     int r;
 
-    i = 0;
-    printf("privet\n");
-    while (str[i])
-    {
-        if (str[i] == '/')
-            r = i;
-        i++;
-    }
-    new = malloc(sizeof(char) * r + 1);
-    i = 0;
-    while (i < r)
-    {
-        new[i] = str[i];
-        i++;
-    }
-    new[r - 1] = '\0';
-    free(str);
-    return (new);
-}
+//     i = 0;
+//     printf("privet\n");
+//     while (str[i])
+//     {
+//         if (str[i] == '/')
+//             r = i;
+//         i++;
+//     }
+//     new = malloc(sizeof(char) * r + 1);
+//     i = 0;
+//     while (i < r)
+//     {
+//         new[i] = str[i];
+//         i++;
+//     }
+//     new[r - 1] = '\0';
+//     free(str);
+//     return (new);
+// }
 
 void add_oldpwd(t_info *info)
 {
@@ -639,10 +639,7 @@ void cd(t_info *info)
         {
             while (!buf)
             {
-                free(info->tokens[info->i].args[1]);
-                info->tokens[info->i].args[1] = ft_strdup(info->str_pwd + 4);
-                info->tokens[info->i].args[1] = up_dir(info->tokens[info->i].args[1]);
-                a = chdir(info->tokens[info->i].args[1]);
+                a = chdir("..");
                 if (!a)
                 {
                     new_pwd_frst(info);
@@ -838,6 +835,7 @@ void prepare_args_and_fd(t_info *info)
 }
 void start_of_line(t_info *info)
 {
+    info->i2 = info->i;
     while (info->i2 != 0 && info->tokens[info->i2].type != 'p')
         info->i2--;
     if (info->tokens[info->i2].type == 'p')
@@ -971,6 +969,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -991,6 +990,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -1011,6 +1011,7 @@ void program_define(t_info *info)
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
+                    info->result = NULL;
                 }
                 exit(0);
             }
@@ -1038,8 +1039,13 @@ void program_define(t_info *info)
     g_global.f = 0;
     unlink_files(info);
 
-    info->result = malloc(1);
-    info->result[0] = '\0';
+    if (info->result)
+    {
+        free(info->result);
+        info->result = NULL;
+    }
+    // info->result = malloc(1);
+    // info->result[0] = '\0';
 
     (info->i) = 0;
 }

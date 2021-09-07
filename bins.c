@@ -62,6 +62,10 @@ char *find_bin(t_info *info)
             return (ret);
         }
     }
+    j = -1;
+    while (tmp_arr[++j])
+        free(tmp_arr[j]);
+    free(tmp_arr);
 	return (NULL);
 }
 
@@ -79,9 +83,6 @@ void define_fd_out(t_info *info)
         if (info->tokens[i].type == 'g')
         {
             int a;
-            // a = write(fd, NULL, 0);
-            // if (a == -1)
-            //     opening_error(info->tokens[i].args[0]);
             if (fd)
                 close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_TRUNC, 0777);
@@ -93,9 +94,6 @@ void define_fd_out(t_info *info)
         if (info->tokens[i].type == 'G')
         {
             int a;
-            // a = write(fd, NULL, 0);
-            // if (a == -1 && fd != -5)
-            //     opening_error(info->tokens[i].args[0]);
             close(fd);
             fd = open(info->tokens[i].args[0], O_CREAT | O_WRONLY | O_APPEND, 0777);
             a = write(fd, NULL, 0);

@@ -78,10 +78,11 @@ int count_files(t_info *info, int q);
 int count_redir(t_info *info);
 void opening_error(char *filename);
 void search_heredoc(t_info *info);
-char *heredoc_str(char *stop, char **buf, int *len, t_info *info);
+char *heredoc_str(char *stop, char *buf, int *len);
 void redirects_solo(t_info *info);
 void unlink_files(t_info *info);
 void opening_error_scnd(char *filename);
+
 
 
 //commands.c
