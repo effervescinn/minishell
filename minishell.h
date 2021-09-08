@@ -78,11 +78,10 @@ int count_files(t_info *info, int q);
 int count_redir(t_info *info);
 void opening_error(char *filename);
 void search_heredoc(t_info *info);
-char *heredoc_str(char *stop, char *buf, int *len);
+char *heredoc_str(char *stop, char **buf, int *len, t_info *info);
 void redirects_solo(t_info *info);
 void unlink_files(t_info *info);
 void opening_error_scnd(char *filename);
-
 
 
 //commands.c
@@ -116,7 +115,7 @@ char *vars(char **str, t_list *head);
 void dollar(char **str, char **newstr, char **start, t_info *info);
 char *replace_vars(char *str, t_info *info);
 char **make_tokens(char *str);
-void handle_token(char *tmp_token, t_token *token);
+void handle_token(char *tmp_token, char **str);
 t_token *delete_quotes(char **tmp_arr);
 void less_args(t_token *tokens, int i);
 void define_types(t_info *info);
