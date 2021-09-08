@@ -135,6 +135,8 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 		else
 		{
 			var = vars(str, info->head);
+			// printf("str |%s|\n", *str);
+			// printf("var |%s|\n", var);
 			glue = ft_substr(*start, 0, *str - *start - 1);
 			tmp = *newstr;
 			*newstr = ft_strjoin(tmp, glue);
@@ -314,14 +316,13 @@ char **make_tokens(char *str)
 	return (arr);
 }
 
-void handle_token(char *tmp_token, t_token *token)
+void handle_token(char *tmp_token, char **str)
 {
 	int i;
 	int j;
 	int quotes;
 	int flag;
 
-	token->str = (char *)malloc(ft_strlen(tmp_token) + 1);
 	i = 0;
 	j = 0;
 	flag = 0;
@@ -355,7 +356,7 @@ void handle_token(char *tmp_token, t_token *token)
 		{
 			while (tmp_token[i] && tmp_token[i] != '\'')
 			{
-				token->str[j] = tmp_token[i];
+				(*str)[j] = tmp_token[i];
 				i++;
 				j++;
 			}
@@ -365,7 +366,7 @@ void handle_token(char *tmp_token, t_token *token)
 		{
 			while (tmp_token[i] && tmp_token[i] != '\"')
 			{
-				token->str[j] = tmp_token[i];
+				(*str)[j] = tmp_token[i];
 				i++;
 				j++;
 			}
@@ -375,7 +376,7 @@ void handle_token(char *tmp_token, t_token *token)
 		{
 			while (tmp_token[i] && tmp_token[i] != '\"' && tmp_token[i] != '\'')
 			{
-				token->str[j] = tmp_token[i];
+				(*str)[j] = tmp_token[i];
 				i++;
 				j++;
 			}
@@ -384,7 +385,7 @@ void handle_token(char *tmp_token, t_token *token)
 		if (tmp_token[i])
 			i++;
 	}
-	token->str[j] = '\0';
+	(*str)[j] = '\0';
 }
 
 t_token *delete_quotes(char **tmp_arr)
@@ -400,7 +401,8 @@ t_token *delete_quotes(char **tmp_arr)
 	i = 0;
 	while (tmp_arr[i])
 	{
-		handle_token(tmp_arr[i], &tokens_arr[i]);
+		tokens_arr[i].str = (char *)malloc(ft_strlen(tmp_arr[i]) + 1);
+		handle_token(tmp_arr[i], &tokens_arr[i].str);
 		if (tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
 			tokens_arr[i].type = 'p';
 		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
