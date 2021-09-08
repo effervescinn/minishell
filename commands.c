@@ -893,15 +893,19 @@ void program_define(t_info *info)
     char *cmd;
     pid_t pid;
     int fd_dasha;
-    // int *pids; //for pipes
-    // int **fd; //for pipes
-    int pids[info->pipes_num + 1];
-    int fd[info->pipes_num][2];
+    int *pids;
+    int **fd;
     int k = -1; //счетчик для пайпов
     int j;
 
-    // printf("res |%s|\n", info->result);
-	// char *tmp = info->result;
+    pids = (int*)malloc(sizeof(int) * (info->pipes_num + 1));
+    fd = (int**)malloc(sizeof(int*) * info->pipes_num);
+    j = 0;
+    while (j < info->pipes_num)
+    {
+        fd[j] = (int*)malloc(sizeof(int) * 2);
+        j++;
+    }
     info->result = ft_strdup("\0");
     search_heredoc(info);
 
@@ -911,20 +915,14 @@ void program_define(t_info *info)
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
-        if (info->tokens[info->i].type != 'c' && info->tokens[info->i].type != 'L') //если в начале или после пайпа info->i на > , >> или <
+        if (info->tokens[info->i].type != 'c' && info->tokens[info->i].type != 'L')
         {
-            if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type == 'c')  //если "> 1 echo shtonibud"
-                info->i += 2;                                                               //info->i будет на echo
-            else                                                                            //если "> 1" или "> 1 > 2 > 3" и в таком духе
+            if (info->tokens[info->i + 2].str && info->tokens[info->i + 2].type == 'c')
+                info->i += 2;
+            else
             {
                 redirects_solo(info);
-                //тут должна быть функция, которая обрабатывает "> file" или "< file" без функции после ("> file > file > file" и "< file < file" в том числе)
-                //эта функция должна отмотать info->i до последнего редиректа, если их несколько (т.е если "> 1 > 2 > 3", info->i должен быть на редиректе перед 3)
-                //  ^
-                //  |
-                //  |
-                // это нужно чтобы потом отмотать индекс на следующий токен после пайпа вот тут -
-                if (info->tokens[info->i].str && info->tokens[info->i + 1].str)                           //  <--------------|
+                if (info->tokens[info->i].str && info->tokens[info->i + 1].str)
                     info->i += 1;
                 continue ;
             }
@@ -965,7 +963,6 @@ void program_define(t_info *info)
                 exec_printable(info, cmd);
                 if (info->result)
                 {
-
                     fd_dasha = define_fd_built_in(info);
                     write(fd_dasha, info->result, ft_strlen(info->result));
                     free(info->result);
@@ -1044,8 +1041,14 @@ void program_define(t_info *info)
         free(info->result);
         info->result = NULL;
     }
-    // info->result = malloc(1);
-    // info->result[0] = '\0';
-
     (info->i) = 0;
+
+    free(pids);
+    j = 0;
+    while (j < info->pipes_num)
+    {
+        free(fd[j]);
+        j++;
+    }
+    free(fd);
 }
