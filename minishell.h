@@ -14,7 +14,7 @@
 typedef struct	s_token
 {
 	char *str;
-	char *type; //word, command, pipe, great, less, GREAT, LESS 
+	char type; //word, command, pipe, great, less, GREAT, LESS 
 	char **args;
 	int pipe;
 	int print;
@@ -29,7 +29,6 @@ typedef struct	s_info
     char *result;
 	int i;
 	int i2;
-	int index;
 	t_list *exp;
 	t_list *extra_exp;
 	t_list *pths;
@@ -37,11 +36,7 @@ typedef struct	s_info
 	t_list *oldpwd;
 	int oldpwd_flag;
 	t_list *heredoc;
-
-
 	char **pths_array;
-
-	
 	char *str_pwd;
 	char *str_oldpwd;
 	int pipes_num;
@@ -57,8 +52,8 @@ typedef struct s_global
 
 
 
-int file;
-t_global g_global;
+extern int file;
+extern t_global g_global;
 
 typedef void (*sighandler_t)(int);
 
@@ -80,15 +75,13 @@ void define_fd_out(t_info *info);
 int define_fd_in(t_info *info);
 int define_fd_built_in(t_info *info);
 int count_files(t_info *info, int q);
-// int open_file_in(t_info *info, int a);
 int count_redir(t_info *info);
-// void exec_once(t_info *info, char *cmd);
-// void exec_few_times(int *flag, t_info *info, char *cmd, int files);
-void replace_index(t_info *info);
 void opening_error(char *filename);
 void search_heredoc(t_info *info);
-char *heredoc_str(char *stop, char *buf, int *len);
-
+char *heredoc_str(char *stop, char **buf, int *len, t_info *info);
+void redirects_solo(t_info *info);
+void unlink_files(t_info *info);
+void opening_error_scnd(char *filename);
 
 
 //commands.c
@@ -112,6 +105,7 @@ void new_pwd(t_info *info);
 void exec_command(t_info *info, int pid);
 void free_list(t_list **list);
 int set_start(t_info *info);
+char *change_shlvl(char *str);
 
 
 
@@ -122,7 +116,7 @@ char *vars(char **str, t_list *head);
 void dollar(char **str, char **newstr, char **start, t_info *info);
 char *replace_vars(char *str, t_info *info);
 char **make_tokens(char *str);
-void handle_token(char *tmp_token, t_token *token);
+void handle_token(char *tmp_token, char **str);
 t_token *delete_quotes(char **tmp_arr);
 void less_args(t_token *tokens, int i);
 void define_types(t_info *info);

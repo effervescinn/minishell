@@ -1,5 +1,8 @@
 #include "minishell.h"
 
+int file;
+t_global g_global;
+
 int ft_putchar(int c)
 {
     write(1, &c, 1);
@@ -75,27 +78,27 @@ int unexpected_tokens(t_token *tokens)
     i = 0;
     while (tokens[i].str)
     {
-        if (tokens[i].type[0] == 'p')
+        if (tokens[i].type == 'p')
         {
             if (i == 0)
                 return (1);
-            if (tokens[i + 1].type)
-                if (tokens[i + 1].type[0] == 'p')
+            if (tokens[i + 1].str)
+                if (tokens[i + 1].type == 'p')
                     return (1);
         }
-        else if (tokens[i].type[0] == 'g' || tokens[i].type[0] == 'G' || tokens[i].type[0] == 'l' || tokens[i].type[0] == 'L')
+        else if (tokens[i].type == 'g' || tokens[i].type == 'G' || tokens[i].type == 'l' || tokens[i].type == 'L')
         {
             if (tokens[i + 1].str)
             {
-                if (tokens[i + 1].type[0] == 'p')
+                if (tokens[i + 1].type == 'p')
                     return (1);
-                else if (tokens[i + 1].type[0] == 'L')
+                else if (tokens[i + 1].type == 'L')
                     return (2);
-                else if (tokens[i + 1].type[0] == 'l')
+                else if (tokens[i + 1].type == 'l')
                     return (3);
-                else if (tokens[i + 1].type[0] == 'g')
+                else if (tokens[i + 1].type == 'g')
                     return (4);
-                else if (tokens[i + 1].type[0] == 'G')
+                else if (tokens[i + 1].type == 'G')
                     return (5);
             }
             else
@@ -139,6 +142,8 @@ char *close_pipe(char *line)
     i = 0;
     while (line[i])
         i++;
+    if (i == 0)
+        return (line);
     i--;
     while (i > 0 && line[i] == ' ')
         i--;
@@ -157,25 +162,26 @@ char *close_pipe(char *line)
                 continue ;
             else
                 break;         
-        }
+       }
         no_enters = (char*)malloc(ft_strlen(closed_str) + 1);
         i = 0;
-        while (*closed_str)
+        j = 0;
+        while (closed_str[j])
         {
-            if (*closed_str != '\n')
+            if (closed_str[j] != '\n')
             {
-                no_enters[i] = *closed_str;
+                no_enters[i] = closed_str[j];
                 i++;
             }
-            closed_str++;
+            j++;
         }
         no_enters[i] = '\0';
         free(line);
-        // free(closed_str);
+        free(closed_str);
         return (no_enters);
     }
     free(line);
-    return closed_str;
+    return (closed_str);
 }
 
 void check_pipe()
@@ -185,14 +191,22 @@ void check_pipe()
     if (g_global.input == NULL)
         return;
     i = 0;
+    while (g_global.input[i])
+        i++;
+    if (i > 0)
+        i--;
+    while (g_global.input[i] == ' ' && i > 0)
+        i--;
     if (g_global.input[i] == '|')
     {
-        i++;
-        while (g_global.input[i] && g_global.input[i] == ' ')
-            i++;
-        if (g_global.input[i] == '\0')
+        if (i > 0)
+            i--;
+        while (g_global.input[i] == ' ' && i > 0)
+            i--;
+        if (g_global.input[i] == '|')
             return ;
     }
+    // free(g_global.input);
     g_global.input = close_pipe(g_global.input);
     return ;
 }
@@ -221,10 +235,10 @@ void history(t_info *info)
             free(info->str_pwd);
             free(info->str_oldpwd);
             free(g_global.prompt);
-            write(1, "\n", 1);
+            write(1, "exit\n", 5);
             exit(0);
         }
-        if (count_quotes(g_global.input) % 2 == 0)
+        if (count_quotes(g_global.input) % 2 == 0 && ft_strlen(g_global.input))
         {
             newstr = replace_vars(g_global.input, info);
             tmp_arr = make_tokens(newstr);
@@ -254,7 +268,7 @@ void history(t_info *info)
             else
                 printf_tokens_err(tokens_err);
         }
-        else
+        else if (count_quotes(g_global.input) % 2 != 0)
             write(1, "-dashBash: unclosed quote\n", 27);
         if (g_global.input)
         {
@@ -267,7 +281,6 @@ void history(t_info *info)
 int main(int ac, char **av, char **envp)
 {
     t_info info;
-	info.result = 0;
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
