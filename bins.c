@@ -244,5 +244,4 @@ void opening_error_scnd(char *filename)
     else if (errno == 2)
         write(2, ": No such file or directory\n", 28);
     g_global.ex_status = 1;
-
 }

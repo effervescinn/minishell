@@ -840,6 +840,7 @@ void start_of_line(t_info *info)
         info->i2++;
 }
 
+
 char *change_shlvl(char *str)
 {
     int lvl;

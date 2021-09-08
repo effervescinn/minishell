@@ -206,7 +206,6 @@ void check_pipe()
         if (g_global.input[i] == '|')
             return ;
     }
-    // free(g_global.input);
     g_global.input = close_pipe(g_global.input);
     return ;
 }
