@@ -840,7 +840,22 @@ void start_of_line(t_info *info)
         info->i2++;
 }
 
-char **make_envp_arr(t_info *info)
+
+char *change_shlvl(char *str)
+{
+    int lvl;
+    char *tmp;
+    char *new_str;
+
+    lvl = ft_atoi(str + 6);
+    lvl++;
+    tmp = ft_itoa(lvl);
+    new_str = ft_strjoin("SHLVL=", tmp);
+    free(tmp);
+    return (new_str);
+}
+
+char **make_envp_arr(t_info *info, char **shlvl)
 {
     int i;
     t_list *tmp;
@@ -869,6 +884,7 @@ char **make_envp_arr(t_info *info)
 void exec_printable(t_info *info, char *cmd)
 {
     char **envp_arr;
+    char *shlvl;
 
     start_of_line(info);
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
@@ -885,9 +901,11 @@ void exec_printable(t_info *info, char *cmd)
             free(info->result);
         info->result = NULL;
         prepare_args_and_fd(info);
-        //функция, которая делает массив из списка
-        envp_arr = make_envp_arr(info);
+        envp_arr = make_envp_arr(info, &shlvl);
+        // signal(SIGINT, &sig_int);
+        // signal(SIGQUIT, SIG_DFL);
         execve(cmd, info->tokens[info->i].args, envp_arr);
+        free(shlvl);
         free(envp_arr);
     }
     else

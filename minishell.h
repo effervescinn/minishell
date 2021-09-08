@@ -105,6 +105,8 @@ void new_pwd(t_info *info);
 void exec_command(t_info *info, int pid);
 void free_list(t_list **list);
 int set_start(t_info *info);
+char *change_shlvl(char *str);
+
 
 
 

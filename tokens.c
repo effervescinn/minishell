@@ -12,7 +12,10 @@ void make_env(char **envp, t_list **head)
 		new = (t_list *)malloc(sizeof(t_list));
 		if (ft_strncmp("_=./", envp[i], 4) && ft_strncmp("OLDPWD=", envp[i], 7))
 		{
-			new->content = ft_strdup(envp[i]);
+	        if (!ft_strncmp(envp[i], "SHLVL=", 6))
+            	new->content = change_shlvl(envp[i]);
+			else
+				new->content = ft_strdup(envp[i]);
 			new->next = NULL;
 			ft_lstadd_back(head, new);
 		}
