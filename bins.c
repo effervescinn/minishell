@@ -6,8 +6,8 @@ void free_paths_array(t_info *info)
 
     if (!info->pths_array)  
         return;
-    i = 0;
-    while (info->pths_array[i++])
+    i = -1;
+    while (info->pths_array[++i])
         free(info->pths_array[i]);
     free(info->pths_array);
     info->pths_array = NULL;
@@ -15,10 +15,14 @@ void free_paths_array(t_info *info)
 
 void make_paths(t_info *info)
 {
-    if (info->pths)
-        info->pths_array = ft_split(info->pths->content + 5, ':');
+    if (info->pths){
+		free_paths_array(info);
+        info->pths_array = ft_split(info->pths->content + 5, ':');}
     else
-        info->pths_array = NULL;
+	{
+		free_paths_array(info);
+        //info->pths_array = NULL;
+	}
 }
 
 char *find_bin(t_info *info)

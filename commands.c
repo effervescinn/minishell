@@ -412,8 +412,8 @@ char *remove_eqs(char *str, char *ptr_to_eq)
     char *new;
 
     i = 0;
-        if (ptr_to_eq[i + 1] != '=')
-            return str;
+    if (ptr_to_eq[i + 1] != '=')
+        return str;
     while (ptr_to_eq[i] && ptr_to_eq[i] == '=')
         i++;
     new = malloc(sizeof(char) * (ft_strlen(str) - i + 2));
@@ -479,8 +479,8 @@ void export(t_info *info)
     {
         while (info->tokens[info->i].args[a])
         {
-			if(var_name)
-				free(var_name);
+            if (var_name)
+                free(var_name);
             no_quotes(info->tokens[info->i].args[a]);
             ptr_to_eq = ft_strchr(info->tokens[info->i].args[a], '=');
             if ((!ft_strncmp(info->tokens[info->i].args[a], "PWD\0", 4) && ft_strlen(info->tokens[info->i].args[a]) == 3 && !info->pwd) ||
@@ -707,13 +707,11 @@ void unset(t_info *info)
         }
         remove_var(info, &info->head, a);
         remove_from_extra_exp(&info->extra_exp, info->tokens[info->i].args[a]);
-        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4)
-            || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3)
-            || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
-            {
-                set_pointers(info);
-                make_paths(info);
-            }
+        if ((!ft_strncmp(info->tokens[info->i].args[a], "PATH", 4) && ft_strlen(info->tokens[info->i].args[a]) == 4) || (!ft_strncmp(info->tokens[info->i].args[a], "PWD", 3) && ft_strlen(info->tokens[info->i].args[a]) == 3) || (!ft_strncmp(info->tokens[info->i].args[a], "OLDPWD", 6) && ft_strlen(info->tokens[info->i].args[a]) == 6))
+        {
+            set_pointers(info);
+            make_paths(info);
+        }
         a++;
     }
 }
@@ -722,11 +720,11 @@ void exit_minishell(t_info *info)
 {
     write(1, "exit\n", 6);
     if (info->tokens[info->i + 1].str)
-        {
-            write(2, "-dashBash: exit: ", 17);
-            write(2, info->tokens[info->i + 1].str, ft_strlen(info->tokens[info->i + 1].str));
-            write(2, ": numeric argument required\n", 28);
-        }
+    {
+        write(2, "-dashBash: exit: ", 17);
+        write(2, info->tokens[info->i + 1].str, ft_strlen(info->tokens[info->i + 1].str));
+        write(2, ": numeric argument required\n", 28);
+    }
     free_list(&info->extra_exp);
     free_list(&info->head);
     free_args(info);
@@ -842,8 +840,36 @@ void start_of_line(t_info *info)
         info->i2++;
 }
 
+char **make_envp_arr(t_info *info)
+{
+    int i;
+    t_list *tmp;
+    char **res;
+
+    i = 0;
+    tmp = info->head;
+    while (tmp)
+    {
+        i++;
+        tmp = tmp->next;
+    }
+    res = (char**)malloc(sizeof(char*) * (i + 1));
+    res[i] = NULL;
+    tmp = info->head;
+    i = 0;
+    while (tmp)
+    {
+        res[i] = tmp->content;
+        tmp = tmp->next;
+        i++;
+    }
+    return (res);
+}
+
 void exec_printable(t_info *info, char *cmd)
 {
+    char **envp_arr;
+
     start_of_line(info);
     if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
         pwd(info);
@@ -859,7 +885,10 @@ void exec_printable(t_info *info, char *cmd)
             free(info->result);
         info->result = NULL;
         prepare_args_and_fd(info);
-        execve(cmd, info->tokens[info->i].args, 0);
+        //функция, которая делает массив из списка
+        envp_arr = make_envp_arr(info);
+        execve(cmd, info->tokens[info->i].args, envp_arr);
+        free(envp_arr);
     }
     else
     {
@@ -898,12 +927,12 @@ void program_define(t_info *info)
     int k = -1; //счетчик для пайпов
     int j;
 
-    pids = (int*)malloc(sizeof(int) * (info->pipes_num + 1));
-    fd = (int**)malloc(sizeof(int*) * info->pipes_num);
+    pids = (int *)malloc(sizeof(int) * (info->pipes_num + 1));
+    fd = (int **)malloc(sizeof(int *) * info->pipes_num);
     j = 0;
     while (j < info->pipes_num)
     {
-        fd[j] = (int*)malloc(sizeof(int) * 2);
+        fd[j] = (int *)malloc(sizeof(int) * 2);
         j++;
     }
     info->result = ft_strdup("\0");
@@ -911,7 +940,7 @@ void program_define(t_info *info)
 
     while (++k < info->pipes_num + 1)
     {
-        
+
         if (k < info->pipes_num)
             if (pipe(fd[k]) < 0)
                 return;
@@ -924,7 +953,7 @@ void program_define(t_info *info)
                 redirects_solo(info);
                 if (info->tokens[info->i].str && info->tokens[info->i + 1].str)
                     info->i += 1;
-                continue ;
+                continue;
             }
         }
 
@@ -1002,7 +1031,7 @@ void program_define(t_info *info)
                 }
                 info->i2 = info->i;
                 exec_printable(info, cmd);
-                
+
                 if (info->result)
                 {
                     fd_dasha = define_fd_built_in(info);

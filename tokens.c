@@ -128,15 +128,16 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 			free(tmp);
 			free(glue);
 			tmp = *newstr;
-			*newstr = ft_strjoin(tmp, ft_itoa(g_global.ex_status));
+			char *tmp2;
+			tmp2 = ft_itoa(g_global.ex_status);
+			*newstr = ft_strjoin(tmp, tmp2);
+			free(tmp2);
 			free(tmp);
 			(*str)++;
 		}
 		else
 		{
 			var = vars(str, info->head);
-			// printf("str |%s|\n", *str);
-			// printf("var |%s|\n", var);
 			glue = ft_substr(*start, 0, *str - *start - 1);
 			tmp = *newstr;
 			*newstr = ft_strjoin(tmp, glue);
