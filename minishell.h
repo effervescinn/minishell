@@ -134,3 +134,5 @@ char *find_bin(t_info *info);
 void check_syms(char **str, t_info *info, char **newstr, char **start);
 void s_quote(char **str, char **newstr, char **start);
 void question(char **str, char **newstr, char **start);
+void define_types(t_info *info);
+void define_command(t_info *info, int *i);

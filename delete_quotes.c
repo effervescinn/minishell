@@ -107,9 +107,11 @@ void set_types(char ***tmp_arr, t_token **tokens_arr, int *i)
         (*tokens_arr)[*i].type = 'g';
     else if ((*tmp_arr)[*i][0] == '<' && (*tmp_arr)[*i][1] == '\0')
         (*tokens_arr)[*i].type = 'l';
-    else if ((*tmp_arr)[*i][0] == '>' && (*tmp_arr)[*i][1] == '>' && (*tmp_arr)[*i][2] == '\0')
+    else if ((*tmp_arr)[*i][0] == '>' && (*tmp_arr)[*i][1]
+    == '>' && (*tmp_arr)[*i][2] == '\0')
         (*tokens_arr)[*i].type = 'G';
-    else if ((*tmp_arr)[*i][0] == '<' && (*tmp_arr)[*i][1] == '<' && (*tmp_arr)[*i][2] == '\0')
+    else if ((*tmp_arr)[*i][0] == '<' && (*tmp_arr)[*i][1]
+    == '<' && (*tmp_arr)[*i][2] == '\0')
         (*tokens_arr)[*i].type = 'L';
     else
         (*tokens_arr)[*i].type = 'w';
