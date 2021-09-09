@@ -242,9 +242,7 @@ void history(t_info *info)
             newstr = replace_vars(g_global.input, info);
             tmp_arr = make_tokens(newstr);
             info->tokens = delete_quotes(tmp_arr);
-
             free(newstr);
-
             int i = 0;
             while (tmp_arr[i])
             {

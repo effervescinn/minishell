@@ -128,3 +128,9 @@ void command_types(t_info *info);
 
 //bins.c
 char *find_bin(t_info *info);
+
+
+//norma tokenov
+void check_syms(char **str, t_info *info, char **newstr, char **start);
+void s_quote(char **str, char **newstr, char **start);
+void question(char **str, char **newstr, char **start);

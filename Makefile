@@ -1,6 +1,6 @@
 all:		
 
-			gcc -g $$LDFLAGS $$CPPFLAGS -L./libft -lft -ltermcap -lreadline heredoc.c commands.c main.c tokens.c bins.c -fsanitize=address
+			gcc -g $$LDFLAGS $$CPPFLAGS -L./libft -lft -ltermcap -lreadline heredoc.c commands.c main.c tokens.c bins.c replace_vars.c make_tokens.c delete_quotes.c -fsanitize=address
 
 fclean:	
 			rm -rf *.o
