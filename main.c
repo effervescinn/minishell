@@ -9,34 +9,28 @@ int ft_putchar(int c)
     return 1;
 }
 
-void sig_int(int d)
-{
-    int right = 50;
-    int left = 40;
 
-    while (right--)
-        tputs(cursor_right, 1, ft_putchar);
-    while (left--)
-    {
-        tputs(cursor_left, 1, ft_putchar);
-        tputs(tgetstr("dc", NULL), 1, ft_putchar);
-    }
-    write(1, "\n", 1);
-    if (g_global.input)
-        free(g_global.input);
-    g_global.input = NULL;
-    rl_on_new_line();
-    rl_replace_line("", 0);
-    rl_redisplay();
-    if (g_global.f)
-    {
-        int backspase = 10;
-        while (backspase--)
+void sig_int(int sig)
+{
+	if (g_global.f)
+        signal(SIGINT, SIG_IGN);
+	if (!g_global.f)
+	{
+        int left = 40;
+        int right = 50;
+
+        while (right--)
+            tputs(cursor_right, 1, ft_putchar);
+        while (left--)
         {
             tputs(cursor_left, 1, ft_putchar);
             tputs(tgetstr("dc", NULL), 1, ft_putchar);
         }
-    }
+		write(1, "\n", 1);
+		rl_replace_line("", 1);
+		rl_on_new_line();
+		rl_redisplay();
+	}
 }
 
 void free_tokens(t_info *info)
@@ -284,10 +278,11 @@ int main(int ac, char **av, char **envp)
     set_pointers(&info);
     make_paths(&info);
     info.oldpwd_flag = 0;
+    g_global.hd_ex = 0;
     g_global.f = 0;
     info.heredoc = NULL;
 
-    // file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
+    file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);

@@ -48,6 +48,7 @@ typedef struct s_global
 	int f;
 	int ex_status;
 	char *prompt;
+	int hd_ex;
 }				t_global;
 
 
