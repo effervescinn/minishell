@@ -29,53 +29,73 @@ int check_flags(char **tmp_token, int *i, int *flag)
     return (0);
 }
 
-void handle_token(char *tmp_token, char **str)
+void s_flag(char **tmp_token, char **str, int *i, int *j)
 {
-    int i;
-    int j;
-    int quotes;
+    while ((*tmp_token)[*i] && (*tmp_token)[*i] != '\'')
+    {
+        (*str)[*j] = (*tmp_token)[*i];
+        (*i)++;
+        (*j)++;
+    }
+}
+
+void d_flag(char **tmp_token, char **str, int *i, int *j)
+{
+    while ((*tmp_token)[*i] && (*tmp_token)[*i] != '\"')
+    {
+        (*str)[*j] = (*tmp_token)[*i];
+        (*i)++;
+        (*j)++;
+    }
+}
+
+void no_flags(char **tmp_token, char **str, int *i, int *j)
+{
+    while ((*tmp_token)[*i] && (*tmp_token)[*i] != '\"' && (*tmp_token)[*i] != '\'')
+    {
+        (*str)[*j] = (*tmp_token)[*i];
+        (*i)++;
+        (*j)++;
+    }
+}
+
+void    handle_quotes(char **tmp_token, char **str, int *i, int *j)
+{
     int flag;
 
-    i = 0;
-    j = 0;
     flag = 0;
-    while (tmp_token[i])
+    while ((*tmp_token)[*i])
     {
-        if (check_flags(&tmp_token, &i, &flag))
+        if (check_flags(tmp_token, i, &flag))
             continue;
         if (flag == 1)
         {
-            while (tmp_token[i] && tmp_token[i] != '\'')
-            {
-                (*str)[j] = tmp_token[i];
-                i++;
-                j++;
-            }
+            s_flag(tmp_token, str, i, j);
             continue;
         }
         else if (flag == 2)
         {
-            while (tmp_token[i] && tmp_token[i] != '\"')
-            {
-                (*str)[j] = tmp_token[i];
-                i++;
-                j++;
-            }
+            d_flag(tmp_token, str, i, j);
             continue;
         }
         else
         {
-            while (tmp_token[i] && tmp_token[i] != '\"' && tmp_token[i] != '\'')
-            {
-                (*str)[j] = tmp_token[i];
-                i++;
-                j++;
-            }
+            no_flags(tmp_token, str, i, j);
             continue;
         }
-        if (tmp_token[i])
-            i++;
+        if ((*tmp_token)[*i])
+            (*i)++;
     }
+}
+
+void handle_token(char *tmp_token, char **str)
+{
+    int i;
+    int j;
+
+    i = 0;
+    j = 0;
+    handle_quotes(&tmp_token, str, &i, &j);
     (*str)[j] = '\0';
 }
 
