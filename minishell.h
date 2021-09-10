@@ -132,7 +132,9 @@ void found_g_redirect(int *fd, t_info *info, int i, int *flag);
 char **make_envp_arr(t_info *info, char **shlvl);
 void start_of_line(t_info *info);
 void check_pipe();
-
+char *make_no_enters_string(char **closed_str, char **line);
+int unexpected_return(t_token *tokens, int i);
+char *close_pipe(char *line);
 
 
 

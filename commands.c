@@ -1,7 +1,5 @@
 #include "minishell.h"
 
-
-
 void exec_builtin(t_info *info)
 {
     if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)

@@ -2,37 +2,52 @@
 
 t_global g_global;
 
-void sig_int(int sig)
+void execution(t_info *info)
 {
-	if (g_global.f)
-        signal(SIGINT, SIG_IGN);
-	if (!g_global.f)
-	{
-        int left = 40;
-        int right = 50;
+    int tokens_err;
 
-        while (right--)
-            tputs(cursor_right, 1, ft_putchar);
-        while (left--)
-        {
-            tputs(cursor_left, 1, ft_putchar);
-            tputs(tgetstr("dc", NULL), 1, ft_putchar);
-        }
-		write(1, "\n", 1);
-		rl_replace_line("", 1);
-		rl_on_new_line();
-		rl_redisplay();
-	}
+    tokens_err = unexpected_tokens(info->tokens);
+    if (tokens_err == 0)
+    {
+        set_args(info);
+        define_types(info);
+        set_pipes(info);
+        command_types(info);
+        set_start(info);
+        program_define(info);
+        free_args(info);
+        free_tokens(info);
+    }
+    else
+        printf_tokens_err(tokens_err);
 }
 
-
-void history(t_info *info)
+void parse(t_info *info)
 {
     char *newstr;
     char **tmp_arr;
-    char *closed_str;
-    int tokens_err;
 
+    if (count_quotes(g_global.input) % 2 == 0 && ft_strlen(g_global.input))
+    {
+        newstr = replace_vars(g_global.input, info);
+        tmp_arr = make_tokens(newstr);
+        info->tokens = delete_quotes(tmp_arr);
+        free(newstr);
+        int i = 0;
+        while (tmp_arr[i])
+        {
+            free(tmp_arr[i]);
+            i++;
+        }
+        free(tmp_arr);
+        execution(info);
+    }
+    else if (count_quotes(g_global.input) % 2 != 0)
+        write(1, "-dashBash: unclosed quote\n", 27);
+}
+
+void history(t_info *info)
+{
     g_global.prompt = ft_strdup("dashBash$ ");
     while (1)
     {
@@ -45,38 +60,7 @@ void history(t_info *info)
         add_history(g_global.input);
         if (!g_global.input)
             exit_ctrl_d(info);
-        if (count_quotes(g_global.input) % 2 == 0 && ft_strlen(g_global.input))
-        {
-            newstr = replace_vars(g_global.input, info);
-            tmp_arr = make_tokens(newstr);
-            info->tokens = delete_quotes(tmp_arr);
-
-            free(newstr);
-
-            int i = 0;
-            while (tmp_arr[i])
-            {
-                free(tmp_arr[i]);
-                i++;
-            }
-            free(tmp_arr);
-            tokens_err = unexpected_tokens(info->tokens);
-            if (tokens_err == 0)
-            {
-                set_args(info);
-                define_types(info);
-                set_pipes(info);
-                command_types(info);
-                set_start(info);
-                program_define(info);
-                free_args(info);
-                free_tokens(info);
-            }
-            else
-                printf_tokens_err(tokens_err);
-        }
-        else if (count_quotes(g_global.input) % 2 != 0)
-            write(1, "-dashBash: unclosed quote\n", 27);
+        parse(info);
         if (g_global.input)
         {
             free(g_global.input);
