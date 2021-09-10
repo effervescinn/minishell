@@ -2,6 +2,31 @@
 
 t_global g_global;
 
+void make_env(char **envp, t_list **head)
+{
+	t_list *new;
+	int i;
+
+	i = 1;
+	*head = ft_lstnew(ft_strdup(envp[0]));
+	while (envp[i])
+	{
+		new = (t_list *)malloc(sizeof(t_list));
+		if (ft_strncmp("_=./", envp[i], 4) && ft_strncmp("OLDPWD=", envp[i], 7))
+		{
+			if (!ft_strncmp(envp[i], "SHLVL=", 6))
+				new->content = change_shlvl(envp[i]);
+			else
+				new->content = ft_strdup(envp[i]);
+			new->next = NULL;
+			ft_lstadd_back(head, new);
+		}
+		else
+			free(new);
+		i++;
+	}
+}
+
 void execution(t_info *info)
 {
     int tokens_err;

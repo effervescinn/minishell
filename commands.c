@@ -1,18 +1,5 @@
 #include "minishell.h"
 
-void exec_builtin(t_info *info)
-{
-    if (!ft_strncmp(info->tokens[info->i].str, "cd", 2) && ft_strlen(info->tokens[info->i].str) == 2)
-        cd(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 5 && !ft_strncmp(info->tokens[info->i].str, "unset", 5))
-        unset(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "exit", 4))
-        exit_minishell(info);
-    else if (ft_strlen(info->tokens[info->i].str) == 6 && !ft_strncmp(info->tokens[info->i].str, "export", 6))
-        export(info);
-    g_global.ex_status = 0;
-}
-
 void add_from_the_first(t_info *info, int q, char **array, int *k)
 {
     int q2 = 0;
@@ -124,6 +111,7 @@ int exec_printable_buildin(t_info *info)
     }
     return(0);
 }
+
 void exec_printable(t_info *info, char *cmd)
 {
     char **envp_arr;

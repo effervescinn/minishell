@@ -174,7 +174,17 @@ void s_quote(char **str, char **newstr, char **start);
 void question(char **str, char **newstr, char **start);
 void define_types(t_info *info);
 void define_command(t_info *info, int *i);
+void pipe_redir(char **str, char ***arr, char **start, int *i);
+void meet_quotes(char **str);
+void quotes_after(char **str);
+void finish_tokens(char **str, char ***arr, char **start, int *i);
+void define_greatless(t_info *info, int *i);
 
 //program_define
 void exec_printable(t_info *info, char *cmd);
 void exec_builtin(t_info *info);
+int no_print(t_info **info, int ***fd, int *k);
+void exec_fork(t_info **info, int ***fd, int **pids, int *k);
+void first_fork(t_info **info, char *cmd, int ***fd, int *k);
+void between_fork(t_info **info, char *cmd, int ***fd, int *k);
+void last_fork(t_info **info, char *cmd, int ***fd, int *k);
