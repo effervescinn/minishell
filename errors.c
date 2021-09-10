@@ -29,20 +29,3 @@ void opening_error_scnd(char *filename)
         write(2, ": No such file or directory\n", 28);
     g_global.ex_status = 1;
 }
-
-void printf_tokens_err(int error)
-{
-    if (error == 1)
-        printf("-dashBash: syntax error near unexpected token `|'\n");
-    else if (error == 2)
-        printf("-dashBash: syntax error near unexpected token `<<'\n");
-    else if (error == 3)
-        printf("-dashBash: syntax error near unexpected token `<'\n");
-    else if (error == 4)
-        printf("-dashBash: syntax error near unexpected token `>'\n");
-    else if (error == 5)
-        printf("-dashBash: syntax error near unexpected token `>>'\n");
-    else if (error == 6)
-        printf("-dashBash: syntax error near unexpected token `newline'\n");
-    g_global.ex_status = 258;
-}

@@ -12,8 +12,8 @@ void make_env(char **envp, t_list **head)
 		new = (t_list *)malloc(sizeof(t_list));
 		if (ft_strncmp("_=./", envp[i], 4) && ft_strncmp("OLDPWD=", envp[i], 7))
 		{
-	        if (!ft_strncmp(envp[i], "SHLVL=", 6))
-            	new->content = change_shlvl(envp[i]);
+			if (!ft_strncmp(envp[i], "SHLVL=", 6))
+				new->content = change_shlvl(envp[i]);
 			else
 				new->content = ft_strdup(envp[i]);
 			new->next = NULL;
@@ -25,9 +25,34 @@ void make_env(char **envp, t_list **head)
 	}
 }
 
+int find_double(char **str, int *quotes)
+{
+	(*str)++;
+	(*quotes)++;
+	*str = ft_strchr(*str, '\"');
+	if (!*str)
+		return (*quotes);
+	(*quotes)++;
+	(*str)++;
+	return (0);
+}
+
+int find_single(char **str, int *quotes)
+{
+	(*str)++;
+	(*quotes)++;
+	*str = ft_strchr(*str, '\'');
+	if (!*str)
+		return (*quotes);
+	(*quotes)++;
+	(*str)++;
+	return (0);
+}
+
 int count_quotes(char *str)
 {
 	int quotes;
+	int ret;
 
 	quotes = 0;
 	while (*str)
@@ -36,428 +61,20 @@ int count_quotes(char *str)
 			str++;
 		if (*str == '\"')
 		{
-			str++;
-			quotes++;
-			str = ft_strchr(str, '\"');
-			if (!str)
-				return (quotes);
-			quotes++;
-			str++;
+			ret = find_double(&str, &quotes);
+			if (ret)
+				return (ret);
 		}
 		else if (*str == '\'')
 		{
-			str++;
-			quotes++;
-			str = ft_strchr(str, '\'');
-			if (!str)
-				return (quotes);
-			quotes++;
-			str++;
+			ret = find_single(&str, &quotes);
+			if (ret)
+				return (ret);
 		}
 		if (*str == '\0')
 			continue;
 	}
 	return (quotes);
-}
-
-char *vars(char **str, t_list *head)
-{
-	char *var;
-	char *newvar;
-	int j;
-	int len;
-
-	newvar = NULL;
-	while (head)
-	{
-		j = 0;
-		while ((*str)[j] && head->content[j] && head->content[j] == (*str)[j])
-			j++;
-		if (head->content[j] == '=' && ((*str)[j] == ' ' || (*str)[j] == '\0' || (*str)[j] == '\'' || (*str)[j] == '\"' || (*str)[j] == '$'))
-		{
-			j++;
-			newvar = ft_substr(&(head->content[j]), 0, ft_strlen(&(head->content[j])));
-			return (newvar);
-		}
-		head = head->next;
-	}
-	if (newvar == NULL)
-	{
-		newvar = (char *)malloc(1);
-		*newvar = '\0';
-	}
-	return (newvar);
-}
-
-void dollar(char **str, char **newstr, char **start, t_info *info)
-{
-	char *tmp;
-	char *glue;
-	char *var;
-
-	(*str)++;
-	if (**str == ' ' || **str == '\0')
-	{
-		tmp = *newstr;
-		glue = ft_substr(*start, 0, *str - *start);
-		*newstr = ft_strjoin(tmp, glue);
-		free(tmp);
-		free(glue);
-		return;
-	}
-	if ((info->d_quote == 0 && info->s_quote == 1))
-	{
-		tmp = *newstr;
-		glue = ft_substr(*start, 0, *str - *start);
-		*newstr = ft_strjoin(tmp, glue);
-		free(tmp);
-		free(glue);
-		*start = *str;
-		while (**str != '\0' && **str != '\'' && **str != '\"' && **str != ' ')
-			(*str)++;
-		tmp = *newstr;
-		glue = ft_substr(*start, 0, *str - *start);
-		*newstr = ft_strjoin(tmp, glue);
-		free(tmp);
-		free(glue);
-	}
-	else
-	{
-		if (**str == '?')
-		{
-			tmp = *newstr;
-			glue = ft_substr(*start, 0, *str - *start - 1);
-			*newstr = ft_strjoin(tmp, glue);
-			free(tmp);
-			free(glue);
-			tmp = *newstr;
-			char *tmp2;
-			tmp2 = ft_itoa(g_global.ex_status);
-			*newstr = ft_strjoin(tmp, tmp2);
-			free(tmp2);
-			free(tmp);
-			(*str)++;
-		}
-		else
-		{
-			var = vars(str, info->head);
-			glue = ft_substr(*start, 0, *str - *start - 1);
-			tmp = *newstr;
-			*newstr = ft_strjoin(tmp, glue);
-			free(tmp);
-			free(glue);
-			tmp = *newstr;
-			*newstr = ft_strjoin(tmp, var);
-			free(tmp);
-			free(var);
-			while (**str != ' ' && **str != '\0' && **str != '\'' && **str != '\"' && **str != '$')
-				(*str)++;
-		}
-	}
-}
-
-char *replace_vars(char *str, t_info *info)
-{
-	int i;
-	char *newstr;
-	char *start;
-	char *glue;
-	char *tmp;
-
-	info->d_quote = 0;
-	info->s_quote = 0;
-	start = str;
-	newstr = (char *)malloc(1);
-	*newstr = '\0';
-	while (*str)
-	{
-		while (*str && *str != '\'' && *str != '\"' && *str != '$')
-			str++;
-		if (*str == '\"')
-		{
-			if (info->s_quote == 0)
-				info->d_quote = !(info->d_quote);
-			str++;
-		}
-		else if (*str == '\'')
-		{
-			if (info->d_quote == 0)
-				info->s_quote = !(info->s_quote);
-			str++;
-		}
-		else if (*str == '$')
-		{
-			dollar(&str, &newstr, &start, info);
-			start = str;
-		}
-		if (*str == '\0')
-		{
-			glue = ft_substr(start, 0, str - start);
-			tmp = newstr;
-			newstr = ft_strjoin(tmp, glue);
-			free(tmp);
-			free(glue);
-		}
-	}
-	return newstr;
-}
-
-char **make_tokens(char *str)
-{
-	char **arr;
-	char *start;
-	char **new_arr;
-	char **tmp;
-	int i;
-	int j;
-
-	start = str;
-	i = 0;
-
-	arr = (char **)malloc(sizeof(char *));
-	arr[0] = NULL;
-	while (*str)
-	{
-		while (*str && *str == ' ')
-			str++;
-		if (*str == '\0')
-			continue;
-		start = str;
-		if (*str != '\"' && *str != '\'')
-		{
-			if (*str == '|' || *str == '<' || *str == '>')
-			{
-				i++;
-				tmp = arr;
-				arr = (char **)malloc(sizeof(char *) * (i + 1));
-				arr[i] = NULL;
-
-				j = 0;
-				while (tmp[j])
-				{
-					arr[j] = ft_substr(tmp[j], 0, ft_strlen(tmp[j]));
-					j++;
-				}
-				if (*(str + 1) == '>' || *(str + 1) == '<')
-				{
-					arr[j] = ft_substr(start, 0, 2);
-					str += 2;
-				}
-
-				else
-				{
-					arr[j] = ft_substr(start, 0, 1);
-					str++;
-				}
-				j = 0;
-				while (j < i)
-				{
-					free(tmp[j]);
-					j++;
-				}
-				free(tmp);
-				continue;
-			}
-			while (*str && *str != ' ')
-			{
-				while (*str && *str != '\"' && *str != '\'' && *str != ' ' && *str != '|' && *str != '>' && *str != '<')
-					str++;
-				if (*str == '\'')
-				{
-					str++;
-					str = ft_strchr(str, '\'');
-					str++;
-				}
-				else if (*str == '\"')
-				{
-					str++;
-					str = ft_strchr(str, '\"');
-					str++;
-				}
-				else if (*str == '|' || *str == '>' || *str == '<')
-					break;
-			}
-		}
-		else if (*str == '\"' || *str == '\'')
-		{
-			if (*str == '\'')
-			{
-				str++;
-				str = ft_strchr(str, '\'');
-				while (*str && *str != ' ' && *str != '|' && *str != '<' && *str != '>')
-					str++;
-			}
-
-			else if (*str == '\"')
-			{
-				str++;
-				str = ft_strchr(str, '\"');
-				while (*str && *str != ' ' && *str != '|' && *str != '<' && *str != '>')
-					str++;
-			}
-		}
-		i++;
-		tmp = arr;
-		arr = (char **)malloc(sizeof(char *) * (i + 1));
-		arr[i] = NULL;
-
-		j = 0;
-		while (tmp[j])
-		{
-			arr[j] = ft_substr(tmp[j], 0, ft_strlen(tmp[j]));
-			j++;
-		}
-		arr[j] = ft_substr(start, 0, str - start);
-		j = 0;
-		while (j < i)
-		{
-			free(tmp[j]);
-			j++;
-		}
-		free(tmp);
-	}
-
-	return (arr);
-}
-
-void handle_token(char *tmp_token, char **str)
-{
-	int i;
-	int j;
-	int quotes;
-	int flag;
-
-	i = 0;
-	j = 0;
-	flag = 0;
-	while (tmp_token[i])
-	{
-		if (tmp_token[i] == '\'' && flag == 0)
-		{
-			flag = 1;
-			i++;
-			continue;
-		}
-		else if (tmp_token[i] == '\'' && flag == 1)
-		{
-			flag = 0;
-			i++;
-			continue;
-		}
-		else if (tmp_token[i] == '\"' && flag == 0)
-		{
-			flag = 2;
-			i++;
-			continue;
-		}
-		else if (tmp_token[i] == '\"' && flag == 2)
-		{
-			flag = 0;
-			i++;
-			continue;
-		}
-		if (flag == 1)
-		{
-			while (tmp_token[i] && tmp_token[i] != '\'')
-			{
-				(*str)[j] = tmp_token[i];
-				i++;
-				j++;
-			}
-			continue;
-		}
-		else if (flag == 2)
-		{
-			while (tmp_token[i] && tmp_token[i] != '\"')
-			{
-				(*str)[j] = tmp_token[i];
-				i++;
-				j++;
-			}
-			continue;
-		}
-		else
-		{
-			while (tmp_token[i] && tmp_token[i] != '\"' && tmp_token[i] != '\'')
-			{
-				(*str)[j] = tmp_token[i];
-				i++;
-				j++;
-			}
-			continue;
-		}
-		if (tmp_token[i])
-			i++;
-	}
-	(*str)[j] = '\0';
-}
-
-t_token *delete_quotes(char **tmp_arr)
-{
-	int i;
-	t_token *tokens_arr;
-
-	i = 0;
-	while (tmp_arr[i])
-		i++;
-	tokens_arr = (t_token *)malloc(sizeof(t_token) * (i + 1));
-	tokens_arr[i].str = NULL;
-	i = 0;
-	while (tmp_arr[i])
-	{
-		tokens_arr[i].str = (char *)malloc(ft_strlen(tmp_arr[i]) + 1);
-		handle_token(tmp_arr[i], &tokens_arr[i].str);
-		if (tmp_arr[i][0] == '|' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = 'p';
-		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = 'g';
-		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '\0')
-			tokens_arr[i].type = 'l';
-		else if (tmp_arr[i][0] == '>' && tmp_arr[i][1] == '>' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = 'G';
-		else if (tmp_arr[i][0] == '<' && tmp_arr[i][1] == '<' && tmp_arr[i][2] == '\0')
-			tokens_arr[i].type = 'L';
-		else
-			tokens_arr[i].type = 'w';
-		i++;
-	}
-	return (tokens_arr);
-}
-
-void less_args(t_token *tokens, int i)
-{
-	int q;
-	int j;
-
-	if ((i != 0) && (tokens[i - 1].type != 'p'))
-	{
-		q = 0;
-		i++;
-		while (tokens[i].str && tokens[i].type == 'w')
-		{
-			i++;
-			q++;
-		}
-		i -= q + 1;
-		tokens[i].args = (char **)malloc(sizeof(char *) * (q + 1));
-		tokens[i].args[q] = NULL;
-		j = 0;
-		while (q)
-		{
-			tokens[i].args[j] = ft_strdup(tokens[i + j + 1].str);
-			j++;
-			q--;
-		}
-	}
-	else
-	{
-		tokens[i].args = (char **)malloc(sizeof(char *) * 2);
-		tokens[i].args[1] = NULL;
-		tokens[i].args[0] = ft_strdup(tokens[i + 1].str);
-		if (tokens[i + 2].str)
-			if (tokens[i + 2].type == 'w')
-				tokens[i + 2].type = 'c';
-	}
 }
 
 void set_args(t_info *info)
@@ -469,108 +86,6 @@ void set_args(t_info *info)
 	{
 		info->tokens[i].args = (char **)malloc(sizeof(char *));
 		info->tokens[i].args[0] = NULL;
-		i++;
-	}
-}
-
-void command_args(t_token *tokens, int i)
-{
-	int q;
-	int j;
-	int k;
-
-	q = 0;
-	j = i;
-	i++;
-	while (tokens[i].str && tokens[i].type == 'w')
-	{
-		i++;
-		q++;
-	}
-	if (tokens[i].str)
-	{
-		if (tokens[i].type == 'g' || tokens[i].type == 'G')
-		{
-			i += 2;
-			while (tokens[i].str && tokens[i].type == 'w')
-			{
-				i++;
-				q++;
-			}
-		}
-	}
-	tokens[j].args = (char **)malloc(sizeof(char *) * (q + 2)); //
-	tokens[j].args[q + 1] = NULL;
-	tokens[j].args[0] = ft_strdup(tokens[j].str);
-	k = 0;
-	while (tokens[j + k + 1].str && tokens[j + k + 1].type == 'w')
-	{
-		tokens[j].args[k + 1] = ft_strdup(tokens[j + k + 1].str);
-		k++;
-	}
-	i = j + k + 1;
-	if (tokens[i].str)
-	{
-		if (tokens[i].type == 'g' || tokens[i].type == 'G')
-		{
-			i += 2;
-			while (tokens[i].str && tokens[i].type == 'w')
-			{
-				tokens[j].args[k + 1] = ft_strdup(tokens[i].str);
-				k++;
-				i++;
-			}
-		}
-	}
-}
-
-void define_types(t_info *info)
-{
-	int i;
-
-	i = 0;
-	while (info->tokens[i].str)
-	{
-		info->tokens[i].print = 1;
-		if ((i == 0 && info->tokens[i].type == 'w') || info->tokens[i].type == 'c')
-		{
-			info->tokens[i].type = 'c';
-			free(info->tokens[i].args[0]);
-			free(info->tokens[i].args);
-			command_args(info->tokens, i);
-		}
-		else if (info->tokens[i].type == 'p')
-		{
-			if (info->tokens[i + 1].str)
-				if (info->tokens[i + 1].type == 'w')
-					info->tokens[i + 1].type = 'c';
-		}
-		else if (info->tokens[i].type == 'g' || info->tokens[i].type == 'G')
-		{
-			free(info->tokens[i].args[0]);
-			free(info->tokens[i].args);
-			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
-			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1].str);
-			info->tokens[i].args[1] = NULL;
-			if (!((i != 0) && (info->tokens[i - 1].type != 'p')))
-				if (info->tokens[i + 2].str)
-					if (info->tokens[i + 2].type == 'w')
-						info->tokens[i + 2].type = 'c';
-		}
-		else if (info->tokens[i].type == 'l')
-		{
-			free(info->tokens[i].args[0]);
-			free(info->tokens[i].args);
-			less_args(info->tokens, i);
-		}
-		else if (info->tokens[i].type == 'L')
-		{
-			free(info->tokens[i].args[0]);
-			free(info->tokens[i].args);
-			info->tokens[i].args = (char **)malloc(sizeof(char *) * 2);
-			info->tokens[i].args[0] = ft_strdup(info->tokens[i + 1]. str);
-			info->tokens[i].args[1] = NULL;
-		}
 		i++;
 	}
 }
@@ -611,11 +126,18 @@ void command_types(t_info *info)
 	i = 0;
 	while (info->tokens[i].str)
 	{
-		if ( (!ft_strncmp(info->tokens[i].str, "cd", 2) && ft_strlen(info->tokens[i].str) == 2 && info->tokens[i].type == 'c')
-		|| (ft_strlen(info->tokens[i].str) == 6 && !ft_strncmp(info->tokens[i].str, "export", 6) && info->tokens[i].type == 'c' && info->tokens[i].args[1])
-		|| (ft_strlen(info->tokens[i].str) == 5 && !ft_strncmp(info->tokens[i].str, "unset", 5) && info->tokens[i].type == 'c')
-		|| (ft_strlen(info->tokens[i].str) == 4 && !ft_strncmp(info->tokens[i].str, "exit", 4) && info->tokens[i].type == 'c')
-		)
+		if ((!ft_strncmp(info->tokens[i].str, "cd", 2)
+		&& ft_strlen(info->tokens[i].str) == 2
+		&& info->tokens[i].type == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 6
+		&& !ft_strncmp(info->tokens[i].str, "export", 6)
+		&& info->tokens[i].type == 'c' && info->tokens[i].args[1])
+		|| (ft_strlen(info->tokens[i].str) == 5
+		&& !ft_strncmp(info->tokens[i].str, "unset", 5)
+		&& info->tokens[i].type == 'c')
+		|| (ft_strlen(info->tokens[i].str) == 4
+		&& !ft_strncmp(info->tokens[i].str, "exit", 4)
+		&& info->tokens[i].type == 'c'))
 			info->tokens[i].print = 0;
 		i++;
 	}

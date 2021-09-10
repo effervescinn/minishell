@@ -20,28 +20,6 @@ int unexpected_return(t_token *tokens, int i)
     return (0);
 }
 
-int unexpected_tokens(t_token *tokens)
-{
-    int i;
-
-    i = 0;
-    while (tokens[i].str)
-    {
-        if (tokens[i].type == 'p')
-        {
-            if (i == 0)
-                return (1);
-            if (tokens[i + 1].str)
-                if (tokens[i + 1].type == 'p')
-                    return (1);
-        }
-        else if (tokens[i].type == 'g' || tokens[i].type == 'G' || tokens[i].type == 'l' || tokens[i].type == 'L')
-            return(unexpected_return(tokens, i));
-        i++;
-    }
-    return (0);
-}
-
 char *make_no_enters_string(char **closed_str, char **line)
 {
     char *no_enters;
