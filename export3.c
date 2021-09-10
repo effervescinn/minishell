@@ -27,10 +27,9 @@ void find_existing_var(char *var_name, t_info *info, int a)
     ft_lstadd_back(&info->head, tmp);
 }
 
-char *var_name_in_str(char *str, char *ptr_to_eq)
+char *var_name_in_str(char *str)
 {
     char *var_name;
-    int var_len;
     int i;
     i = 0;
 

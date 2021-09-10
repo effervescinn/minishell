@@ -30,7 +30,6 @@ int define_fd_built_in(t_info *info)
 {
     int i;
     int fd;
-    int a;
 
     i = info->i2;
     fd = -1;

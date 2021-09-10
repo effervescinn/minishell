@@ -95,7 +95,6 @@ char *close_pipe(char *line)
 {
     int i;
     char *closed_str;
-    char *no_enters;
 
     if (!line)
         return (NULL);

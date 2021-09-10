@@ -74,7 +74,6 @@ void cd_problem(char **buf, t_info *info)
 void cd(t_info *info)
 {
     char *buf;
-    char *tmp2;
     int a;
 
     if (!info->tokens[info->i].args[1])

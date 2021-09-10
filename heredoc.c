@@ -11,7 +11,7 @@ char *heredoc_str(char *stop, char **buf, int *len, t_info *info)
         (*buf)[*len - 1] = '\0';
     else
         return NULL;
-    if (!ft_strncmp(*buf, stop, ft_strlen(stop)) && *len - 1 == ft_strlen(stop))
+    if (!ft_strncmp(*buf, stop, ft_strlen(stop)) && *len - 1 == (int)ft_strlen(stop))
         return (NULL);
     buf2 = *buf;
     *buf = replace_vars(buf2, info);

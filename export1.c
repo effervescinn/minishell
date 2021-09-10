@@ -40,7 +40,6 @@ void swap_content(t_list *list1, t_list *list2)
 void export_order(t_info *info, int i)
 {
     t_list *next;
-    t_list *tmp;
     int dif;
     t_list *head;
 

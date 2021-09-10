@@ -93,9 +93,7 @@ void new_str_without_quotes(int quotes, char **str)
 }
 void no_quotes(char *str)
 {
-    char *new_string;
     int i;
-    int k;
     int quotes;
 
     i = 0;

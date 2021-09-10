@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-void compare_vars(t_list *tmp, t_info *info, t_list **list, t_list **prev)
+void compare_vars(t_list *tmp, t_list **list, t_list **prev)
 {
     if (tmp == *list)
     {
@@ -28,7 +28,7 @@ void remove_var(t_info *info, t_list **list, int a)
     while (tmp)
     {
         if (!ft_strncmp(tmp->content, info->tokens[info->i].args[a], var_len) && tmp->content[var_len] == '=')
-            compare_vars(tmp, info, list, &prev);
+            compare_vars(tmp, list, &prev);
         prev = tmp;
         tmp = tmp->next;
     }

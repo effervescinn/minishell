@@ -26,7 +26,6 @@ void redirects_solo(t_info *info)
 {
     int i;
     int fd;
-    int a;
 
     i = info->i;
     while (info->tokens[i].str && info->tokens[i].type != 'p')

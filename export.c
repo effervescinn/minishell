@@ -13,7 +13,7 @@ int export_loop(t_info *info, int *a)
         info->tokens[info->i].args[*a] = remove_eqs(info->tokens[info->i].args[*a], ptr_to_eq);
     ptr_to_eq = ft_strchr(info->tokens[info->i].args[*a], '=');
     if (ptr_to_eq && ptr_to_eq != info->tokens[info->i].args[*a])
-        var_name = var_name_in_str(info->tokens[info->i].args[*a], ptr_to_eq);
+        var_name = var_name_in_str(info->tokens[info->i].args[*a]);
     else
         var_name = ft_strdup(info->tokens[info->i].args[*a]);
     if (!check_var_name(var_name))

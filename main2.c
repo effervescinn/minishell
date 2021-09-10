@@ -28,6 +28,7 @@ void check_pipe()
 
 void sig_int(int sig)
 {
+    (void)sig;
 	if (g_global.f)
         signal(SIGINT, SIG_IGN);
 	if (!g_global.f)

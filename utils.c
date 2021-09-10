@@ -39,7 +39,7 @@ char *change_shlvl(char *str)
     return (new_str);
 }
 
-char **make_envp_arr(t_info *info, char **shlvl)
+char **make_envp_arr(t_info *info)
 {
     int i;
     t_list *tmp;

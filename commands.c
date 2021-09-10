@@ -41,8 +41,9 @@ void add_from_the_first(t_info *info, int q, char **array, int *k)
 
 void add_redirect_args(char **array, int *k, t_info *info, int smb)
 {
-    int i = info->i;
-    int q = 0;
+    int q;
+    
+    q = 0;
     while (q < smb)
     {
         add_from_the_first(info, q, array, k);
@@ -82,7 +83,6 @@ void prepare_args_and_fd(t_info *info)
     int files = 0;
     int smb;
     int q;
-    int flag = 0;
 
     q = 0;
     smb = count_redir(info);
@@ -127,7 +127,6 @@ int exec_printable_buildin(t_info *info)
 void exec_printable(t_info *info, char *cmd)
 {
     char **envp_arr;
-    char *shlvl = NULL;
     int buildin;
 
     buildin = exec_printable_buildin(info);
@@ -137,10 +136,8 @@ void exec_printable(t_info *info, char *cmd)
             free(info->result);
         info->result = NULL;
         prepare_args_and_fd(info);
-        envp_arr = make_envp_arr(info, &shlvl);
+        envp_arr = make_envp_arr(info);
         execve(cmd, info->tokens[info->i].args, envp_arr);
-        if (shlvl)
-            free(shlvl);
         free(envp_arr);
     }
     else if (!buildin)
@@ -172,8 +169,6 @@ int set_start(t_info *info)
 
 void program_define(t_info *info)
 {
-    char *cmd;
-    pid_t pid;
     int fd_dasha;
     int *pids;
     int **fd;

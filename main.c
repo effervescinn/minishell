@@ -73,6 +73,8 @@ int main(int ac, char **av, char **envp)
 {
     t_info info;
 
+    (void)ac;
+    (void)av;
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
