@@ -53,8 +53,8 @@ typedef struct s_global
 
 
 
-extern int file;
 extern t_global g_global;
+
 
 typedef void (*sighandler_t)(int);
 
@@ -83,6 +83,7 @@ char *heredoc_str(char *stop, char **buf, int *len, t_info *info);
 void redirects_solo(t_info *info);
 void unlink_files(t_info *info);
 void opening_error_scnd(char *filename);
+void files_to_unlink(t_info *info, char *filename);
 
 
 //commands.c
@@ -107,6 +108,40 @@ void exec_command(t_info *info, int pid);
 void free_list(t_list **list);
 int set_start(t_info *info);
 char *change_shlvl(char *str);
+void exit_ctrl_d(t_info *info);
+void exit_minishell(t_info *info);
+void unset(t_info *info);
+void cd(t_info *info);
+void remove_from_extra_exp(t_list **list, char *var);
+void compare_vars(t_list *tmp, t_info *info, t_list **list, t_list **prev);
+int check_unset_var(t_info *info, int a);
+void echo_print(t_info *info, int a, int n);
+void join_env_and_extra(t_info *info, t_list **exp_tmp, int *i);
+void remove_extra(t_list **tmp, t_list **list, t_list **prev);
+void one_equality(char *str, char **new, int i);
+int check_var_name(char *var_name);
+char *remove_eqs(char *str, char *ptr_to_eq);
+void find_and_join(char *ptr_to_eq, t_info *info, char *var, int a);
+void var_name_error(int *a, char **var_name, t_info *info);
+int plus_before_eq(char **ptr_to_eq, t_info *info, char **var_name, int a);
+int export_end(char **ptr_to_eq, t_info *info, char **var_name, int *a);
+int export_if_pwd(t_info *info, int *a, char **ptr_to_eq);
+void search_heredoc_end(t_info *info, char **filename, int fd, int i);
+void g_redirects_solo(t_info *info, int i);
+void found_g_redirect(int *fd, t_info *info, int i, int *flag);
+char **make_envp_arr(t_info *info, char **shlvl);
+void start_of_line(t_info *info);
+void check_pipe();
+
+
+
+
+
+
+
+
+
+
 
 
 

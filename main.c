@@ -1,14 +1,6 @@
 #include "minishell.h"
 
-int file;
 t_global g_global;
-
-int ft_putchar(int c)
-{
-    write(1, &c, 1);
-    return 1;
-}
-
 
 void sig_int(int sig)
 {
@@ -33,176 +25,6 @@ void sig_int(int sig)
 	}
 }
 
-void free_tokens(t_info *info)
-{
-    int i;
-
-    i = 0;
-    while (info->tokens[i].str)
-    {
-        free(info->tokens[i].str);
-        i++;
-    }
-    free(info->tokens);
-}
-
-void free_args(t_info *info)
-{
-    int i;
-    int j;
-
-    i = 0;
-    while (info->tokens[i].str)
-    {
-        j = 0;
-        while (info->tokens[i].args[j])
-        {
-            free(info->tokens[i].args[j]);
-            j++;
-        }
-        free(info->tokens[i].args);
-        i++;
-    }
-}
-
-int unexpected_tokens(t_token *tokens)
-{
-    int i;
-
-    i = 0;
-    while (tokens[i].str)
-    {
-        if (tokens[i].type == 'p')
-        {
-            if (i == 0)
-                return (1);
-            if (tokens[i + 1].str)
-                if (tokens[i + 1].type == 'p')
-                    return (1);
-        }
-        else if (tokens[i].type == 'g' || tokens[i].type == 'G' || tokens[i].type == 'l' || tokens[i].type == 'L')
-        {
-            if (tokens[i + 1].str)
-            {
-                if (tokens[i + 1].type == 'p')
-                    return (1);
-                else if (tokens[i + 1].type == 'L')
-                    return (2);
-                else if (tokens[i + 1].type == 'l')
-                    return (3);
-                else if (tokens[i + 1].type == 'g')
-                    return (4);
-                else if (tokens[i + 1].type == 'G')
-                    return (5);
-            }
-            else
-                return (6);
-        }
-        i++;
-    }
-    return (0);
-}
-
-void printf_tokens_err(int error)
-{
-    if (error == 1)
-        printf("-dashBash: syntax error near unexpected token `|'\n");
-    else if (error == 2)
-        printf("-dashBash: syntax error near unexpected token `<<'\n");
-    else if (error == 3)
-        printf("-dashBash: syntax error near unexpected token `<'\n");
-    else if (error == 4)
-        printf("-dashBash: syntax error near unexpected token `>'\n");
-    else if (error == 5)
-        printf("-dashBash: syntax error near unexpected token `>>'\n");
-    else if (error == 6)
-        printf("-dashBash: syntax error near unexpected token `newline'\n");
-    g_global.ex_status = 258;
-}
-
-char *close_pipe(char *line)
-{
-    int i;
-    char buf[1024 + 1];
-    int ret = 0;
-    char *closed_str;
-    char *no_enters;
-    int j;
-    char *tmp;
-
-    if (!line)
-        return (NULL);
-    closed_str = ft_substr(line, 0, ft_strlen(line));
-    i = 0;
-    while (line[i])
-        i++;
-    if (i == 0)
-        return (line);
-    i--;
-    while (i > 0 && line[i] == ' ')
-        i--;
-    if (line[i] == '|')
-    {
-        while((ret = read(0, buf, 1024)))
-        {
-            buf[ret] = '\0';
-            j = ret - 2;
-            while (buf[j] == ' ' && j > 0)
-                j--;
-            tmp = closed_str;
-            closed_str = ft_strjoin(tmp, buf);
-            free(tmp);
-            if (buf[j] == '|')
-                continue ;
-            else
-                break;         
-       }
-        no_enters = (char*)malloc(ft_strlen(closed_str) + 1);
-        i = 0;
-        j = 0;
-        while (closed_str[j])
-        {
-            if (closed_str[j] != '\n')
-            {
-                no_enters[i] = closed_str[j];
-                i++;
-            }
-            j++;
-        }
-        no_enters[i] = '\0';
-        free(line);
-        free(closed_str);
-        return (no_enters);
-    }
-    free(line);
-    return (closed_str);
-}
-
-void check_pipe()
-{
-    int i;
-
-    if (g_global.input == NULL)
-        return;
-    i = 0;
-    while (g_global.input[i])
-        i++;
-    if (i > 0)
-        i--;
-    while (g_global.input[i] == ' ' && i > 0)
-        i--;
-    if (g_global.input[i] == '|')
-    {
-        if (i > 0)
-            i--;
-        while (g_global.input[i] == ' ' && i > 0)
-            i--;
-        if (g_global.input[i] == '|')
-            return ;
-    }
-    g_global.input = close_pipe(g_global.input);
-    return ;
-}
 
 void history(t_info *info)
 {
@@ -222,15 +44,7 @@ void history(t_info *info)
         check_pipe();
         add_history(g_global.input);
         if (!g_global.input)
-        {
-            free_list(&info->extra_exp);
-            free_list(&info->head);
-            free(info->str_pwd);
-            free(info->str_oldpwd);
-            free(g_global.prompt);
-            write(1, "exit\n", 5);
-            exit(0);
-        }
+            exit_ctrl_d(info);
         if (count_quotes(g_global.input) % 2 == 0 && ft_strlen(g_global.input))
         {
             newstr = replace_vars(g_global.input, info);
@@ -274,6 +88,7 @@ void history(t_info *info)
 int main(int ac, char **av, char **envp)
 {
     t_info info;
+
     make_env(envp, &info.head);
     set_pointers(&info);
     make_paths(&info);
@@ -281,14 +96,10 @@ int main(int ac, char **av, char **envp)
     g_global.hd_ex = 0;
     g_global.f = 0;
     info.heredoc = NULL;
-
-    file = open("file", O_CREAT | O_WRONLY | O_TRUNC, 0777);
     info.str_oldpwd = NULL;
     info.str_pwd = NULL;
     copy_pwds(&info);
-
     info.exp = NULL;
     info.extra_exp = NULL;
-
     history(&info);
 }
