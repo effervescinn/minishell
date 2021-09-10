@@ -86,20 +86,9 @@ void prepare_args_and_fd(t_info *info)
     define_fd_in(info);
 }
 
-int exec_printable_buildin(t_info *info)
+int exec_printable_buildin_scnd(t_info *info)
 {
-    start_of_line(info);
-    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
-    {
-        pwd(info);
-        return(1);
-    }
-    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
-    {
-        echo(info);
-        return (1);
-    }
-    else if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
+    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "env", 3))
     {
         env(info);
         return(1);
@@ -112,12 +101,28 @@ int exec_printable_buildin(t_info *info)
     return(0);
 }
 
+int exec_printable_buildin_frst(t_info *info)
+{
+    start_of_line(info);
+    if (ft_strlen(info->tokens[info->i].str) == 3 && !ft_strncmp(info->tokens[info->i].str, "pwd", 3))
+    {
+        pwd(info);
+        return(1);
+    }
+    else if (ft_strlen(info->tokens[info->i].str) == 4 && !ft_strncmp(info->tokens[info->i].str, "echo", 4))
+    {
+        echo(info);
+        return (1);
+    }
+    return (exec_printable_buildin_scnd(info));
+}
+
 void exec_printable(t_info *info, char *cmd)
 {
     char **envp_arr;
     int buildin;
 
-    buildin = exec_printable_buildin(info);
+    buildin = exec_printable_buildin_frst(info);
     if (!buildin && cmd)
     {
         if (info->result)

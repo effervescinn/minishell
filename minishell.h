@@ -188,3 +188,6 @@ void exec_fork(t_info **info, int ***fd, int **pids, int *k);
 void first_fork(t_info **info, char *cmd, int ***fd, int *k);
 void between_fork(t_info **info, char *cmd, int ***fd, int *k);
 void last_fork(t_info **info, char *cmd, int ***fd, int *k);
+int exec_printable_buildin_scnd(t_info *info);
+int exec_printable_buildin_frst(t_info *info);
+
