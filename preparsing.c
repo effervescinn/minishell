@@ -44,7 +44,7 @@ char *make_no_enters_string(char **closed_str, char **line)
     return (no_enters);
 }
 
-void make_closed_string(char **closed_str)
+int make_closed_string(char **closed_str)
 {
     int ret;
     char buf[1024 + 1];
@@ -54,9 +54,12 @@ void make_closed_string(char **closed_str)
     ret = 1;
     while (ret)
     {
+        write(1, "> ", 2);
         ret = read(0, buf, 1024);
         buf[ret] = '\0';
         j = ret - 2;
+        if (!ret)
+            return (0);
         while (buf[j] == ' ' && j > 0)
             j--;
         tmp = *closed_str;
@@ -67,6 +70,7 @@ void make_closed_string(char **closed_str)
         else
             break;         
     }
+    return (1);
 }
 
 char *close_pipe(char *line)
@@ -87,7 +91,8 @@ char *close_pipe(char *line)
         i--;
     if (line[i] == '|')
     {
-        make_closed_string(&closed_str);
+        if (!make_closed_string(&closed_str))
+            return (NULL);
         return (make_no_enters_string(&closed_str, &line));
     }
     free(line);
