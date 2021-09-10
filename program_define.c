@@ -134,7 +134,6 @@ void exec_fork(t_info **info, int ***fd, int **pids, int *k)
 {
     int j;
     char *cmd;
-    int new_fd;
 
     j = 0;
     cmd = find_bin(*info);
@@ -196,7 +195,6 @@ void program_define(t_info *info)
 {
     int **fd;
     int k;
-    char *cmd;
 
     init_pids(&info, &info->pids, &fd);
     k = -1;

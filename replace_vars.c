@@ -2,10 +2,8 @@
 
 char *vars(char **str, t_list *head)
 {
-    char *var;
     char *newvar;
     int j;
-    int len;
 
     newvar = NULL;
     while (head)
@@ -116,8 +114,6 @@ void dollar(char **str, char **newstr, char **start, t_info *info)
 
 void check_syms(char **str, t_info *info, char **newstr, char **start)
 {
-    char *glue;
-
     while (**str && **str != '\'' && **str != '\"' && **str != '$')
         (*str)++;
     if (**str == '\"')
@@ -141,7 +137,6 @@ void check_syms(char **str, t_info *info, char **newstr, char **start)
 
 char *replace_vars(char *str, t_info *info)
 {
-    int i;
     char *newstr;
     char *start;
     char *glue;
