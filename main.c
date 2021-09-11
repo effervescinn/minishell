@@ -101,6 +101,7 @@ int main(int ac, char **av, char **envp)
     (void)ac;
     (void)av;
     make_env(envp, &info.head);
+    info.pths_array = NULL;
     set_pointers(&info);
     make_paths(&info);
     info.oldpwd_flag = 0;
