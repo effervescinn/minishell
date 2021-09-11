@@ -1,11 +1,11 @@
 #include "minishell.h"
 
-void check_pipe()
+int check_pipe()
 {
     int i;
 
     if (g_global.input == NULL)
-        return;
+        return (1);
     i = 0;
     while (g_global.input[i])
         i++;
@@ -20,10 +20,15 @@ void check_pipe()
         while (g_global.input[i] == ' ' && i > 0)
             i--;
         if (g_global.input[i] == '|')
-            return ;
+            return (1);
     }
     g_global.input = close_pipe(g_global.input);
-    return ;
+    if (!g_global.input)
+    {
+        printf("dashBash: syntax error: unexpected end of file\n");
+        return (0);
+    }
+    return (1);
 }
 
 void sig_int(int sig)

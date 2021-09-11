@@ -81,11 +81,13 @@ void history(t_info *info)
         signal(SIGQUIT, SIG_IGN);
         g_global.input = NULL;
         g_global.input = readline(g_global.prompt);
-        check_pipe();
-        add_history(g_global.input);
         if (!g_global.input)
             exit_ctrl_d(info);
-        parse(info);
+        if (check_pipe())
+        {
+            add_history(g_global.input);
+            parse(info);
+        }
         if (g_global.input)
         {
             free(g_global.input);

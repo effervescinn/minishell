@@ -44,21 +44,35 @@ char *make_no_enters_string(char **closed_str, char **line)
     return (no_enters);
 }
 
+int read_after_unclosed_pipe(char **buf, int *j, char **closed_str)
+{
+    int ret;
+
+    write(1, "> ", 2);
+    ret = read(0, *buf, 1024);
+    (*buf)[ret] = '\0';
+    *j = ret - 2;
+    if (!ret)
+    {
+        free(*closed_str);
+        free(*buf);
+        return (0);
+    }
+    return (1);
+}
+
 int make_closed_string(char **closed_str)
 {
     int ret;
-    char buf[1024 + 1];
+    char *buf;
     int j;
     char *tmp;
 
     ret = 1;
+    buf = malloc(sizeof(char) * 1025);
     while (ret)
     {
-        write(1, "> ", 2);
-        ret = read(0, buf, 1024);
-        buf[ret] = '\0';
-        j = ret - 2;
-        if (!ret)
+        if (!read_after_unclosed_pipe(&buf, &j, closed_str))
             return (0);
         while (buf[j] == ' ' && j > 0)
             j--;
@@ -70,6 +84,7 @@ int make_closed_string(char **closed_str)
         else
             break;         
     }
+    free(buf);
     return (1);
 }
 
