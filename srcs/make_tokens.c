@@ -1,35 +1,55 @@
 #include "../minishell.h"
 
-void	str_to_tokens(char **str, char ***arr, char **start, int *i)
+void str_to_tokens(char **str, char ***arr, char **start, int *i)
 {
 	while (**str)
 	{
 		while (**str && **str == ' ')
 			(*str)++;
 		if (**str == '\0')
-			continue ;
+			continue;
 		*start = *str;
 		if (**str != '\"' && **str != '\'')
 		{
 			if (**str == '|' || **str == '<' || **str == '>')
 			{
 				pipe_redir(str, arr, start, i);
-				continue ;
+				continue;
 			}
 			quotes_after(str);
 		}
 		else if (**str == '\"' || **str == '\'')
-			meet_quotes(str);
+		{
+			int i = 0;
+
+			if (*str[0] == '\'')
+			{
+				(*str)++;
+				*str = ft_strchr(*str, '\'');
+				(*str)++;
+				while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|' && (*str)[i] != '<' && (*str)[i] != '>')
+					i++;
+			}
+			else if (**str == '\"')
+			{
+				(*str)++;
+				*str = ft_strchr(*str, '\"');
+				(*str)++;
+				while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|' && (*str)[i] != '<' && (*str)[i] != '>')
+					i++;
+			}
+		}
+		// meet_quotes(str);
 		(*i)++;
 		finish_tokens(str, arr, start, i);
 	}
 }
 
-char	**make_tokens(char *str)
+char **make_tokens(char *str)
 {
-	char	**arr;
-	char	*start;
-	int		i;
+	char **arr;
+	char *start;
+	int i;
 
 	start = str;
 	i = 0;
