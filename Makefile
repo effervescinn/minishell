@@ -7,7 +7,7 @@ DEPFLAGS = -MMD -MF $(@:.o=.d)
 CC = gcc
 NAME = minishell
 FLAGS = -g -Wall -Wextra -Werror
-READLINE = -ltermcap -lreadline 
+READLINE = -lreadline 
 FT_LIB = $(LIBFT_DIR)/libft.a
 LIBFT_DIR = ./libft
 

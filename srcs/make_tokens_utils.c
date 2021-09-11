@@ -30,21 +30,26 @@ void	pipe_redir(char **str, char ***arr, char **start, int *i)
 
 void	meet_quotes(char **str)
 {
-	if (**str == '\'')
+	int	i;
+
+	i = 0;
+	if (*str[0] == '\'')
 	{
 		(*str)++;
 		*str = ft_strchr(*str, '\'');
-		while (**str && **str != ' ' && **str != '|'
-			&& **str != '<' && **str != '>')
-			(*str)++;
+		(*str)++;
+		while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|'
+			&& (*str)[i] != '<' && (*str)[i] != '>')
+			i++;
 	}
 	else if (**str == '\"')
 	{
 		(*str)++;
 		*str = ft_strchr(*str, '\"');
-		while (**str && **str != ' ' && **str != '|'
-			&& **str != '<' && **str != '>')
-			(*str)++;
+		(*str)++;
+		while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|'
+			&& (*str)[i] != '<' && (*str)[i] != '>')
+			i++;
 	}
 }
 
