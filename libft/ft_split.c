@@ -39,7 +39,8 @@ static int	count_words(char const *s, char c)
 
 static int	free_all(char **arr, int i, int w_len)
 {
-	if (!(arr[i] = (char *)malloc(w_len * sizeof(char) + sizeof(char))))
+	arr[i] = (char *)malloc(w_len * sizeof(char) + sizeof(char));
+	if (!(arr[i]))
 	{
 		while (i-- >= 0)
 			free(arr[i]);
@@ -77,7 +78,7 @@ static int	push_strs(const char *s, char c, char **arr, int w_q)
 	return (0);
 }
 
-char		**ft_split(char const *s, char c)
+char	**ft_split(char const *s, char c)
 {
 	char	**arr;
 	int		w_q;
@@ -85,7 +86,8 @@ char		**ft_split(char const *s, char c)
 	if (s == NULL)
 		return (NULL);
 	w_q = count_words(s, c);
-	if ((arr = (char **)malloc(w_q * sizeof(char *) + sizeof(char *))))
+	arr = (char **)malloc(w_q * sizeof(char *) + sizeof(char *));
+	if (arr)
 	{
 		if ((push_strs(s, c, arr, w_q) == 1))
 			return (NULL);
