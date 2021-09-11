@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	pipe_redir(char **str, char ***arr, char **start, int *i)
 {

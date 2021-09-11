@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	first_fork(t_info **info, char *cmd, int ***fd, int *k)
 {

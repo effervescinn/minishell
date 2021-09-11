@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	found_redir_buildin(t_info *info, int i, int *fd)
 {

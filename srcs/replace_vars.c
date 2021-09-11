@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	check_syms(char **str, t_info *info, char **newstr, char **start)
 {

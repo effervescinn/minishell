@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	compare_vars(t_list *tmp, t_list **list, t_list **prev)
 {

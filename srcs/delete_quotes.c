@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	handle_quotes(char **tmp_token, char **str, int *i, int *j)
 {

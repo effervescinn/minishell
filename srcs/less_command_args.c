@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	less_command(t_token **tokens, int *i)
 {

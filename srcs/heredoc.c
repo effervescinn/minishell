@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 char	*heredoc_str(char *stop, char **buf, int *len, t_info *info)
 {

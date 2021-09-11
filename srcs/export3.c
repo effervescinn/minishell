@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	find_existing_var(char *var_name, t_info *info, int a)
 {

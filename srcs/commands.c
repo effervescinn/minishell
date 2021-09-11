@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	prepare_args_and_fd(t_info *info)
 {

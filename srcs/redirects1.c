@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	g_redirects_solo(t_info *info, int i)
 {

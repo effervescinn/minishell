@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 int	check_redirs(t_info **info, int ***fd, int *k)
 {

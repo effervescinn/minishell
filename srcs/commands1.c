@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	add_from_the_first(t_info *info, int q, char **array, int *k)
 {

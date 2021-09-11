@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	make_exp(t_info *info)
 {
@@ -71,7 +71,7 @@ void	print_exp_vars(t_info *info)
 	free_list(&info->exp);
 }
 
-void	ew_str_without_quotes(int quotes, char **str)
+void	new_str_without_quotes(int quotes, char **str)
 {
 	char	*new_string;
 	int		i;

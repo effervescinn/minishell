@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	str_to_tokens(char **str, char ***arr, char **start, int *i)
 {

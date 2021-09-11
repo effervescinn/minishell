@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	echo_print(t_info *info, int a, int n)
 {
