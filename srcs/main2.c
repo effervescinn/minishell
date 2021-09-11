@@ -41,9 +41,6 @@ int	check_pipe(void)
 
 void	sig_int(int sig)
 {
-	int	left;
-	int	right;
-
 	(void)sig;
 	if (g_global.f)
 	{
@@ -52,18 +49,11 @@ void	sig_int(int sig)
 	}
 	if (!g_global.f)
 	{
-		left = 40;
-		right = 50;
-		while (right--)
-			tputs(cursor_right, 1, ft_putchar);
-		while (left--)
-		{
-			tputs(cursor_left, 1, ft_putchar);
-			tputs(tgetstr("dc", NULL), 1, ft_putchar);
-		}
-		write(1, "\n", 1);
-		rl_replace_line("", 1);
 		rl_on_new_line();
 		rl_redisplay();
-	}
+		write(1, "  \b\b\n", 5);
+		rl_on_new_line();
+		rl_replace_line("", 1);
+		rl_redisplay();
+ 	}
 }
