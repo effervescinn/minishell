@@ -28,36 +28,41 @@ void	pipe_redir(char **str, char ***arr, char **start, int *i)
 	free(tmp);
 }
 
-// void	meet_quotes(char **str)
-// {
-	// int i;
-
-	// if (*str[0] == '\'')
-	// {
-	// 	(*str)++;
-	// 	*str = ft_strchr(*str, '\'');
-	// 	(*str)++;
-	// 	while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|'
-	// 		&& (*str)[i] != '<' && (*str)[i] != '>')
-	// 		i++;
-	// }
-	// else if (**str == '\"')
-	// {
-	// 	(*str)++;
-	// 	*str = ft_strchr(*str, '\"');
-	// 	(*str)++;
-	// 	while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|'
-	// 		&& (*str)[i] != '<' && (*str)[i] != '>')
-	// 		i++;
-	// }
-// }
+void	meet_quotes(char **str)
+{
+	while (**str && (**str == '\"' || **str == '\''))
+	{
+		if (**str == '\'')
+		{
+			(*str)++;
+			*str = ft_strchr(*str, '\'');
+			(*str)++;
+			while (**str && **str != ' ' && **str != '|' && **str != '<'
+				&& **str != '>' && **str != '\'' && **str != '\"')
+				(*str)++;
+			if (**str == '\'' || **str == '\"')
+				continue ;
+		}
+		else if (**str == '\"')
+		{
+			(*str)++;
+			*str = ft_strchr(*str, '\"');
+			(*str)++;
+			while (**str && **str != ' ' && **str != '|' && **str != '<'
+				&& **str != '>' && **str != '\'' && **str != '\"')
+				(*str)++;
+			if (**str == '\'' || **str == '\"')
+				continue ;
+		}
+	}
+}
 
 void	quotes_after(char **str)
 {
 	while (**str && **str != ' ')
 	{
-		while (**str && **str != '\"' && **str != '\'' && **str != ' '
-			&& **str != '|' && **str != '>' && **str != '<')
+		while (**str && **str != '\"' && **str != '\'' && **str
+			!= ' ' && **str != '|' && **str != '>' && **str != '<')
 			(*str)++;
 		if (**str == '\'')
 		{
