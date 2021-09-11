@@ -163,5 +163,10 @@ void	between_fork(t_info **info, char *cmd, int ***fd, int *k);
 void	last_fork(t_info **info, char *cmd, int ***fd, int *k);
 int		exec_printable_buildin_scnd(t_info *info);
 int		exec_printable_buildin_frst(t_info *info);
-
+char	**create_new_exec_array(t_info *info, int files, int smb);
+void	add_from_the_first(t_info *info, int q, char **array, int *k);
+int		check_flags(char **tmp_token, int *i, int *flag);
+void	s_flag(char **tmp_token, char **str, int *i, int *j);
+void	d_flag(char **tmp_token, char **str, int *i, int *j);
+void	no_flags(char **tmp_token, char **str, int *i, int *j);
 #endif
