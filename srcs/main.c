@@ -1,7 +1,5 @@
 #include "../minishell.h"
 
-t_global	g_global;
-
 void	make_env(char **envp, t_list **head)
 {
 	t_list	*new;
