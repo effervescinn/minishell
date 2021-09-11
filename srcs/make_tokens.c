@@ -20,22 +20,22 @@ void str_to_tokens(char **str, char ***arr, char **start, int *i)
 		}
 		else if (**str == '\"' || **str == '\'')
 		{
-			int i = 0;
+			int j = 0;
 
 			if (*str[0] == '\'')
 			{
 				(*str)++;
 				*str = ft_strchr(*str, '\'');
 				(*str)++;
-				while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|' && (*str)[i] != '<' && (*str)[i] != '>')
-					i++;
+				while ((*str)[j] && (*str)[j] != ' ' && (*str)[j] != '|' && (*str)[j] != '<' && (*str)[j] != '>')
+					j++;
 			}
 			else if (**str == '\"')
 			{
 				(*str)++;
 				*str = ft_strchr(*str, '\"');
 				(*str)++;
-				while ((*str)[i] && (*str)[i] != ' ' && (*str)[i] != '|' && (*str)[i] != '<' && (*str)[i] != '>')
+				while ((*str)[j] && (*str)[j] != ' ' && (*str)[j] != '|' && (*str)[j] != '<' && (*str)[j] != '>')
 					i++;
 			}
 		}
