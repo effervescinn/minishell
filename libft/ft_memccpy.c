@@ -18,8 +18,8 @@ void	*ft_memccpy(void *dst, const void *src, int c, size_t n)
 	const unsigned char		*new_src;
 	unsigned char			s;
 
-	new_dst = (unsigned char*)dst;
-	new_src = (const unsigned char*)src;
+	new_dst = (unsigned char *)dst;
+	new_src = (const unsigned char *)src;
 	s = (unsigned char)c;
 	if (new_dst == NULL && new_src == NULL)
 		return (dst);
@@ -28,7 +28,7 @@ void	*ft_memccpy(void *dst, const void *src, int c, size_t n)
 		*new_dst = *new_src;
 		new_dst++;
 		if (*new_src == s)
-			return ((void*)new_dst);
+			return ((void *)new_dst);
 		new_src++;
 		n--;
 	}

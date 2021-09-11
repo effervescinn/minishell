@@ -22,7 +22,8 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		return (NULL);
 	s1_len = ft_strlen(s1);
 	s2_len = ft_strlen(s2);
-	if ((res_str = (char*)malloc((s1_len + s2_len) * sizeof(*s1) + 1)))
+	res_str = (char *)malloc((s1_len + s2_len) * sizeof(*s1) + 1);
+	if (res_str)
 	{
 		ft_bzero(res_str, ft_strlen(s1) + ft_strlen(s2) + 1);
 		ft_memmove(res_str, s1, ft_strlen(s1));

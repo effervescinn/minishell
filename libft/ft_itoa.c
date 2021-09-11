@@ -60,7 +60,7 @@ static char	*itos(long long int new_n, char *res)
 	return (res);
 }
 
-char		*ft_itoa(int n)
+char	*ft_itoa(int n)
 {
 	char			*res;
 	long long int	n_len;
@@ -68,7 +68,8 @@ char		*ft_itoa(int n)
 
 	new_n = n;
 	n_len = count_len(new_n);
-	if ((res = (char *)malloc(n_len * sizeof(char) + 2 * sizeof(char))))
+	res = (char *)malloc(n_len * sizeof(char) + 2 * sizeof(char));
+	if (res)
 	{
 		return (itos(new_n, res));
 	}

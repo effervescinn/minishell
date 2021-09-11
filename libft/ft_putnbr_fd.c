@@ -25,7 +25,7 @@ static int	ft_divider(long long int c)
 	return (divider);
 }
 
-void		ft_putnbr_fd(int n, int fd)
+void	ft_putnbr_fd(int n, int fd)
 {
 	long long int	new_n;
 	long long int	div;

@@ -15,7 +15,7 @@
 void	ft_putstr_fd(char *s, int fd)
 {
 	if (s == NULL)
-		return ((void)NULL);
+		return (NULL);
 	if (fd)
 	{
 		while (*s)
