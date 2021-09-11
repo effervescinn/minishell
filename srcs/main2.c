@@ -46,7 +46,10 @@ void	sig_int(int sig)
 
 	(void)sig;
 	if (g_global.f)
+	{
 		signal(SIGINT, SIG_IGN);
+		write(1, "\n", 1);
+	}
 	if (!g_global.f)
 	{
 		left = 40;
