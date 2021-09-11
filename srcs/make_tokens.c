@@ -36,7 +36,7 @@ void str_to_tokens(char **str, char ***arr, char **start, int *i)
 				*str = ft_strchr(*str, '\"');
 				(*str)++;
 				while ((*str)[j] && (*str)[j] != ' ' && (*str)[j] != '|' && (*str)[j] != '<' && (*str)[j] != '>')
-					i++;
+					j++;
 			}
 		}
 		// meet_quotes(str);
