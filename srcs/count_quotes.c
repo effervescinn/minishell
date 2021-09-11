@@ -1,6 +1,6 @@
-#include "../minishell.h"
+#include "minishell.h"
 
-int find_double(char **str, int *quotes)
+int	find_double(char **str, int *quotes)
 {
 	(*str)++;
 	(*quotes)++;
@@ -12,7 +12,7 @@ int find_double(char **str, int *quotes)
 	return (0);
 }
 
-int find_single(char **str, int *quotes)
+int	find_single(char **str, int *quotes)
 {
 	(*str)++;
 	(*quotes)++;
@@ -24,10 +24,10 @@ int find_single(char **str, int *quotes)
 	return (0);
 }
 
-int count_quotes(char *str)
+int	count_quotes(char *str)
 {
-	int quotes;
-	int ret;
+	int	quotes;
+	int	ret;
 
 	quotes = 0;
 	while (*str)
@@ -47,7 +47,7 @@ int count_quotes(char *str)
 				return (ret);
 		}
 		if (*str == '\0')
-			continue;
+			continue ;
 	}
 	return (quotes);
 }

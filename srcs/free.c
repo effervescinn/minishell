@@ -1,47 +1,47 @@
-#include "../minishell.h"
+#include "minishell.h"
 
-void free_tokens(t_info *info)
+void	free_tokens(t_info *info)
 {
-    int i;
+	int	i;
 
-    i = 0;
-    while (info->tokens[i].str)
-    {
-        free(info->tokens[i].str);
-        i++;
-    }
-    free(info->tokens);
+	i = 0;
+	while (info->tokens[i].str)
+	{
+		free(info->tokens[i].str);
+		i++;
+	}
+	free(info->tokens);
 }
 
-void free_args(t_info *info)
+void	free_args(t_info *info)
 {
-    int i;
-    int j;
+	int	i;
+	int	j;
 
-    i = 0;
-    while (info->tokens[i].str)
-    {
-        j = 0;
-        while (info->tokens[i].args[j])
-        {
-            free(info->tokens[i].args[j]);
-            j++;
-        }
-        free(info->tokens[i].args);
-        i++;
-    }
+	i = 0;
+	while (info->tokens[i].str)
+	{
+		j = 0;
+		while (info->tokens[i].args[j])
+		{
+			free(info->tokens[i].args[j]);
+			j++;
+		}
+		free(info->tokens[i].args);
+		i++;
+	}
 }
 
-void free_list(t_list **list)
+void	free_list(t_list **list)
 {
-    t_list *tmp;
+	t_list	*tmp;
 
-    while (*list)
-    {
-        tmp = *list;
-        *list = (*list)->next;
-        free(tmp->content);
-        free(tmp);
-    }
-    *list = NULL;
+	while (*list)
+	{
+		tmp = *list;
+		*list = (*list)->next;
+		free(tmp->content);
+		free(tmp);
+	}
+	*list = NULL;
 }

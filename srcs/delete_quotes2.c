@@ -1,4 +1,4 @@
-#include "../minishell.h"
+#include "minishell.h"
 
 int	check_flags(char **tmp_token, int *i, int *flag)
 {
