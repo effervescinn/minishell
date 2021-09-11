@@ -54,8 +54,7 @@ typedef struct s_global
 	int		hd_ex;
 }				t_global;
 
-t_global	g_global;
-
+t_global		g_global;
 typedef void	(*t_sighandler_t)(int);
 
 int		ft_putchar(int c);
